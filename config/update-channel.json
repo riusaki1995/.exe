@@ -1,4 +1,4 @@
 {
   "_instrucciones": "1) Sube config/panel-update.json a HTTPS y copia su URL. 2) Pégala en manifestUrl. 3) npm run build. Ver INSTRUCCIONES-ACTUALIZACIONES.txt",
-  "manifestUrl": ""
+  "manifestUrl": "https://github.com/riusaki1995/.exe/releases/download/v1.0.70/Panel.TikTok.PRO.Setup.1.0.70.exe"
 }
