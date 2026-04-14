@@ -1,5 +1,0 @@
-{
-  "version": "1.0.62",
-  "downloadUrl": "https://www.mediafire.com/file/7asd96uv0pxeqnt/Panel_TikTok_PRO_Setup_1.0.60.exe/file",
-  "notes": "Cambia version cuando publiques una release nueva. downloadUrl debe ser HTTPS y apuntar al Panel-TikTok-PRO-Setup.exe (o el nombre que genere electron-builder en dist/)."
-}
