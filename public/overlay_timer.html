@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Overlay - Temporizador</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@700;800&display=swap');
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Inter', sans-serif;
+            background: transparent;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        .timer-container {
+            background: rgba(32, 32, 36, 0.92);
+            border: 2px solid rgba(100, 150, 255, 0.45);
+            padding: 12px 36px;
+            border-radius: 12px;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.45);
+        }
+        .time-text {
+            color: #fff;
+            font-size: 64px;
+            font-weight: 800;
+            letter-spacing: 6px;
+            font-variant-numeric: tabular-nums;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="timer-container">
+        <div class="time-text" id="timer-display">00:00</div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/js/overlay_room.js?v=1"></script>
+    <script>
+        const socket = io();
+        const params = new URLSearchParams(window.location.search);
+        const streamerId = params.get('user');
+        if (streamerId) {
+            setupOverlaySocketRoom(socket, streamerId);
+        }
+
+        let timeRemaining = 0;
+        let timerInterval = null;
+
+        let settings = {
+            gift_mult: 5,
+            like: 2,
+            follow: 10,
+            share: 15,
+            subscribe: 60,
+            chat: 0,
+            defaultInitialSec: 300,
+            maxEnabled: false,
+            maxCapSec: 18000,
+            actionOnFinish: 'pause'
+        };
+
+        function clampTime() {
+            if (timeRemaining < 0) timeRemaining = 0;
+            if (settings.maxEnabled && settings.maxCapSec > 0) {
+                timeRemaining = Math.min(timeRemaining, settings.maxCapSec);
+            }
+        }
+
+        function updateDisplay() {
+            const t = Math.max(0, Math.floor(timeRemaining));
+            const h = Math.floor(t / 3600);
+            const m = Math.floor((t % 3600) / 60);
+            const s = t % 60;
+            let displayString = '';
+            if (h > 0) {
+                displayString += (h < 10 ? '0' : '') + h + ':';
+            }
+            displayString += (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+            document.getElementById('timer-display').innerText = displayString;
+        }
+
+        function mergeSettings(data) {
+            if (!data || typeof data !== 'object') return;
+            const pick = (a, b, def) => (a !== undefined && a !== null ? a : b !== undefined && b !== null ? b : def);
+            settings.gift_mult = parseFloat(pick(data.gift_mult, data.giftMult, settings.gift_mult)) || 0;
+            settings.like = parseFloat(pick(data.like, null, settings.like)) || 0;
+            settings.follow = parseFloat(pick(data.follow, null, settings.follow)) || 0;
+            settings.share = parseFloat(pick(data.share, null, settings.share)) || 0;
+            settings.subscribe = parseFloat(pick(data.subscribe, null, settings.subscribe)) || 0;
+            settings.chat = parseFloat(pick(data.chat, null, settings.chat)) || 0;
+            settings.defaultInitialSec = parseFloat(pick(data.defaultInitialSec, data.default_initial_sec, settings.defaultInitialSec)) || 0;
+            settings.maxEnabled = !!(pick(data.maxEnabled, data.max_enabled, settings.maxEnabled));
+            settings.maxCapSec = parseFloat(pick(data.maxCapSec, data.max_cap_sec, settings.maxCapSec)) || 0;
+            const act = pick(data.actionOnFinish, data.action_on_finish, settings.actionOnFinish);
+            settings.actionOnFinish = String(act || 'pause');
+        }
+
+        function addSeconds(delta) {
+            const d = parseFloat(delta);
+            if (!d) return;
+            timeRemaining += d;
+            clampTime();
+            updateDisplay();
+        }
+
+        function playBeep() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const o = ctx.createOscillator();
+                const g = ctx.createGain();
+                o.connect(g);
+                g.connect(ctx.destination);
+                o.frequency.value = 880;
+                g.gain.value = 0.08;
+                o.start();
+                setTimeout(() => { o.stop(); ctx.close(); }, 180);
+            } catch (e) {}
+        }
+
+        function onReachZero() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+            const act = settings.actionOnFinish;
+            if (act === 'reset') {
+                timeRemaining = settings.defaultInitialSec || 0;
+                clampTime();
+            } else if (act === 'beep') {
+                playBeep();
+            }
+            updateDisplay();
+        }
+
+        socket.on('timer_settings', (data) => {
+            mergeSettings(data);
+            updateDisplay();
+        });
+
+        socket.on('timer_control', (data) => {
+            if (!data || !data.action) return;
+            const a = data.action;
+            if (a === 'set') {
+                if (data.totalSeconds != null) {
+                    timeRemaining = Math.max(0, Math.floor(Number(data.totalSeconds)));
+                } else if (data.minutes != null) {
+                    timeRemaining = Math.max(0, Math.floor(Number(data.minutes) * 60));
+                }
+                clampTime();
+                updateDisplay();
+            } else if (a === 'add_seconds') {
+                addSeconds(data.delta);
+            } else if (a === 'start') {
+                if (data.totalSeconds != null) {
+                    timeRemaining = Math.max(0, Math.floor(Number(data.totalSeconds)));
+                    clampTime();
+                }
+                if (timerInterval) clearInterval(timerInterval);
+                timerInterval = setInterval(() => {
+                    if (timeRemaining <= 0) {
+                        clearInterval(timerInterval);
+                        timerInterval = null;
+                        onReachZero();
+                        return;
+                    }
+                    timeRemaining--;
+                    updateDisplay();
+                    if (timeRemaining <= 0) {
+                        clearInterval(timerInterval);
+                        timerInterval = null;
+                        onReachZero();
+                    }
+                }, 1000);
+            } else if (a === 'pause') {
+                if (timerInterval) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                }
+            } else if (a === 'reset') {
+                if (timerInterval) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                }
+                timeRemaining = settings.defaultInitialSec != null ? Math.max(0, Math.floor(settings.defaultInitialSec)) : 0;
+                clampTime();
+                updateDisplay();
+            }
+        });
+
+        function giftSeconds(data) {
+            const coins = Math.max(0, Number(data.diamondCount || 0) * Math.max(1, Number(data.repeatCount || 1)));
+            return coins * settings.gift_mult;
+        }
+
+        socket.on('gift', (data) => {
+            addSeconds(giftSeconds(data));
+        });
+
+        socket.on('like', (data) => {
+            const batch = Math.max(0, Number(data.likeCount || data.count || 1));
+            const per100 = settings.like;
+            addSeconds((batch / 100) * per100);
+        });
+
+        socket.on('follow', () => addSeconds(settings.follow));
+        socket.on('share', () => addSeconds(settings.share));
+        socket.on('subscribe', () => addSeconds(settings.subscribe));
+        socket.on('chat', () => addSeconds(settings.chat));
+
+        socket.on('nuevo_live', () => {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+            timeRemaining = settings.defaultInitialSec != null ? Math.max(0, Math.floor(settings.defaultInitialSec)) : 0;
+            clampTime();
+            updateDisplay();
+        });
+
+        updateDisplay();
+
+        window.addEventListener('message', (event) => {
+            if (!event.data || event.data.type !== 'overlay_test' || event.data.kind !== 'timer') return;
+            addSeconds(30);
+        });
+    </script>
+</body>
+</html>

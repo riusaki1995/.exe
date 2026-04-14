@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Integración Minecraft | Agencia ELArbol</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+        
+        /* Fondo base imitando tu panel principal */
+        body { 
+            background: #0f172a; /* Color de fondo oscuro por si no tienes el tuyo puesto */
+            color: #e2e8f0; 
+            font-family: 'Inter', sans-serif; 
+            margin: 0; 
+            padding: 40px 20px; 
+            display: flex; 
+            justify-content: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        /* Estilo Glassmorphism (Cristal) */
+        .glass { 
+            background: rgba(20, 25, 35, 0.6); 
+            backdrop-filter: blur(16px); 
+            border: 1px solid rgba(255, 255, 255, 0.08); 
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2); 
+        }
+
+        /* Contenedor Principal */
+        .card { 
+            padding: 30px; 
+            border-radius: 16px; 
+            width: 100%; 
+            max-width: 800px;
+            height: fit-content;
+        }
+
+        /* Título de la página */
+        .header-title {
+            margin-bottom: 30px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 15px;
+        }
+        .header-title h1 { margin: 0; font-size: 24px; font-weight: 800; color: #fff; display: flex; align-items: center; gap: 10px; }
+        .header-title p { margin: 5px 0 0 0; color: #94a3b8; font-size: 14px; }
+
+        /* Estructura a dos columnas (Checkbox izq, Textarea der) */
+        .layout-grid {
+            display: grid;
+            grid-template-columns: 220px 1fr;
+            gap: 20px;
+            align-items: start;
+        }
+
+        /* Estilos del Checkbox */
+        .checkbox-container {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-top: 5px;
+        }
+        .custom-checkbox {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: #00f2fe; /* Color cyan para el check */
+            margin-top: 2px;
+        }
+        .checkbox-label {
+            color: #e2e8f0;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            line-height: 1.4;
+        }
+
+        /* Estilos de la columna derecha (Controles) */
+        .controls-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        /* Botón de Importar */
+        .btn-import {
+            background: #1e293b;
+            border: 1px solid #334155;
+            color: #e2e8f0;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s;
+            width: 100%;
+        }
+        .btn-import:hover {
+            background: #334155;
+            border-color: #475569;
+        }
+
+        /* Área de Texto (Comandos) */
+        .textarea-cmd {
+            width: 100%;
+            height: 140px;
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            color: #10b981; /* Verde esmeralda tipo código */
+            padding: 15px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 14px;
+            resize: vertical;
+            outline: none;
+            box-sizing: border-box;
+            transition: border-color 0.2s;
+        }
+        .textarea-cmd:focus {
+            border-color: #00f2fe;
+            box-shadow: 0 0 0 2px rgba(0, 242, 254, 0.2);
+        }
+        .textarea-cmd::placeholder {
+            color: #64748b;
+        }
+
+        /* Leyenda de Parámetros */
+        .info-text {
+            font-size: 12px;
+            color: #94a3b8;
+            line-height: 1.6;
+        }
+        .info-text strong {
+            color: #cbd5e1;
+        }
+
+        /* Enlaces del Footer */
+        .footer-links {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 5px;
+        }
+        .link-action {
+            color: #38bdf8; /* Azul claro */
+            text-decoration: none;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+        .link-action:hover {
+            color: #00f2fe;
+            text-decoration: underline;
+        }
+
+        /* Responsivo para celulares/pantallas pequeñas */
+        @media (max-width: 650px) {
+            .layout-grid {
+                grid-template-columns: 1fr;
+            }
+            .checkbox-container {
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="card glass">
+        
+        <div class="header-title">
+            <h1>🎮 Configuración Minecraft</h1>
+            <p>Vincula acciones de tu Live con comandos directos en tu servidor o partida.</p>
+        </div>
+
+        <div class="layout-grid">
+            
+            <div class="checkbox-container">
+                <input type="checkbox" id="mc-activar" class="custom-checkbox" checked>
+                <label for="mc-activar" class="checkbox-label">
+                    Ejecutar Comando de Minecraft
+                </label>
+            </div>
+
+            <div class="controls-container">
+                
+                <button class="btn-import">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                    Importar código desde plantilla
+                </button>
+
+                <textarea id="mc-comandos" class="textarea-cmd" placeholder="or enter your commands here (without slash)"></textarea>
+
+                <div class="info-text">
+                    <strong>Parámetros:</strong> {playername} {username} {nickname} {comment} {giftname} {coins} {repeatcount} {likecount} {totallikecount}<br>
+                    <strong>Comandos:</strong> delay &lt;milisegundos&gt;, break_delays, skip_delays
+                </div>
+
+                <div class="footer-links">
+                    <a href="#" class="link-action">
+                        <span style="font-size: 16px;">❓</span> ¿Cómo funciona esto?
+                    </a>
+                    <a href="#" class="link-action">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                            <polyline points="15 3 21 3 21 9"></polyline>
+                            <line x1="10" y1="14" x2="21" y2="3"></line>
+                        </svg>
+                        Editor Expandir
+                    </a>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Overlays | Agencia ELArbol</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+
+        :root {
+            --tf-bg: #0c0e14;
+            --tf-surface: #151a22;
+            --tf-surface-elevated: #1a2029;
+            --tf-border: rgba(100, 116, 139, 0.32);
+            --tf-teal: #3dd6c3;
+            --tf-teal-soft: rgba(61, 214, 195, 0.18);
+            --tf-pink: #f472b6;
+            --tf-pink-deep: #db2777;
+            --tf-text: #e8edf4;
+            --tf-muted: #8b95a8;
+        }
+
+        html, body { height: 100%; margin: 0; }
+        body {
+            background-color: var(--tf-bg);
+            color: var(--tf-text);
+            font-family: 'Inter', sans-serif;
+            font-size: 12px;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100%;
+            overflow: auto;
+            box-sizing: border-box;
+        }
+        .glass {
+            background: var(--tf-surface);
+            border: 1px solid var(--tf-border);
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(61, 214, 195, 0.35); border-radius: 6px; }
+
+        #area-principal { flex: 1 1 auto; min-height: 0; padding: 10px 10px 14px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; box-sizing: border-box; }
+
+        .header-overlays {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--tf-surface-elevated);
+            padding: 12px 16px;
+            border-radius: 10px;
+            border-left: 3px solid var(--tf-teal);
+            flex-shrink: 0;
+        }
+        .header-title h1 { margin: 0 0 4px 0; font-size: 15px; font-weight: 800; color: var(--tf-text); letter-spacing: 0.03em; }
+        .header-title p { margin: 0; color: var(--tf-muted); font-size: 11px; line-height: 1.45; }
+
+        .card { padding: 14px; border-radius: 10px; flex-shrink: 0; }
+        .card h2 { margin: 0 0 8px 0; font-size: 14px; color: var(--tf-teal); display: flex; align-items: center; gap: 8px; font-weight: 700; }
+
+        .url-box { display: flex; gap: 8px; background: rgba(10, 12, 18, 0.6); padding: 6px 8px; border-radius: 8px; border: 1px solid var(--tf-border); align-items: center; margin-top: 8px; }
+        .url-input { flex-grow: 1; background: transparent; border: none; color: var(--tf-teal); font-family: monospace; font-size: 11px; outline: none; padding: 0 6px; }
+
+        .btn-copiar {
+            background: linear-gradient(135deg, var(--tf-pink), var(--tf-pink-deep)) !important;
+            color: #ffffff !important;
+            border: none !important;
+            padding: 7px 12px !important;
+            border-radius: 6px !important;
+            font-weight: 600 !important;
+            cursor: pointer !important;
+            transition: filter 0.2s !important;
+            white-space: nowrap !important;
+            font-size: 11px !important;
+        }
+        .btn-copiar:hover { filter: brightness(1.08) !important; }
+
+        .overlay-card-content { display: flex; gap: 16px; align-items: flex-start; flex-wrap: wrap; }
+        .overlay-info { flex: 1; display: flex; flex-direction: column; min-width: 200px; }
+        
+        .overlay-preview-container { width: 260px; display: flex; flex-direction: column; gap: 8px; flex-shrink: 0; }
+        .preview-label { font-size: 10px; color: var(--tf-muted); text-transform: uppercase; font-weight: 700; text-align: center; letter-spacing: 0.06em; }
+        .preview-box {
+            width: 100%;
+            height: 280px;
+            border-radius: 8px;
+            border: 1px solid var(--tf-border);
+            overflow: hidden;
+            background-color: #0a0c10 !important;
+            background-image: linear-gradient(45deg, #12151c 25%, transparent 25%, transparent 75%, #12151c 75%, #12151c), linear-gradient(45deg, #12151c 25%, transparent 25%, transparent 75%, #12151c 75%, #12151c) !important;
+            background-size: 18px 18px !important;
+            background-position: 0 0, 9px 9px !important;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        /* Centra el iframe dentro del rectángulo (misma idea que la vista previa de Hype Bar) */
+        .preview-shim {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .preview-shim--fill iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            pointer-events: none;
+        }
+
+        .preview-shim iframe {
+            border: none;
+            pointer-events: none;
+            flex-shrink: 0;
+            transform-origin: center center;
+        }
+
+        /* Canvas lógico grande + escala desde el centro (rankings, listas anchas) */
+        .preview-iframe--xl {
+            width: 960px;
+            height: 720px;
+            transform: scale(0.28);
+        }
+
+        .preview-iframe--batalla {
+            width: 480px;
+            height: 420px;
+            transform: scale(0.58);
+        }
+
+        .preview-iframe--timer {
+            width: 520px;
+            height: 220px;
+            transform: scale(0.88);
+        }
+
+        .preview-iframe--alerta {
+            width: 920px;
+            height: 560px;
+            transform: scale(0.3);
+        }
+
+        .preview-iframe--spotify {
+            width: 920px;
+            height: 820px;
+            transform: scale(0.28);
+        }
+
+        input[type="number"] { background: rgba(10, 12, 18, 0.85) !important; border: 1px solid var(--tf-border) !important; color: var(--tf-text) !important; outline: none !important; transition: border-color 0.2s !important; border-radius: 6px !important; font-size: 12px !important; padding: 4px 8px !important;}
+        input[type="number"]:focus { border-color: var(--tf-teal) !important; box-shadow: 0 0 0 2px var(--tf-teal-soft) !important; }
+        div[style*="background: rgba(0,0,0,0.2)"] { background: rgba(10, 12, 18, 0.55) !important; border-color: var(--tf-border) !important; }
+        h3[style*="color: #00f2fe"] { color: var(--tf-teal) !important; }
+        
+        /* RESPETAMOS LOS COLORES DE PLAY/PAUSA/RESET DEL TIMER */
+        button[onclick*="'start'"] { background: #10b981 !important; color: white !important;}
+        button[onclick*="'start'"]:hover { background: #059669 !important;}
+        button[onclick*="'pause'"] { background: #f59e0b !important; color: white !important;}
+        button[onclick*="'pause'"]:hover { background: #d97706 !important;}
+        button[onclick*="'reset'"] { background: #ef4444 !important; color: white !important;}
+        button[onclick*="'reset'"]:hover { background: #dc2626 !important;}
+        button[onclick*="'set'"] { background: #475569 !important; color: white !important;}
+        button[onclick*="'set'"]:hover { background: #334155 !important;}
+
+        @media (max-width: 900px) {
+            html, body { overflow-x: hidden; max-width: 100vw; }
+            #area-principal { padding: 10px; min-width: 0; box-sizing: border-box; }
+            .glass, .card { max-width: 100%; min-width: 0; box-sizing: border-box; }
+        }
+    </style>
+</head>
+<body>
+    <div id="area-principal">
+        
+        <div class="header-overlays glass">
+            <div class="header-title">
+                <h1>Widgets para OBS / Live Studio</h1>
+                <p>ATENTO, SI VAS A ESTAR EN LA VERSION WEB PON ESTE ENLACE SI ESTARAS EN LA VERSION PC USA EL DE LA APP</p>
+            </div>
+        </div>
+
+        <div class="card glass">
+            <div class="overlay-card-content">
+                <div class="overlay-info">
+                    <h2>❤️ Top Likes y 💎 Top Diamantes</h2>
+                    <p style="color: var(--tf-muted); font-size: 12px; margin: 0; line-height: 1.45;">
+                        Configuración completa, vista previa fija y número de filas: usa la pestaña <strong style="color: var(--tf-teal);">Rankings Likes / Diamantes</strong> en el menú principal de la app.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card glass">
+            <div class="overlay-card-content">
+                <div class="overlay-info">
+                    <h2>Guerra de Héroes (Monedas)</h2>
+                    <p style="color: var(--tf-muted); font-size: 12px; margin: 0; line-height: 1.45;">
+                        Enlace para OBS, vista previa y personalización (colores, VS, tarjetas, filas): pestaña <strong style="color: var(--tf-teal);">Gifts overlays</strong> en el menú principal.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card glass">
+            <div class="overlay-card-content">
+                <div class="overlay-info">
+                    <h2>⚔️ Batalla de Likes (1 vs 2)</h2>
+                    <p style="color: var(--tf-muted); font-size: 12px; margin: 0; line-height: 1.45;">
+                        Ranking de likes en vivo; el <strong>VS</strong> solo entre 1.º y 2.º. Más filas y apariencia (icono de likes, colores, tarjetas): pestaña <strong style="color: var(--tf-teal);">Gifts overlays</strong> en el menú principal.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="card glass">
+            <div class="overlay-card-content">
+                <div class="overlay-info">
+                    <h2>👑 MVP: Top 1 Donador</h2>
+                    <p style="color: var(--tf-muted); font-size: 12px; margin: 0; line-height: 1.45;">
+                        Este overlay se configura y enlaza desde la pestaña <strong style="color: var(--tf-teal);">Gifts overlays</strong> del menú principal (vista previa 850×520, colores y textos personalizables).
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card glass">
+            <div class="overlay-card-content">
+                <div class="overlay-info">
+                    <h2>🎵 Spotify: Reproductor en Vivo</h2>
+                    <p style="color: var(--tf-muted); font-size: 12px; margin: 0; line-height: 1.45;">
+                        Muestra la canción actual y las próximas 3 canciones en la fila de Spotify. Se oculta automáticamente si la música se pausa.
+                    </p>
+                    <button class="btn-copiar" style="width: 100%; margin-top: 12px; padding: 8px 12px !important; font-size: 11px !important;" onclick="copiarLinkOverlay('overlay_spotify.html', true)">🔗 Copiar Link Inteligente para OBS</button>
+                    <button class="btn-copiar" style="width: 100%; margin-top: 8px; background:#16a34a !important;" onclick="probarOverlay('preview-spotify','spotify')">🧪 Probar vista Spotify</button>
+                </div>
+
+                <div class="overlay-preview-container">
+                    <div class="preview-label">Vista Previa (EN VIVO)</div>
+                    <div class="preview-box">
+                        <div class="preview-shim">
+                            <iframe id="preview-spotify" class="preview-iframe--spotify" src="overlay_spotify.html"></iframe>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+
+        function copiarURL(idElemento) {
+            const input = document.getElementById(idElemento);
+
+            // Si el overlay que estás copiando es el de Spotify, le inyectamos el token en vivo
+            if (idElemento === 'url-spotify') {
+                const token = localStorage.getItem('spotify_token');
+                if (token) {
+                    input.value = 'http://127.0.0.1:3000/overlay_spotify.html?token=' + token;
+                } else {
+                    alert("¡Ojo! No hay sesión de Spotify activa. Ve a la pestaña 'Música' y dale a Re-vincular primero.");
+                    return; // Detiene la copia para que no pegues un enlace roto
+                }
+            }
+
+            input.select();
+            document.execCommand('copy');
+            alert('¡URL copiada! Pégala en OBS o TikTok Live Studio');
+        }
+
+        function copiarLinkOverlay(archivo, esSpotify = false) {
+            // 1. Buscamos el usuario de TikTok en la ventana principal
+            const inputUsuario = window.parent.document.getElementById('input-usuario');
+            const user = inputUsuario ? inputUsuario.value.trim() : '';
+            
+            if (!user) {
+                alert("⚠️ Primero escribe un Usuario de TikTok en la barra principal y dale a CONECTAR.");
+                return;
+            }
+
+            // 2. Armamos la base del enlace (overlayv fuerza recarga en OBS; súbelo si cambias CSS/HTML del overlay)
+            const OVERLAY_LINK_VER = '21';
+            let link = window.location.origin + "/" + archivo + "?user=" + encodeURIComponent(user) + "&overlayv=" + OVERLAY_LINK_VER;
+
+            // 3. 🔥 EL TRUCO PARA SPOTIFY 🔥
+            // Si el botón que apretaron fue el de Spotify, le agregamos la llave
+            if (esSpotify) {
+                const token = localStorage.getItem('spotify_token');
+                if (!token) {
+                    alert("❌ ERROR: No tienes la llave de Spotify.\nVe a la pestaña de Música y dale a 'Vincular Spotify' primero.");
+                    return;
+                }
+                link += "&token=" + token;
+            }
+
+            // 4. Copiamos al portapapeles
+            navigator.clipboard.writeText(link).then(() => {
+                alert("✅ ¡Enlace Copiado con Éxito!\n\nLink: " + link + "\n\nYa puedes pegarlo en el navegador de tu OBS.");
+            }).catch(err => {
+                alert("❌ Error al copiar. Cópialo manualmente: " + link);
+            });
+        }
+
+        function probarOverlay(iframeId, kind, payload) {
+            const iframe = document.getElementById(iframeId);
+            if (!iframe || !iframe.contentWindow) return;
+            const msg = { type: 'overlay_test', kind };
+            if (payload != null) msg.payload = payload;
+            iframe.contentWindow.postMessage(msg, '*');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vinculando YouTube…</title>
+    <style>
+        body { margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
+            background: #0c0e14; color: #e8edf4; font-family: system-ui, sans-serif; text-align: center; padding: 20px; }
+    </style>
+</head>
+<body>
+    <div id="msg">Conectando con Google…</div>
+    <script>
+        (async function () {
+            const params = new URLSearchParams(window.location.search);
+            const code = params.get('code');
+            const err = params.get('error');
+            const errDesc = params.get('error_description') || '';
+
+            function finishError(text) {
+                document.getElementById('msg').textContent = text;
+                try {
+                    if (window.opener) {
+                        window.opener.postMessage({ type: 'YOUTUBE_OAUTH_ERR', error: text }, '*');
+                    }
+                } catch (e) {}
+                setTimeout(function () { window.close(); }, 3500);
+            }
+
+            if (err) {
+                finishError('OAuth: ' + err + (errDesc ? ' — ' + errDesc : ''));
+                return;
+            }
+            if (!code) {
+                finishError('No se recibió el código de autorización.');
+                return;
+            }
+
+            const verifier = localStorage.getItem('yt_pkce_verifier');
+            const clientId = localStorage.getItem('yt_oauth_client_id');
+            const redirectUri = localStorage.getItem('yt_oauth_redirect_uri');
+            if (!verifier || !clientId || !redirectUri) {
+                finishError('Sesión PKCE incompleta. Cierra esta ventana e inténtalo de nuevo.');
+                return;
+            }
+
+            try {
+                const tokenUrl = window.location.origin + '/api/youtube-token';
+                const res = await fetch(tokenUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        code: code,
+                        redirect_uri: redirectUri,
+                        code_verifier: verifier
+                    })
+                });
+                const raw = await res.text();
+                let data;
+                try {
+                    data = JSON.parse(raw);
+                } catch (parseErr) {
+                    finishError('El servidor no devolvió JSON (' + res.status + '). ¿Está corriendo el panel en ' + window.location.origin + '? ' + raw.slice(0, 160));
+                    return;
+                }
+                localStorage.removeItem('yt_pkce_verifier');
+
+                if (!data.ok || !data.access_token) {
+                    finishError((data.error_description || data.error || 'Token inválido') + (data.error ? ' (' + data.error + ')' : ''));
+                    return;
+                }
+
+                localStorage.setItem('youtube_access_token', data.access_token);
+                if (data.refresh_token) {
+                    localStorage.setItem('youtube_refresh_token', data.refresh_token);
+                }
+                const expMs = (data.expires_in ? parseInt(data.expires_in, 10) : 3600) * 1000;
+                localStorage.setItem('youtube_expires_at', String(Date.now() + expMs));
+
+                try {
+                    if (window.opener) {
+                        window.opener.postMessage({
+                            type: 'YOUTUBE_TOKEN',
+                            access_token: data.access_token,
+                            refresh_token: data.refresh_token || null
+                        }, '*');
+                    }
+                } catch (e) {}
+
+                document.getElementById('msg').textContent = 'Listo. Puedes cerrar esta ventana.';
+                setTimeout(function () { window.close(); }, 800);
+            } catch (e) {
+                localStorage.removeItem('yt_pkce_verifier');
+                const hint = (e && e.message) ? e.message : String(e);
+                finishError('Error de red al obtener el token: ' + hint + '. Comprueba que el servidor del panel esté en marcha y que esta ventana sea ' + window.location.origin + ' (mismo origen que abriste el panel).');
+            }
+        })();
+    </script>
+</body>
+</html>

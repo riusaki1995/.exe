@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="no-referrer">
+    <title>Overlay — Gift VS Gift</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Rubik:wght@700;800;900&family=Inter:wght@600;700&display=swap');
+        * { box-sizing: border-box; }
+        html, body {
+            margin: 0;
+            overflow: hidden;
+            background: transparent !important;
+            font-family: 'Inter', system-ui, sans-serif;
+        }
+        .stage {
+            width: 850px;
+            height: 520px;
+            position: relative;
+            background: transparent;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            padding: 16px 32px 28px;
+        }
+        .side {
+            flex: 0 1 300px;
+            max-width: 300px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 0;
+        }
+        .hero-img-wrap {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 220px;
+            width: 100%;
+            position: relative;
+        }
+        .hero-img-wrap img {
+            max-width: 240px;
+            max-height: 240px;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            filter: drop-shadow(0 0 20px rgba(100, 200, 255, 0.2));
+        }
+        .hero-img-wrap .ph {
+            font-size: 72px;
+            opacity: 0.35;
+        }
+        .score {
+            font-family: 'Rubik', sans-serif;
+            font-weight: 900;
+            font-size: 72px;
+            line-height: 1;
+            color: #fff;
+            text-shadow: 0 2px 0 #000, 0 0 28px rgba(255, 255, 255, 0.15);
+            letter-spacing: -0.02em;
+            margin-top: 4px;
+        }
+        .mid {
+            flex: 0 0 auto;
+            width: auto;
+            min-width: 100px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 0 2px;
+            position: relative;
+            z-index: 1;
+        }
+        .mid-aura {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 110px;
+            height: 110px;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 0;
+            background: radial-gradient(
+                circle at 50% 50%,
+                rgba(255, 210, 120, 0.22) 0%,
+                rgba(255, 130, 60, 0.12) 42%,
+                rgba(255, 70, 40, 0.06) 62%,
+                transparent 78%
+            );
+            animation: aura-flicker 2.2s ease-in-out infinite;
+        }
+        @keyframes aura-flicker {
+            0%, 100% { opacity: 0.65; transform: translate(-50%, -50%) scale(1); }
+            33% { opacity: 0.85; transform: translate(-50%, -50%) scale(1.04); }
+            66% { opacity: 0.55; transform: translate(-50%, -50%) scale(0.98); }
+        }
+        .vs-text {
+            position: relative;
+            z-index: 2;
+            font-family: 'Rubik', sans-serif;
+            font-weight: 900;
+            font-size: 86px;
+            line-height: 0.9;
+            letter-spacing: -0.04em;
+            color: #fff8e8;
+            text-transform: uppercase;
+            background: linear-gradient(185deg, #fffef0 0%, #ffcc33 22%, #ff6600 55%, #ff2200 88%, #ffaa00 100%);
+            background-size: 100% 140%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 3px rgba(255, 190, 100, 0.45));
+            animation: vs-fire 2.4s ease-in-out infinite;
+        }
+        @keyframes vs-fire {
+            0%, 100% {
+                filter:
+                    drop-shadow(0 0 4px rgba(255, 200, 100, 0.5))
+                    drop-shadow(0 0 10px rgba(255, 120, 50, 0.28))
+                    drop-shadow(0 0 18px rgba(255, 70, 30, 0.14));
+            }
+            50% {
+                filter:
+                    drop-shadow(0 0 5px rgba(255, 220, 130, 0.55))
+                    drop-shadow(0 0 12px rgba(255, 130, 55, 0.32))
+                    drop-shadow(0 0 22px rgba(255, 80, 35, 0.18));
+            }
+        }
+        .goal-flash .stage { animation: gf 0.6s ease; }
+        @keyframes gf {
+            0%, 100% { filter: none; }
+            50% { filter: brightness(1.25); }
+        }
+    </style>
+</head>
+<body>
+    <div class="stage" id="stage">
+        <div class="side" id="side-l">
+            <div class="hero-img-wrap">
+                <img id="img-l" alt="" style="display:none" referrerpolicy="no-referrer">
+                <span class="ph" id="ph-l">🎁</span>
+            </div>
+            <div class="score" id="score-l">0</div>
+        </div>
+        <div class="mid">
+            <div class="mid-aura" aria-hidden="true"></div>
+            <div class="vs-text">VS</div>
+        </div>
+        <div class="side" id="side-r">
+            <div class="hero-img-wrap">
+                <img id="img-r" alt="" style="display:none" referrerpolicy="no-referrer">
+                <span class="ph" id="ph-r">🎁</span>
+            </div>
+            <div class="score" id="score-r">0</div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/js/overlay_room.js?v=1"></script>
+    <script>
+        (function () {
+            const params = new URLSearchParams(window.location.search);
+            const streamerId = (params.get('user') || '').trim();
+            const isPreviewEmbed = params.get('preview_embed') === '1';
+
+            const gidL = (params.get('gl') || '').trim();
+            const gidR = (params.get('gr') || '').trim();
+            const staticImgL = (params.get('gli') || '').trim();
+            const staticImgR = (params.get('gri') || '').trim();
+            let metaBase = Math.max(1, parseInt(params.get('meta'), 10) || 500);
+            let metaStep = Math.max(1, parseInt(params.get('gs'), 10) || metaBase);
+            let currentMeta = metaBase;
+            const onGoal = (params.get('og') || 'increase').trim();
+
+            function normRoom(u) {
+                return String(u || '').trim().toLowerCase().replace(/^@+/, '');
+            }
+            const roomSelf = normRoom(streamerId);
+
+            function labelFromKey(k) {
+                if (!k) return '';
+                const partes = String(k).split('_').filter(Boolean);
+                if (partes.length >= 2 && /^\d+$/.test(partes[partes.length - 1])) {
+                    return partes.slice(0, -1).join(' ') || String(k).replace(/_/g, ' ');
+                }
+                return String(k).replace(/_/g, ' ');
+            }
+
+            function idFromKey(k) {
+                if (!k) return '—';
+                const partes = String(k).split('_').filter(Boolean);
+                const last = partes[partes.length - 1];
+                return /^\d+$/.test(last) ? last : k;
+            }
+
+            function matchesListaRegalo(catalogKey, data) {
+                const k = String(catalogKey || '').trim().toLowerCase();
+                if (!k) return false;
+                const nombreTikTok = (data.giftName || '').toLowerCase().replace(/_/g, ' ');
+                const gid = data.giftId != null ? String(data.giftId) : '';
+                if (/^\d+$/.test(k)) {
+                    return gid === k;
+                }
+                const partes = k.split('_').filter(Boolean);
+                if (partes.length === 0) return false;
+                const last = partes[partes.length - 1];
+                if (/^\d+$/.test(last)) {
+                    if (gid === last) return true;
+                    const namePart = partes.slice(0, -1).join(' ');
+                    if (namePart && nombreTikTok.indexOf(namePart) !== -1) return true;
+                    return false;
+                }
+                return nombreTikTok.indexOf(partes.join(' ')) !== -1;
+            }
+
+            /** Mismo criterio que el panel principal: combos TikTok (giftType 1) avisan repeatCount 1,2,3… antes del final. */
+            let combosRegalosActivos = {};
+
+            let leftTotal = 0;
+            let rightTotal = 0;
+            let leftShown = 0;
+            let rightShown = 0;
+            let gvgTickTimer = null;
+            const GVG_TICK_MS = 26;
+            const GVG_BURST_GAP = 120;
+
+            function scheduleGvgTick() {
+                if (gvgTickTimer) return;
+                gvgTickTimer = setInterval(function () {
+                    let moved = false;
+                    const stepL = leftTotal - leftShown;
+                    const stepR = rightTotal - rightShown;
+                    if (stepL > 0) {
+                        const burst = stepL > GVG_BURST_GAP ? Math.min(12, Math.ceil(stepL / 35)) : 1;
+                        leftShown = Math.min(leftTotal, leftShown + burst);
+                        moved = true;
+                    }
+                    if (stepR > 0) {
+                        const burst = stepR > GVG_BURST_GAP ? Math.min(12, Math.ceil(stepR / 35)) : 1;
+                        rightShown = Math.min(rightTotal, rightShown + burst);
+                        moved = true;
+                    }
+                    if (moved) {
+                        renderScores();
+                        checkGoal();
+                    }
+                    if (leftShown >= leftTotal && rightShown >= rightTotal) {
+                        clearInterval(gvgTickTimer);
+                        gvgTickTimer = null;
+                    }
+                }, GVG_TICK_MS);
+            }
+            const leftInfo = {
+                name: gidL ? labelFromKey(gidL) : '',
+                coins: 0,
+                img: staticImgL || '',
+                id: idFromKey(gidL)
+            };
+            const rightInfo = {
+                name: gidR ? labelFromKey(gidR) : '',
+                coins: 0,
+                img: staticImgR || '',
+                id: idFromKey(gidR)
+            };
+
+            /** Diamantes a sumar en ESTE aviso socket (combos: solo el delta de repeatCount, no todo el lote al final). */
+            function diamondCoinsThisSocketEvent(data) {
+                let d = data.diamondCount;
+                if (d === undefined && data.giftDetails) d = data.giftDetails.diamondCount;
+                const per = Math.max(0, Number(d) || 0);
+                if (per <= 0) return 0;
+
+                if (data.giftType !== 1) {
+                    const r = Math.max(1, Number(data.repeatCount) || 1);
+                    return per * r;
+                }
+
+                const idUnicoGrupo = data.groupId != null ? data.groupId : data.giftId;
+                const prev = combosRegalosActivos[idUnicoGrupo] || 0;
+                const rc = Math.max(0, Number(data.repeatCount) || 0);
+                const nuevos = rc - prev;
+                if (data.giftType === 1) combosRegalosActivos[idUnicoGrupo] = data.repeatCount;
+                if (nuevos <= 0) return 0;
+                return per * nuevos;
+            }
+
+            function giftImg(data) {
+                let u = (data.giftPictureUrl || '').trim();
+                if (u) return u;
+                const gd = data.giftDetails;
+                if (gd && gd.giftImage && gd.giftImage.url) {
+                    const urls = gd.giftImage.url;
+                    if (Array.isArray(urls) && urls[0]) return String(urls[0]).trim();
+                    if (typeof urls === 'string') return urls.trim();
+                }
+                return '';
+            }
+
+            function applySideVisual(side, info) {
+                const pre = side === 'l' ? 'l' : 'r';
+                const img = document.getElementById('img-' + pre);
+                const ph = document.getElementById('ph-' + pre);
+                const u = (info.img || '').trim();
+                if (u) {
+                    img.style.display = '';
+                    ph.style.display = 'none';
+                    img.src = u;
+                    img.onerror = function () {
+                        img.style.display = 'none';
+                        ph.style.display = '';
+                    };
+                } else {
+                    img.style.display = 'none';
+                    ph.style.display = '';
+                }
+            }
+
+            function renderScores() {
+                document.getElementById('score-l').textContent = String(leftShown);
+                document.getElementById('score-r').textContent = String(rightShown);
+                notifyParent();
+            }
+
+            function notifyParent() {
+                try {
+                    if (window.parent !== window) {
+                        window.parent.postMessage({
+                            type: 'gift_vs_scores',
+                            left: leftTotal,
+                            right: rightTotal,
+                            meta: currentMeta
+                        }, '*');
+                    }
+                } catch (e) {}
+            }
+
+            function considerGift(data) {
+                const total = diamondCoinsThisSocketEvent(data);
+                if (total <= 0) return;
+                const gname = (data.giftName || '').replace(/_/g, ' ') || 'Gift';
+                const img = giftImg(data);
+                const gidLive = data.giftId != null ? String(data.giftId) : '';
+
+                if (gidL && matchesListaRegalo(gidL, data)) {
+                    leftTotal += total;
+                    leftInfo.name = gname || labelFromKey(gidL);
+                    leftInfo.coins = Math.max(leftInfo.coins, Number(data.diamondCount) || 0);
+                    leftInfo.img = img || leftInfo.img || staticImgL;
+                    leftInfo.id = gidLive || idFromKey(gidL);
+                    applySideVisual('l', leftInfo);
+                } else if (gidR && matchesListaRegalo(gidR, data)) {
+                    rightTotal += total;
+                    rightInfo.name = gname || labelFromKey(gidR);
+                    rightInfo.coins = Math.max(rightInfo.coins, Number(data.diamondCount) || 0);
+                    rightInfo.img = img || rightInfo.img || staticImgR;
+                    rightInfo.id = gidLive || idFromKey(gidR);
+                    applySideVisual('r', rightInfo);
+                } else {
+                    return;
+                }
+                scheduleGvgTick();
+                renderScores();
+                checkGoal();
+            }
+
+            function checkGoal() {
+                if (leftTotal < currentMeta && rightTotal < currentMeta) return;
+                document.body.classList.add('goal-flash');
+                setTimeout(function () { document.body.classList.remove('goal-flash'); }, 600);
+                if (onGoal === 'none') {
+                    renderScores();
+                    return;
+                }
+                if (onGoal === 'reset') {
+                    leftTotal = rightTotal = leftShown = rightShown = 0;
+                } else if (onGoal === 'increase') {
+                    currentMeta += metaStep;
+                    leftTotal = rightTotal = leftShown = rightShown = 0;
+                }
+                if (gvgTickTimer) {
+                    clearInterval(gvgTickTimer);
+                    gvgTickTimer = null;
+                }
+                renderScores();
+            }
+
+            function resetAll() {
+                leftTotal = rightTotal = leftShown = rightShown = 0;
+                currentMeta = metaBase;
+                combosRegalosActivos = {};
+                if (gvgTickTimer) {
+                    clearInterval(gvgTickTimer);
+                    gvgTickTimer = null;
+                }
+                renderScores();
+            }
+
+            /** Prueba: siempre 0–0; solo muestra iconos del catálogo si hay gli/gri en la URL. */
+            function runDemo() {
+                combosRegalosActivos = {};
+                leftTotal = rightTotal = leftShown = rightShown = 0;
+                leftInfo.name = labelFromKey(gidL) || '';
+                leftInfo.coins = 0;
+                leftInfo.id = idFromKey(gidL);
+                leftInfo.img = staticImgL || '';
+                rightInfo.name = labelFromKey(gidR) || '';
+                rightInfo.coins = 0;
+                rightInfo.id = idFromKey(gidR);
+                rightInfo.img = staticImgR || '';
+                applySideVisual('l', leftInfo);
+                applySideVisual('r', rightInfo);
+                renderScores();
+            }
+
+            applySideVisual('l', leftInfo);
+            applySideVisual('r', rightInfo);
+
+            const socket = io();
+
+            if (streamerId && !isPreviewEmbed) {
+                setupOverlaySocketRoom(socket, streamerId);
+            }
+
+            socket.on('gift', function (data) {
+                if (isPreviewEmbed) return;
+                considerGift(data);
+            });
+
+            socket.on('nuevo_live', function () {
+                if (isPreviewEmbed) return;
+                resetAll();
+            });
+
+            socket.on('gift_vs_manual', function (data) {
+                if (!data || normRoom(data.room) !== roomSelf) return;
+                const d = Number(data.delta) || 0;
+                if (data.side === 'L') {
+                    leftTotal = Math.max(0, leftTotal + d);
+                    if (d < 0) leftShown = Math.min(leftShown, leftTotal);
+                } else if (data.side === 'R') {
+                    rightTotal = Math.max(0, rightTotal + d);
+                    if (d < 0) rightShown = Math.min(rightShown, rightTotal);
+                }
+                scheduleGvgTick();
+                renderScores();
+                checkGoal();
+            });
+
+            socket.on('gift_vs_reset', function (data) {
+                if (!data || normRoom(data.room) !== roomSelf) return;
+                resetAll();
+            });
+
+            socket.on('test_gift_vs_gift', function () {
+                runDemo();
+            });
+
+            window.addEventListener('message', function (e) {
+                const d = e.data;
+                if (!d || typeof d !== 'object') return;
+                if (d.type === 'overlay_test' && d.kind === 'gift_vs_gift') {
+                    runDemo();
+                    return;
+                }
+                if (d.type === 'gift_vs_delta') {
+                    const dd = Number(d.delta) || 0;
+                    if (d.side === 'L') {
+                        leftTotal = Math.max(0, leftTotal + dd);
+                        if (dd < 0) leftShown = Math.min(leftShown, leftTotal);
+                    } else if (d.side === 'R') {
+                        rightTotal = Math.max(0, rightTotal + dd);
+                        if (dd < 0) rightShown = Math.min(rightShown, rightTotal);
+                    }
+                    scheduleGvgTick();
+                    renderScores();
+                    checkGoal();
+                } else if (d.type === 'gift_vs_local_reset') {
+                    resetAll();
+                } else if (d.type === 'gift_vs_config_patch' && d.config) {
+                    const c = d.config;
+                    if (c.meta != null) {
+                        metaBase = Math.max(1, parseInt(c.meta, 10) || 500);
+                        metaStep = Math.max(1, parseInt(c.goalStep, 10) || metaBase);
+                        currentMeta = metaBase;
+                    }
+                    renderScores();
+                }
+            });
+
+            if (isPreviewEmbed) {
+                runDemo();
+            } else {
+                renderScores();
+            }
+        })();
+    </script>
+</body>
+</html>

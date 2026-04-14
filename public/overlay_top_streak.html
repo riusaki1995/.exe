@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="no-referrer">
+    <title>Overlay — Mejor racha</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Rubik:wght@700;800;900&display=swap');
+
+        * { box-sizing: border-box; }
+        html, body {
+            margin: 0;
+            overflow: hidden;
+            background: transparent !important;
+            font-family: 'Rubik', system-ui, sans-serif;
+        }
+
+        .wrap {
+            width: 800px;
+            height: 450px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 24px 16px;
+            background: transparent;
+            --name-color: #e4e4ee;
+            --name-stroke: #3d3d4a;
+            --value-color: #e8c4a0;
+            --value-stroke: #4a3d2e;
+            --tc1: #ff00aa;
+            --tc2: #00ddff;
+            --tc3: #ffcc00;
+        }
+
+        .wrap--hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .title {
+            font-family: 'Rubik', sans-serif;
+            font-weight: 900;
+            font-size: 34px;
+            letter-spacing: 0.1em;
+            line-height: 1.1;
+            margin: 0 0 8px;
+            max-width: 96%;
+            text-align: center;
+            text-transform: uppercase;
+        }
+
+        .title--rainbow {
+            background: linear-gradient(
+                92deg,
+                #ff1744,
+                #ff9100,
+                #ffea00,
+                #00e676,
+                #00b0ff,
+                #e040fb,
+                #ff1744
+            );
+            background-size: 300% 100%;
+            animation: title-rainbow 4.5s linear infinite;
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 3px 0 rgba(0, 0, 0, 0.55)) drop-shadow(0 5px 12px rgba(0, 0, 0, 0.4));
+        }
+
+        @keyframes title-rainbow {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 100% 50%; }
+        }
+
+        .title--gradient {
+            background: linear-gradient(100deg, var(--tc1), var(--tc2), var(--tc3));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 3px 0 rgba(0, 0, 0, 0.5)) drop-shadow(0 6px 14px rgba(0, 0, 0, 0.35));
+        }
+
+        .img-wrap {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            max-height: 230px;
+            min-height: 200px;
+            margin: 4px 0 10px;
+        }
+
+        .img-wrap::before {
+            content: '';
+            position: absolute;
+            width: min(320px, 85vw);
+            height: min(320px, 85vw);
+            max-height: 260px;
+            border-radius: 50%;
+            z-index: 0;
+            pointer-events: none;
+            background: radial-gradient(
+                circle at 50% 45%,
+                rgba(255, 130, 180, 0.22) 0%,
+                rgba(120, 160, 255, 0.12) 38%,
+                rgba(40, 200, 160, 0.08) 58%,
+                transparent 72%
+            );
+            filter: blur(0.5px);
+        }
+
+        .hero-img {
+            position: relative;
+            z-index: 1;
+            max-width: 300px;
+            max-height: 220px;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            filter:
+                drop-shadow(0 8px 20px rgba(0, 0, 0, 0.45))
+                drop-shadow(0 0 28px rgba(255, 150, 200, 0.15));
+        }
+
+        .hero-img.is-placeholder {
+            opacity: 0.92;
+        }
+
+        .name {
+            font-family: 'Rubik', sans-serif;
+            font-weight: 900;
+            font-size: 46px;
+            letter-spacing: 0.02em;
+            color: var(--name-color);
+            text-align: center;
+            line-height: 1.05;
+            max-width: 92%;
+            padding: 0 10px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            margin: 0 0 8px;
+            -webkit-text-stroke: 3px var(--name-stroke);
+            paint-order: stroke fill;
+            text-shadow:
+                0 4px 0 rgba(15, 15, 22, 0.55),
+                0 7px 14px rgba(0, 0, 0, 0.5),
+                0 0 20px rgba(255, 255, 255, 0.06);
+        }
+
+        .value-line {
+            font-family: 'Rubik', sans-serif;
+            font-weight: 800;
+            font-size: 30px;
+            letter-spacing: 0.03em;
+            color: var(--value-color);
+            text-align: center;
+            margin: 0;
+            text-transform: uppercase;
+            -webkit-text-stroke: 2px var(--value-stroke);
+            paint-order: stroke fill;
+            text-shadow:
+                0 3px 0 rgba(20, 15, 10, 0.45),
+                0 5px 12px rgba(0, 0, 0, 0.45);
+        }
+
+        .gift-tag {
+            font-family: 'Rubik', sans-serif;
+            font-size: 15px;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.55);
+            margin-top: 4px;
+            max-width: 92%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="wrap wrap--hidden" id="root">
+        <div class="title title--rainbow" id="el-title">MEJOR RACHA</div>
+        <div class="img-wrap">
+            <img class="hero-img" id="gift-img" alt="" referrerpolicy="no-referrer">
+        </div>
+        <div class="name" id="el-name">—</div>
+        <div class="value-line">× <span id="el-streak">0</span></div>
+        <div class="gift-tag" id="el-gift"></div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/js/overlay_room.js?v=1"></script>
+    <script>
+        const DEFAULT_IMG = '/videos/mejorracha.png';
+
+        const params = new URLSearchParams(window.location.search);
+        const streamerId = (params.get('user') || '').trim();
+        const isPreviewEmbed = params.get('preview_embed') === '1';
+
+        function hexNorm(h) {
+            if (!h) return '';
+            let s = String(h).trim().replace(/^#/, '');
+            if (/^[0-9a-fA-F]{6}$/.test(s)) return s.toLowerCase();
+            if (/^[0-9a-fA-F]{3}$/.test(s)) {
+                return s.split('').map(function (c) { return c + c; }).join('').toLowerCase();
+            }
+            return '';
+        }
+
+        function parseStyleFromUrl() {
+            return {
+                titleRainbow: params.get('tr') !== '0',
+                tc1: hexNorm(params.get('tc1')) || 'ff00aa',
+                tc2: hexNorm(params.get('tc2')) || '00ddff',
+                tc3: hexNorm(params.get('tc3')) || 'ffcc00',
+                nameColor: hexNorm(params.get('nc')) || 'e4e4ee',
+                valueColor: hexNorm(params.get('vc')) || 'e8c4a0',
+                nameStroke: hexNorm(params.get('ns')) || '3d3d4a',
+                valueStroke: hexNorm(params.get('vs')) || '4a3d2e'
+            };
+        }
+
+        let runtimeStyle = parseStyleFromUrl();
+        const socket = io();
+
+        let best = {
+            streak: 0,
+            nickname: '',
+            giftName: '',
+            giftPictureUrl: ''
+        };
+
+        function applyRuntimeStyle() {
+            const s = runtimeStyle;
+            const root = document.getElementById('root');
+            root.style.setProperty('--name-color', '#' + s.nameColor);
+            root.style.setProperty('--value-color', '#' + s.valueColor);
+            root.style.setProperty('--name-stroke', '#' + (hexNorm(s.nameStroke) || '3d3d4a'));
+            root.style.setProperty('--value-stroke', '#' + (hexNorm(s.valueStroke) || '4a3d2e'));
+            root.style.setProperty('--tc1', '#' + s.tc1);
+            root.style.setProperty('--tc2', '#' + s.tc2);
+            root.style.setProperty('--tc3', '#' + s.tc3);
+
+            const titleEl = document.getElementById('el-title');
+            titleEl.classList.remove('title--rainbow', 'title--gradient');
+            if (s.titleRainbow) {
+                titleEl.classList.add('title--rainbow');
+            } else {
+                titleEl.classList.add('title--gradient');
+            }
+        }
+
+        function limpiarNombre(raw) {
+            if (raw == null || raw === '') return 'Usuario';
+            const s = String(raw).trim().replace(/^@+/, '');
+            return s || 'Usuario';
+        }
+
+        function applyUI() {
+            const root = document.getElementById('root');
+            const has = best.streak > 0;
+            root.classList.toggle('wrap--hidden', !has);
+            if (!has) {
+                document.getElementById('gift-img').removeAttribute('src');
+                document.getElementById('el-name').textContent = '';
+                document.getElementById('el-streak').textContent = '0';
+                document.getElementById('el-gift').textContent = '';
+                return;
+            }
+
+            document.getElementById('el-name').textContent = limpiarNombre(best.nickname);
+            document.getElementById('el-streak').textContent = String(best.streak);
+            const gn = (best.giftName || '').replace(/_/g, ' ');
+            document.getElementById('el-gift').textContent = gn ? gn : ' ';
+
+            const img = document.getElementById('gift-img');
+            const url = (best.giftPictureUrl || '').trim();
+            img.classList.toggle('is-placeholder', !url);
+            img.src = url || DEFAULT_IMG;
+            img.onerror = function () {
+                this.onerror = null;
+                this.src = DEFAULT_IMG;
+                this.classList.add('is-placeholder');
+            };
+        }
+
+        function considerGift(data) {
+            const rc = Math.max(0, parseInt(data.repeatCount, 10) || 0);
+            if (rc <= 0) return;
+            if (rc > best.streak) {
+                best.streak = rc;
+                best.nickname = data.nickname || data.uniqueId || 'Usuario';
+                best.giftName = data.giftName || '';
+                best.giftPictureUrl = data.giftPictureUrl || '';
+                applyUI();
+            }
+        }
+
+        if (streamerId && !isPreviewEmbed) {
+            setupOverlaySocketRoom(socket, streamerId);
+        }
+
+        socket.on('gift', function (data) {
+            if (isPreviewEmbed) return;
+            considerGift(data);
+        });
+
+        socket.on('nuevo_live', function () {
+            if (isPreviewEmbed) return;
+            best = { streak: 0, nickname: '', giftName: '', giftPictureUrl: '' };
+            applyUI();
+        });
+
+        socket.on('test_top_streak', function () {
+            runTest();
+        });
+
+        function runTest() {
+            best = {
+                streak: 99,
+                nickname: 'PreviewFan',
+                giftName: 'rose',
+                giftPictureUrl: '/videos/mejorracha.png'
+            };
+            applyUI();
+        }
+
+        function applyTopStreakStyleFromPayload(style) {
+            if (!style) return;
+            const x = style;
+            runtimeStyle = Object.assign({}, runtimeStyle, x);
+            if (x.titleRainbow !== undefined) {
+                runtimeStyle.titleRainbow = x.titleRainbow === true || x.titleRainbow === '1' || x.titleRainbow === 1;
+            }
+            ['tc1', 'tc2', 'tc3', 'nameColor', 'valueColor', 'nameStroke', 'valueStroke'].forEach(function (k) {
+                if (runtimeStyle[k]) {
+                    const n = hexNorm(runtimeStyle[k]);
+                    if (n) runtimeStyle[k] = n;
+                }
+            });
+            applyRuntimeStyle();
+            applyUI();
+        }
+
+        socket.on('top_streak_style_live', function (data) {
+            if (!data || !data.style) return;
+            applyTopStreakStyleFromPayload(data.style);
+        });
+
+        window.addEventListener('message', function (e) {
+            const d = e.data;
+            if (!d) return;
+            if (d.type === 'top_streak_style' && d.style) {
+                applyTopStreakStyleFromPayload(d.style);
+                return;
+            }
+            if (d.type === 'overlay_test' && d.kind === 'top_streak') {
+                runTest();
+            }
+        });
+
+        applyRuntimeStyle();
+        if (isPreviewEmbed) {
+            best = {
+                streak: 99,
+                nickname: 'PreviewFan',
+                giftName: 'rose',
+                giftPictureUrl: '/videos/mejorracha.png'
+            };
+        }
+        applyUI();
+    </script>
+</body>
+</html>

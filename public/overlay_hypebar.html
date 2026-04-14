@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Overlay Hype Bar</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@600;700;800&display=swap');
+
+    body {
+      margin: 0;
+      background: transparent;
+      font-family: 'Inter', system-ui, sans-serif;
+    }
+
+    .wrap {
+      width: 640px;
+      padding: 8px;
+      box-sizing: border-box;
+    }
+
+    /* Contenedor cuadrado/delgado (no píldora) */
+    .box {
+      position: relative;
+      border-radius: 6px;
+      padding: 8px 12px 10px;
+      overflow: visible;
+      background:
+        radial-gradient(ellipse 120% 80% at 15% 20%, rgba(100, 180, 255, 0.1) 0%, transparent 45%),
+        radial-gradient(ellipse 80% 60% at 85% 80%, rgba(236, 72, 153, 0.06) 0%, transparent 40%),
+        linear-gradient(165deg, rgba(18, 24, 42, 0.94) 0%, rgba(8, 11, 22, 0.97) 100%);
+      border: 1px solid rgba(180, 210, 255, 0.35);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.1),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.35),
+        0 0 0 1px rgba(0, 0, 0, 0.25),
+        0 4px 16px rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(10px);
+    }
+
+    .box::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        radial-gradient(rgba(255, 255, 255, 0.07) 1px, transparent 1px);
+      background-size: 22px 22px;
+      opacity: 0.55;
+      pointer-events: none;
+      mask-image: linear-gradient(180deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.4) 100%);
+    }
+
+    .box-inner {
+      position: relative;
+      z-index: 1;
+    }
+
+    .row-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 7px;
+      gap: 10px;
+    }
+
+    .title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .title-icon {
+      font-size: 18px;
+      line-height: 1;
+      filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.35));
+      flex-shrink: 0;
+    }
+
+    #title {
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      color: #f8fafc;
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .meta-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .meta-icon {
+      font-size: 16px;
+      line-height: 1;
+      filter: drop-shadow(0 0 4px rgba(250, 204, 21, 0.45));
+    }
+
+    .meta-line {
+      font-size: 14px;
+      font-weight: 800;
+      letter-spacing: 0.03em;
+    }
+
+    .meta-gold {
+      color: #facc15;
+      text-shadow: 0 0 12px rgba(250, 204, 21, 0.45);
+    }
+
+    .meta-cyan {
+      color: #22d3ee;
+      text-shadow: 0 0 10px rgba(34, 211, 238, 0.35);
+    }
+
+    /* Carril vacío (track) */
+    .bar-bg {
+      position: relative;
+      height: 16px;
+      border-radius: 4px;
+      background:
+        repeating-linear-gradient(
+          -45deg,
+          rgba(0, 0, 0, 0.15) 0px,
+          rgba(0, 0, 0, 0.15) 2px,
+          transparent 2px,
+          transparent 4px
+        ),
+        linear-gradient(180deg, rgba(0, 0, 0, 0.5) 0%, rgba(15, 23, 42, 0.65) 100%);
+      box-shadow:
+        inset 0 3px 8px rgba(0, 0, 0, 0.55),
+        inset 0 1px 0 rgba(255, 255, 255, 0.06);
+      overflow: visible;
+    }
+
+    /* Progreso con plasma + destello */
+    #bar {
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 100%;
+      width: 0%;
+      min-width: 0;
+      border-radius: 3px;
+      overflow: visible;
+      transition: width 0.28s ease;
+    }
+
+    .bar-plasma {
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      overflow: hidden;
+    }
+
+    /* Base horizontal + capas que suben como llama */
+    .bar-plasma::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: linear-gradient(
+        90deg,
+        #f472b6 0%,
+        #e879f9 18%,
+        #c084fc 38%,
+        #a78bfa 58%,
+        #818cf8 78%,
+        #f0abfc 100%
+      );
+      background-size: 200% 100%;
+      animation: flame-h 2.4s ease-in-out infinite alternate;
+    }
+
+    .bar-plasma::after {
+      content: '';
+      position: absolute;
+      inset: -40% -5% -25%;
+      border-radius: inherit;
+      background:
+        repeating-linear-gradient(
+          90deg,
+          rgba(255, 255, 255, 0.06) 0px,
+          transparent 2px,
+          rgba(255, 200, 255, 0.08) 4px,
+          transparent 7px
+        ),
+        linear-gradient(
+          0deg,
+          rgba(255, 60, 120, 0.95) 0%,
+          rgba(236, 72, 153, 0.85) 22%,
+          rgba(168, 85, 247, 0.75) 45%,
+          rgba(99, 102, 241, 0.65) 68%,
+          rgba(253, 186, 116, 0.55) 88%,
+          rgba(255, 237, 200, 0.45) 100%
+        );
+      background-size: 120% 280%, 100% 100%;
+      background-position: 0% 0%, 50% 100%;
+      mix-blend-mode: screen;
+      opacity: 0.92;
+      animation: flame-v 0.45s steps(3, end) infinite, flame-h 1.8s ease-in-out infinite alternate-reverse;
+    }
+
+    @keyframes flame-h {
+      0% { background-position: 0% 50%; }
+      100% { background-position: 100% 50%; }
+    }
+
+    @keyframes flame-v {
+      0% { transform: translateY(4%) scaleY(1.02); filter: hue-rotate(-6deg) brightness(1.08); }
+      33% { transform: translateY(-2%) scaleY(0.98); filter: hue-rotate(4deg) brightness(0.96); }
+      66% { transform: translateY(1%) scaleY(1.04); filter: hue-rotate(10deg) brightness(1.05); }
+      100% { transform: translateY(-4%) scaleY(1); filter: hue-rotate(-2deg) brightness(1); }
+    }
+
+    .bar-flame {
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      pointer-events: none;
+      background: radial-gradient(
+        120% 180% at 50% 120%,
+        rgba(255, 220, 100, 0.55) 0%,
+        rgba(255, 100, 180, 0.25) 35%,
+        transparent 65%
+      );
+      mix-blend-mode: overlay;
+      animation: flame-core 0.35s ease-in-out infinite alternate;
+    }
+
+    @keyframes flame-core {
+      0% { opacity: 0.55; transform: translateY(1px) scaleX(1.02); }
+      100% { opacity: 0.9; transform: translateY(-2px) scaleX(0.98); }
+    }
+
+    .bar-shine {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(255, 255, 255, 0.22) 42%,
+        rgba(255, 255, 255, 0.45) 50%,
+        rgba(255, 255, 255, 0.18) 58%,
+        transparent 100%
+      );
+      background-size: 200% 100%;
+      animation: shine-sweep 1.1s ease-in-out infinite;
+      mix-blend-mode: overlay;
+      pointer-events: none;
+    }
+
+    @keyframes shine-sweep {
+      0% { transform: translateX(-45%); opacity: 0.7; }
+      50% { opacity: 1; }
+      100% { transform: translateX(45%); opacity: 0.75; }
+    }
+
+    /* Destello pequeño en el borde derecho (resplandor contenido) */
+    .bar-spark {
+      position: absolute;
+      top: 50%;
+      right: 0;
+      transform: translate(48%, -50%);
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 4;
+      background: radial-gradient(circle at 35% 32%, #ffffff 0%, #fefce8 45%, rgba(250, 204, 21, 0.55) 68%, transparent 88%);
+      box-shadow:
+        0 0 2px 1px rgba(255, 255, 255, 0.95),
+        0 0 6px 3px rgba(255, 255, 255, 0.55),
+        0 0 10px 4px rgba(253, 230, 138, 0.45),
+        0 0 14px 5px rgba(250, 204, 21, 0.25);
+      filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.8)) drop-shadow(0 0 6px rgba(253, 224, 71, 0.5));
+      animation: spark-pulse 0.55s ease-in-out infinite alternate;
+    }
+
+    .bar-spark::before,
+    .bar-spark::after {
+      content: '';
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+    .bar-spark::before {
+      width: 22px;
+      height: 22px;
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.35) 0%, transparent 65%);
+      animation: ring-expand 0.85s ease-out infinite;
+    }
+
+    .bar-spark::after {
+      width: 5px;
+      height: 5px;
+      background: #fff;
+      box-shadow: 0 0 4px 1px #fff;
+    }
+
+    @keyframes spark-pulse {
+      0% { transform: translate(48%, -50%) scale(1) rotate(-2deg); opacity: 1; filter: brightness(1.08) drop-shadow(0 0 3px rgba(255, 255, 255, 0.8)) drop-shadow(0 0 6px rgba(253, 224, 71, 0.5)); }
+      100% { transform: translate(48%, -50%) scale(1.06) rotate(2deg); opacity: 0.94; filter: brightness(1) drop-shadow(0 0 4px rgba(255, 255, 255, 0.85)) drop-shadow(0 0 7px rgba(253, 224, 71, 0.55)); }
+    }
+
+    @keyframes ring-expand {
+      0% { transform: translate(-50%, -50%) scale(0.55); opacity: 0.7; }
+      100% { transform: translate(-50%, -50%) scale(1.15); opacity: 0; }
+    }
+
+    /* Si no hay progreso, ocultar destello */
+    #bar.is-empty .bar-spark {
+      opacity: 0;
+    }
+
+    /* Vista previa «Testear»: luz que recorre todo el carril (independiente del % real de la barra) */
+    .bar-test-light {
+      position: absolute;
+      top: 50%;
+      left: 0;
+      z-index: 6;
+      width: 14px;
+      height: 14px;
+      margin-left: 0;
+      border-radius: 50%;
+      pointer-events: none;
+      opacity: 0;
+      transform: translate(0, -50%);
+      background: radial-gradient(circle at 35% 32%, #ffffff 0%, #fefce8 45%, rgba(250, 204, 21, 0.55) 68%, transparent 88%);
+      box-shadow:
+        0 0 2px 1px rgba(255, 255, 255, 0.95),
+        0 0 6px 3px rgba(255, 255, 255, 0.55),
+        0 0 10px 4px rgba(253, 230, 138, 0.45),
+        0 0 14px 5px rgba(250, 204, 21, 0.25);
+      filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.8)) drop-shadow(0 0 6px rgba(253, 224, 71, 0.5));
+    }
+
+    .bar-bg.bar-bg--test-sweep .bar-test-light {
+      opacity: 1;
+      animation: test-light-sweep 2.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+
+    @keyframes test-light-sweep {
+      0% {
+        left: 0%;
+        transform: translate(0, -50%);
+      }
+      100% {
+        left: 100%;
+        transform: translate(-100%, -50%);
+      }
+    }
+
+    #bar.bar--no-transition {
+      transition: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="box">
+      <div class="box-inner">
+        <div class="row-top">
+          <div class="title-wrap">
+            <span class="title-icon" id="title-icon" aria-hidden="true">✨</span>
+            <span id="title"></span>
+          </div>
+          <div class="meta-wrap">
+            <span class="meta-icon" id="meta-icon" aria-hidden="true">✨</span>
+            <span class="meta-line">
+              <span id="meta-current" class="meta-gold">0</span><span class="meta-cyan"> / </span><span id="meta-goal" class="meta-cyan">100</span>
+            </span>
+          </div>
+        </div>
+        <div class="bar-bg" id="bar-bg">
+          <div id="bar" class="is-empty">
+            <div class="bar-plasma">
+              <div class="bar-flame"></div>
+              <div class="bar-shine"></div>
+            </div>
+            <div class="bar-spark"></div>
+          </div>
+          <div class="bar-test-light" id="bar-test-light" aria-hidden="true"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/js/overlay_room.js?v=1"></script>
+  <script>
+    const socket = io();
+    const params = new URLSearchParams(window.location.search);
+    const user = decodeURIComponent(params.get('user') || '').trim().toLowerCase().replace(/^@+/, '');
+    if (user) setupOverlaySocketRoom(socket, user);
+
+    let score = 0;
+    let target = Math.max(10, parseInt(params.get('m') || params.get('meta')) || 100);
+    const eventosParam = (params.get('eventos') || '').toLowerCase();
+    const eventosLista = eventosParam ? eventosParam.split(',').map(x => x.trim()).filter(Boolean) : [];
+    const eventosSet = new Set(eventosLista);
+    const usarListaEventos = eventosSet.size > 0;
+
+    function eventoActivo(nombre, alternos = []) {
+      if (usarListaEventos) {
+        if (eventosSet.has(nombre)) return true;
+        return alternos.some(a => eventosSet.has(a));
+      }
+      return params.get(nombre) !== '0';
+    }
+
+    const allow = {
+      like: eventoActivo('like', ['likes']),
+      follow: eventoActivo('follow', ['follows', 'seguidores']),
+      gift: eventoActivo('gift', ['gifts', 'regalo', 'regalos']),
+      share: eventoActivo('share', ['shares', 'compartir']),
+      sub: eventoActivo('sub', ['subs', 'subscribe', 'suscriptor', 'suscriptores'])
+    };
+    const points = {
+      like: Math.max(1, parseInt(params.get('lp') || params.get('likePoints')) || 1),
+      follow: Math.max(1, parseInt(params.get('fp') || params.get('followPoints')) || 10),
+      share: Math.max(1, parseInt(params.get('sp') || params.get('sharePoints')) || 8),
+      sub: Math.max(1, parseInt(params.get('subp') || params.get('subPoints')) || 15),
+      member: Math.max(1, parseInt(params.get('mp') || params.get('memberPoints')) || 1)
+    };
+    const giftMultiplier = Math.max(1, parseInt(params.get('gp') || params.get('giftPoints')) || 1);
+    const tituloKey = (params.get('titulo') || params.get('t') || 'hype').toLowerCase();
+    const titulosMap = {
+      hype: 'HYPE EN VIVO',
+      regalos: 'META DE REGALOS',
+      likes: 'META DE LIKES',
+      seguidores: 'META DE SEGUIDORES',
+      compartidos: 'META DE COMPARTIDOS',
+      suscriptores: 'META DE SUSCRIPTORES'
+    };
+    const iconosMap = {
+      hype: '✨',
+      regalos: '🎁',
+      likes: '❤️',
+      follow: '👤',
+      seguidores: '👤',
+      compartidos: '↪️',
+      share: '↪️',
+      suscriptores: '⭐',
+      subscribe: '⭐',
+      viewers: '👁',
+      viewer: '👁',
+      coins: '🪙',
+      gift: '🪙',
+      superfan: '🌟',
+      member: '🌟',
+      sub: '⭐'
+    };
+    const goalKind = (params.get('goalKind') || params.get('gk') || '').toLowerCase();
+    const customTitle = (params.get('displayTitle') || params.get('dt') || '').trim();
+    const pctSuffix = params.get('pctSuffix') || params.get('ps') || '';
+    const usePctLabel = params.get('pct') === '1' || params.get('pct') === 'true';
+    const onReach = (params.get('onReach') || params.get('or') || 'increase').toLowerCase();
+    const goalIdParam = params.get('goalId') || '';
+    const modeAbsolute = goalKind === 'viewers';
+
+    let coinTotal = 0;
+
+    let lastTotalLikeByUser = {};
+
+    function canonicalLikeUserId(d) {
+      const raw = d.uniqueId || (d.user && d.user.uniqueId) || d.userId || '';
+      const s = String(raw).trim().toLowerCase();
+      return s || 'viewer_like';
+    }
+
+    function likeDeltaFromEvent(d, userId) {
+      const uid = userId;
+      const batch = Math.floor(Number(d.likeCount));
+      const hasBatch = Number.isFinite(batch) && batch > 0;
+      const total = d.totalLikeCount != null ? Number(d.totalLikeCount) : NaN;
+
+      if (hasBatch) {
+        if (Number.isFinite(total) && total >= 0) lastTotalLikeByUser[uid] = total;
+        return batch;
+      }
+
+      if (Number.isFinite(total) && total >= 0) {
+        const prev = lastTotalLikeByUser[uid];
+        if (prev != null && total > prev) {
+          lastTotalLikeByUser[uid] = total;
+          return total - prev;
+        }
+        if (prev == null) {
+          lastTotalLikeByUser[uid] = total;
+          return total > 0 ? total : 0;
+        }
+      }
+      return 0;
+    }
+
+    /** Los likes llegan en lotes (p. ej. 15); los aplicamos de 1 en 1 para que la barra suba en vivo. */
+    let likeAnimQueue = 0;
+    let likeAnimTimer = null;
+    const LIKE_TICK_MS = 20;
+    let likeAnimStepLabel = '+Like';
+
+    function pumpLikeSteps() {
+      if (likeAnimQueue <= 0) {
+        if (likeAnimTimer) {
+          clearInterval(likeAnimTimer);
+          likeAnimTimer = null;
+        }
+        likeAnimStepLabel = '+Like';
+        return;
+      }
+      const backlog = likeAnimQueue;
+      const perTick = backlog > 100 ? Math.min(6, Math.ceil(backlog / 45)) : 1;
+      for (let i = 0; i < perTick && likeAnimQueue > 0; i++) {
+        likeAnimQueue--;
+        add(points.like, likeAnimStepLabel);
+      }
+      if (likeAnimQueue <= 0 && likeAnimTimer) {
+        clearInterval(likeAnimTimer);
+        likeAnimTimer = null;
+      }
+      if (likeAnimQueue <= 0) likeAnimStepLabel = '+Like';
+    }
+
+    /** Vista previa «Testear»: puntos en pasos + luz que recorre todo el carril (ver CSS .bar-test-light). */
+    let testBarSteps = 0;
+    let testBarTimer = null;
+    let testSweepCleanupTimer = null;
+    const TEST_SWEEP_MS = 2200;
+    const TEST_BAR_POINTS = 12;
+    const TEST_BAR_TICK_MS = Math.max(16, Math.floor(TEST_SWEEP_MS / TEST_BAR_POINTS));
+
+    function finishTestLightSweep() {
+      const bg = document.getElementById('bar-bg');
+      if (bg) bg.classList.remove('bar-bg--test-sweep');
+      const b = document.getElementById('bar');
+      if (b) b.classList.remove('bar--no-transition');
+      if (testSweepCleanupTimer) {
+        clearTimeout(testSweepCleanupTimer);
+        testSweepCleanupTimer = null;
+      }
+    }
+
+    function runTestLightSweep() {
+      const bg = document.getElementById('bar-bg');
+      const light = document.getElementById('bar-test-light');
+      const b = document.getElementById('bar');
+      if (!bg || !light) return;
+      finishTestLightSweep();
+      bg.classList.remove('bar-bg--test-sweep');
+      void light.offsetWidth;
+      if (b) b.classList.add('bar--no-transition');
+      bg.classList.add('bar-bg--test-sweep');
+      const onAnimEnd = (e) => {
+        if (e.target !== light) return;
+        light.removeEventListener('animationend', onAnimEnd);
+        finishTestLightSweep();
+      };
+      light.addEventListener('animationend', onAnimEnd);
+      testSweepCleanupTimer = setTimeout(finishTestLightSweep, TEST_SWEEP_MS + 400);
+    }
+
+    function pumpTestBar() {
+      if (testBarSteps <= 0) {
+        if (testBarTimer) {
+          clearInterval(testBarTimer);
+          testBarTimer = null;
+        }
+        return;
+      }
+      testBarSteps--;
+      add(1, 'TEST');
+      if (testBarSteps <= 0 && testBarTimer) {
+        clearInterval(testBarTimer);
+        testBarTimer = null;
+      }
+    }
+
+    function runTestBarAnimation() {
+      if (testBarTimer) {
+        clearInterval(testBarTimer);
+        testBarTimer = null;
+      }
+      runTestLightSweep();
+      testBarSteps = TEST_BAR_POINTS;
+      testBarTimer = setInterval(pumpTestBar, TEST_BAR_TICK_MS);
+      pumpTestBar();
+    }
+
+    function runTestViewersAnimation() {
+      const room = Math.min(15, Math.max(0, target - score));
+      if (room <= 0) return;
+      let done = 0;
+      if (testBarTimer) {
+        clearInterval(testBarTimer);
+        testBarTimer = null;
+      }
+      const tickMs = Math.max(16, Math.floor(TEST_SWEEP_MS / room));
+      runTestLightSweep();
+      testBarTimer = setInterval(() => {
+        done++;
+        score = Math.min(target, score + 1);
+        if (!usePctLabel) title.textContent = baseTitleDisplay + ' • TEST';
+        update();
+        if (done >= room) {
+          clearInterval(testBarTimer);
+          testBarTimer = null;
+        }
+      }, tickMs);
+    }
+
+    const baseTitleDisplay = customTitle || titulosMap[tituloKey] || titulosMap.hype;
+    const titleIconEl = document.getElementById('title-icon');
+    const metaIconEl = document.getElementById('meta-icon');
+    const iconKey = goalKind && iconosMap[goalKind] != null ? goalKind : tituloKey;
+    const resolvedIcon = iconosMap[iconKey] || iconosMap[tituloKey] || iconosMap.hype;
+    titleIconEl.textContent = resolvedIcon;
+    if (metaIconEl) metaIconEl.textContent = resolvedIcon;
+
+    const metaCurrent = document.getElementById('meta-current');
+    const metaGoal = document.getElementById('meta-goal');
+    const bar = document.getElementById('bar');
+    const title = document.getElementById('title');
+
+    function update() {
+      if (!modeAbsolute) {
+        /* Aumentar meta: sube el techo (+50) sin restar puntos; el acumulado sigue contando. */
+        if (onReach === 'increase') {
+          while (score >= target) {
+            target += 50;
+          }
+        } else if (onReach === 'reset' && score >= target) {
+          score = 0;
+        } else if (onReach === 'keep') {
+          score = Math.min(score, target);
+        }
+      }
+      const pct = target > 0 ? Math.min(100, (score / target) * 100) : 0;
+      metaCurrent.textContent = modeAbsolute ? Math.round(score) : Math.round(score);
+      metaGoal.textContent = Math.round(target);
+      bar.style.width = pct + '%';
+      if (pct <= 0) bar.classList.add('is-empty');
+      else bar.classList.remove('is-empty');
+
+      if (usePctLabel) {
+        if (pctSuffix) title.textContent = baseTitleDisplay + ' - ' + Math.round(pct) + '% ' + pctSuffix;
+        else title.textContent = baseTitleDisplay + ' - ' + Math.round(pct) + '%';
+      }
+    }
+
+    function add(n, label) {
+      if (modeAbsolute) return;
+      score += n;
+      if (!usePctLabel) title.textContent = baseTitleDisplay + ' • ' + label;
+      update();
+    }
+
+    function resetOverlay() {
+      finishTestLightSweep();
+      likeAnimQueue = 0;
+      likeAnimStepLabel = '+Like';
+      lastTotalLikeByUser = {};
+      if (likeAnimTimer) {
+        clearInterval(likeAnimTimer);
+        likeAnimTimer = null;
+      }
+      testBarSteps = 0;
+      if (testBarTimer) {
+        clearInterval(testBarTimer);
+        testBarTimer = null;
+      }
+      if (modeAbsolute) {
+        score = 0;
+        coinTotal = 0;
+      } else {
+        score = 0;
+      }
+      if (!usePctLabel) title.textContent = baseTitleDisplay;
+      update();
+    }
+
+    if (goalKind === 'viewers') {
+      socket.on('room_user', (d) => {
+        const v = Number(d.viewerCount != null ? d.viewerCount : d.viewer_count);
+        if (!Number.isFinite(v) || v < 0) return;
+        score = v;
+        update();
+      });
+    } else if (goalKind === 'member') {
+      socket.on('member', () => {
+        add(points.member, '+Miembro');
+      });
+    } else {
+      socket.on('like', (d) => {
+        if (!allow.like) return;
+        const payload = d || {};
+        const batch = likeDeltaFromEvent(payload, canonicalLikeUserId(payload));
+        if (batch <= 0) return;
+        likeAnimStepLabel = '+Like';
+        likeAnimQueue += batch;
+        if (!likeAnimTimer) {
+          likeAnimTimer = setInterval(pumpLikeSteps, LIKE_TICK_MS);
+        }
+      });
+      socket.on('follow', () => { if (allow.follow) add(points.follow, '+Follow'); });
+      socket.on('share', () => { if (allow.share) add(points.share, '+Share'); });
+      socket.on('subscribe', () => { if (allow.sub) add(points.sub, '+Sub'); });
+      socket.on('gift', (d) => {
+        if (!allow.gift) return;
+        const coins = Math.max(1, Number(d?.diamondCount || 1) * Number(d?.repeatCount || 1));
+        if (goalKind === 'gift' || tituloKey === 'regalos') {
+          coinTotal += coins;
+          score = coinTotal;
+          if (!usePctLabel) title.textContent = baseTitleDisplay + ' • +Monedas';
+          update();
+        } else {
+          add(coins * giftMultiplier, '+Gift');
+        }
+      });
+    }
+
+    socket.on('nuevo_live', resetOverlay);
+
+    socket.on('goal_cut', (data) => {
+      if (data && data.goalId && goalIdParam && data.goalId !== goalIdParam) return;
+      resetOverlay();
+    });
+
+    window.addEventListener('message', (event) => {
+      if (!event?.data || event.data.type !== 'overlay_test') return;
+      if (event.data.kind !== 'hype') return;
+      if (modeAbsolute) {
+        runTestViewersAnimation();
+      } else {
+        runTestBarAnimation();
+      }
+    });
+
+    if (!usePctLabel) title.textContent = baseTitleDisplay;
+    update();
+  </script>
+</body>
+</html>

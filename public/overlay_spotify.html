@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Spotify Overlay HD | Agencia ELArbol</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@600;800;900&display=swap');
+        
+        * { box-sizing: border-box; }
+
+        body { 
+            margin: 0; 
+            padding: 20px; 
+            font-family: 'Inter', sans-serif; 
+            background: transparent; 
+            color: white; 
+            overflow: hidden; 
+            width: 100vw;
+            height: 100vh;
+        }
+
+        .widget-container {
+            width: 100%; 
+            background: rgba(15, 20, 25, 0.40); 
+            backdrop-filter: blur(10px); 
+            border: 3px solid rgba(29, 185, 84, 0.6); 
+            border-radius: 20px; 
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+            padding: 25px; 
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            transition: opacity 0.5s ease;
+        }
+
+        .now-playing {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+            border-bottom: 3px solid rgba(255,255,255,0.2); 
+            padding-bottom: 20px;
+        }
+
+        .album-art {
+            width: 160px; 
+            height: 160px;
+            border-radius: 16px; 
+            object-fit: cover;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.7);
+            animation: spin-slow 12s linear infinite;
+            animation-play-state: paused;
+        }
+
+        .playing .album-art { animation-play-state: running; }
+        .track-info { flex-grow: 1; overflow: hidden; display: flex; flex-direction: column; justify-content: center;}
+
+        .badge-spotify {
+            background: #1db954; color: black; font-size: 24px; font-weight: 900; 
+            padding: 8px 18px; border-radius: 14px; display: inline-block;
+            margin-bottom: 12px; text-transform: uppercase; align-self: flex-start;
+        }
+
+        .track-name { 
+            font-size: 48px; 
+            font-weight: 900; 
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; 
+            color: #fff; margin: 0 0 5px 0; 
+            text-shadow: 0 4px 10px rgba(0,0,0,0.8); 
+        }
+        
+        .artist-name { 
+            font-size: 34px; 
+            font-weight: 800; 
+            color: #cbd5e1; 
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin: 0; 
+            text-shadow: 0 2px 5px rgba(0,0,0,0.8);
+        }
+
+        .queue-container { display: flex; flex-direction: column; gap: 12px; }
+        .queue-title { font-size: 26px; font-weight: 900; color: #e2e8f0; text-transform: uppercase; margin-bottom: 5px; text-shadow: 0 2px 5px rgba(0,0,0,0.8);}
+        
+        .queue-item { display: flex; align-items: center; gap: 20px; background: rgba(0,0,0,0.35); padding: 18px 20px; border-radius: 16px; }
+        .queue-item-img { width: 75px; height: 75px; border-radius: 12px; object-fit: cover;}
+        .queue-item-info { display: flex; flex-direction: column; overflow: hidden; }
+
+        .q-track { font-size: 30px; font-weight: 900; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.8);}
+        .q-artist { font-size: 24px; font-weight: 800; color: #cbd5e1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-shadow: 0 2px 4px rgba(0,0,0,0.8);}
+
+        @keyframes spin-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <div class="widget-container" id="widget">
+        <div class="now-playing" id="now-playing-box">
+            <img src="https://misc.scdn.co/liked-songs/liked-songs-640.png" class="album-art" id="current-art">
+            <div class="track-info">
+                <div class="badge-spotify" id="badge-estado">Cargando...</div>
+                <p class="track-name" id="current-title">Conectando...</p>
+                <p class="artist-name" id="current-artist">Espera un momento</p>
+            </div>
+        </div>
+
+        <div class="queue-container">
+            <div class="queue-title">Siguiente en la fila:</div>
+            <div id="queue-list">
+                <div class="q-artist" style="text-align:center; margin-top:20px;">Esperando datos de Spotify...</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/js/overlay_room.js?v=1"></script>
+    <script>
+        const widget = document.getElementById('widget');
+        const nowPlayingBox = document.getElementById('now-playing-box');
+        
+        const urlCurrentlyPlaying = atob('aHR0cHM6Ly9hcGkuc3BvdGlmeS5jb20vdjEvbWUvcGxheWVyL2N1cnJlbnRseS1wbGF5aW5n');
+        const urlQueue = atob('aHR0cHM6Ly9hcGkuc3BvdGlmeS5jb20vdjEvbWUvcGxheWVyL3F1ZXVl');
+
+        const params = new URLSearchParams(window.location.search);
+        const urlToken = params.get('token');
+        if (urlToken) {
+            localStorage.setItem('spotify_token', urlToken);
+        }
+
+        async function actualizarSpotify() {
+            const token = localStorage.getItem('spotify_token');
+            
+            if (!token) {
+                document.getElementById('badge-estado').innerText = "ERROR";
+                document.getElementById('badge-estado').style.background = "#ff4b4b";
+                document.getElementById('current-title').innerText = "Falta el Token";
+                document.getElementById('current-artist').innerText = "Copia el enlace completo";
+                return;
+            }
+
+            try {
+                const resCurrent = await fetch(urlCurrentlyPlaying, { headers: { 'Authorization': `Bearer ${token}` } });
+                
+                if (resCurrent.status === 401) {
+                    document.getElementById('badge-estado').innerText = "EXPIRADO";
+                    document.getElementById('badge-estado').style.background = "#ff4b4b";
+                    document.getElementById('current-title').innerText = "Sesión Expirada";
+                    document.getElementById('current-artist').innerText = "Re-vincula en tu panel";
+                    return;
+                }
+
+                if (resCurrent.status === 204) {
+                    document.getElementById('badge-estado').innerText = "PAUSA";
+                    document.getElementById('badge-estado').style.background = "#fbbf24";
+                    document.getElementById('current-title').innerText = "Música Pausada";
+                    document.getElementById('current-artist').innerText = "Dale play a Spotify";
+                    nowPlayingBox.classList.remove('playing');
+                    return;
+                }
+
+                if (resCurrent.status === 200) {
+                    const currentData = await resCurrent.json();
+                    
+                    if (currentData && currentData.item) {
+                        document.getElementById('badge-estado').innerText = "SONANDO AHORA";
+                        document.getElementById('badge-estado').style.background = "#1db954";
+                        document.getElementById('current-title').innerText = currentData.item.name;
+                        document.getElementById('current-artist').innerText = currentData.item.artists.map(a => a.name).join(', ');
+                        
+                        document.getElementById('current-art').src = currentData.item.album.images[0]?.url || 'https://misc.scdn.co/liked-songs/liked-songs-640.png';
+                        
+                        if (currentData.is_playing) {
+                            nowPlayingBox.classList.add('playing');
+                        } else {
+                            nowPlayingBox.classList.remove('playing');
+                        }
+                    }
+                }
+
+                const resQueue = await fetch(urlQueue, { headers: { 'Authorization': `Bearer ${token}` } });
+                
+                if (resQueue.status === 403) {
+                    document.getElementById('queue-list').innerHTML = '<div class="q-artist" style="color:#ff4b4b; text-align:center;">Faltan permisos.</div>';
+                    return;
+                }
+
+                if (resQueue.status === 200) {
+                    const queueData = await resQueue.json();
+                    const queueList = document.getElementById('queue-list');
+                    queueList.innerHTML = ''; 
+                    
+                    // AQUÍ ESTÁ EL CAMBIO: Ahora solo corta 1 canción de la fila en lugar de 3.
+                    const proximas = queueData.queue.slice(0, 1);
+                    
+                    if (proximas.length === 0) {
+                        queueList.innerHTML = '<div class="q-artist" style="text-align:center; margin-top:20px;">La fila está vacía</div>';
+                    } else {
+                        proximas.forEach(track => {
+                            const item = document.createElement('div');
+                            item.className = 'queue-item';
+                            item.innerHTML = `
+                                <img src="${track.album.images[1]?.url || track.album.images[0]?.url}" class="queue-item-img">
+                                <div class="queue-item-info">
+                                    <span class="q-track">${track.name}</span>
+                                    <span class="q-artist">${track.artists[0].name}</span>
+                                </div>
+                            `;
+                            queueList.appendChild(item);
+                        });
+                    }
+                }
+            } catch (error) {
+                console.error("Error consultando Spotify API:", error);
+            }
+        }
+
+        setInterval(actualizarSpotify, 5000);
+        actualizarSpotify();
+
+        const socketLive = io();
+        const liveParams = new URLSearchParams(window.location.search);
+        const liveUser = (liveParams.get('user') || '').trim().toLowerCase().replace(/^@+/, '');
+        if (liveUser) setupOverlaySocketRoom(socketLive, liveUser);
+        socketLive.on('nuevo_live', () => { actualizarSpotify(); });
+
+        window.addEventListener('message', (event) => {
+            if (!event?.data || event.data.type !== 'overlay_test' || event.data.kind !== 'spotify') return;
+            document.getElementById('badge-estado').innerText = "SONANDO AHORA";
+            document.getElementById('badge-estado').style.background = "#1db954";
+            document.getElementById('current-title').innerText = "Monaco";
+            document.getElementById('current-artist').innerText = "Bad Bunny";
+            document.getElementById('current-art').src = "https://i.scdn.co/image/ab67616d00001e0241e31d6ea1d493dd77933ee5";
+            nowPlayingBox.classList.add('playing');
+            const queueList = document.getElementById('queue-list');
+            queueList.innerHTML = `
+                <div class="queue-item">
+                    <img src="https://i.scdn.co/image/ab67616d00001e023157e0f22f7cc91e7798da2d" class="queue-item-img">
+                    <div class="queue-item-info">
+                        <span class="q-track">LUNA</span>
+                        <span class="q-artist">Feid, ATL Jacob</span>
+                    </div>
+                </div>`;
+        });
+    </script>
+</body>
+</html>

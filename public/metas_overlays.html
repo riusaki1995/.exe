@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+
+<html lang="es">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Metas Overlays | Panel</title>
+
+    <style>
+
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+
+        :root {
+
+            --mo-bg: #121212;
+
+            --mo-card: #1a1a1e;
+
+            --mo-border: rgba(100, 150, 200, 0.45);
+
+            --mo-green: #4caf50;
+
+            --mo-text: #ececec;
+
+            --mo-muted: #9ca3af;
+
+            --mo-input: #0f1419;
+
+        }
+
+        * { box-sizing: border-box; }
+
+        html, body { margin: 0; background: var(--mo-bg); color: var(--mo-text); font-family: 'Inter', sans-serif; font-size: 13px; }
+
+        .mo-page { max-width: none; width: 100%; margin: 0 auto; padding: 20px 16px 40px; box-sizing: border-box; }
+
+        .mo-h1 { margin: 0 0 8px; font-size: 26px; font-weight: 800; color: var(--mo-green); }
+
+        .mo-intro, .mo-note {
+
+            background: var(--mo-card);
+
+            border: 1px solid rgba(255,255,255,0.06);
+
+            border-radius: 10px;
+
+            padding: 14px 16px;
+
+            line-height: 1.55;
+
+            color: var(--mo-muted);
+
+            margin: 0 0 12px;
+
+        }
+
+        .mo-note { border-color: rgba(61, 214, 195, 0.35); }
+
+        .mo-card {
+
+            border: 1px solid var(--mo-border);
+
+            border-radius: 10px;
+
+            padding: 16px 18px 18px;
+
+            margin-bottom: 20px;
+
+            background: rgba(0,0,0,0.25);
+
+        }
+
+        .mo-card-head {
+
+            font-size: 17px;
+
+            font-weight: 800;
+
+            color: var(--mo-green);
+
+            margin: 0 0 14px;
+
+        }
+
+        .mo-row {
+
+            display: flex;
+
+            flex-wrap: wrap;
+
+            gap: 10px 14px;
+
+            align-items: flex-end;
+
+            margin-bottom: 12px;
+
+        }
+
+        .mo-field { display: flex; flex-direction: column; gap: 4px; min-width: 90px; flex: 1 1 auto; }
+
+        .mo-field label { font-size: 11px; color: var(--mo-muted); font-weight: 600; }
+
+        .mo-field input, .mo-field select {
+
+            padding: 8px 10px;
+
+            border-radius: 8px;
+
+            border: 1px solid rgba(255,255,255,0.12);
+
+            background: var(--mo-input);
+
+            color: #fff;
+
+            font-size: 13px;
+
+            width: 100%;
+
+        }
+
+        .mo-status {
+
+            align-self: center;
+
+            padding: 6px 10px;
+
+            border-radius: 8px;
+
+            font-size: 11px;
+
+            font-weight: 700;
+
+            background: #2a2a30;
+
+            color: var(--mo-muted);
+
+            display: inline-flex;
+
+            align-items: center;
+
+            gap: 6px;
+
+            margin-left: auto;
+
+        }
+
+        .mo-status.ok { color: #86efac; }
+
+        .mo-status .dot { width: 8px; height: 8px; border-radius: 50%; background: #ef4444; }
+
+        .mo-status.ok .dot { background: #22c55e; }
+
+        .mo-url-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 12px; }
+
+        .mo-url {
+
+            flex: 1 1 200px;
+
+            min-width: 0;
+
+            padding: 9px 11px;
+
+            border-radius: 8px;
+
+            border: 1px dashed rgba(120, 160, 220, 0.5);
+
+            background: #0a0c10;
+
+            color: #7dd3fc;
+
+            font-size: 11px;
+
+            font-family: ui-monospace, monospace;
+
+        }
+
+        .mo-btn {
+
+            border: none;
+
+            border-radius: 8px;
+
+            padding: 9px 14px;
+
+            font-weight: 700;
+
+            font-size: 12px;
+
+            cursor: pointer;
+
+            background: #374151;
+
+            color: #e5e7eb;
+
+        }
+
+        .mo-btn:hover { filter: brightness(1.08); }
+
+        .mo-btn--pri { background: #4b5563; }
+
+        .mo-btn--test { background: #0d9488; color: #fff; }
+
+        .mo-btn--cut { background: #7c2d12; color: #ffedd5; }
+
+        .mo-preview-wrap {
+
+            position: relative;
+
+            width: 100%;
+
+            margin: 0;
+
+            border: 1px solid rgba(255,255,255,0.15);
+
+            border-radius: 8px;
+
+            overflow: hidden;
+
+            background: #0c0e12;
+
+            container-type: inline-size;
+
+            container-name: mo-preview;
+
+            height: calc(120px * 100cqw / 900px);
+
+        }
+
+        .mo-preview-inner {
+
+            position: absolute;
+
+            top: 0;
+
+            left: 0;
+
+            width: 900px;
+
+            height: 120px;
+
+            transform-origin: top left;
+
+            transform: scale(calc(100cqw / 900px));
+
+        }
+
+        .mo-preview-inner iframe {
+
+            width: 900px;
+
+            height: 120px;
+
+            border: none;
+
+            display: block;
+
+        }
+
+        .mo-preview-dim {
+
+            position: absolute;
+
+            right: 8px;
+
+            bottom: 6px;
+
+            font-size: 10px;
+
+            color: var(--mo-muted);
+
+            pointer-events: none;
+
+            max-width: calc(100% - 16px);
+
+            text-align: right;
+
+        }
+
+        .mo-modal-overlay {
+
+            display: none;
+
+            position: fixed;
+
+            inset: 0;
+
+            background: rgba(0,0,0,0.6);
+
+            z-index: 1000;
+
+            align-items: center;
+
+            justify-content: center;
+
+            padding: 16px;
+
+        }
+
+        .mo-modal-overlay.is-open { display: flex; }
+
+        .mo-modal {
+
+            background: #1e1e24;
+
+            border: 1px solid var(--mo-border);
+
+            border-radius: 12px;
+
+            padding: 18px 20px;
+
+            max-width: 420px;
+
+            width: 100%;
+
+        }
+
+        .mo-modal h3 { margin: 0 0 12px; color: var(--mo-green); font-size: 16px; }
+
+        .mo-modal .mo-field { margin-bottom: 10px; }
+
+        .mo-modal .mo-field label { font-size: 12px; text-transform: none; letter-spacing: normal; }
+
+        .mo-modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 14px; }
+
+    </style>
+
+</head>
+
+<body>
+
+    <div class="mo-page">
+
+        <h1 class="mo-h1">Metas Overlays</h1>
+
+        <p class="mo-intro">
+
+            Define metas de Likes, Seguidores, Compartidos, espectadores, monedas y más como barras de progreso en OBS. Copia la URL de cada meta y pégala como fuente «Navegador» en OBS o TikTok Live Studio. El progreso se actualiza en vivo con los eventos del directo cuando el panel está conectado a TikTok.
+
+        </p>
+
+        <p class="mo-note">
+
+            La configuración de cada meta se guarda en este navegador (por perfil). Usa el mismo usuario de TikTok en <strong>Inicio</strong> que en el enlace del overlay.
+
+        </p>
+
+        <div id="metas-cards-root"></div>
+
+    </div>
+
+
+
+    <div id="mo-modal" class="mo-modal-overlay" aria-hidden="true">
+
+        <div class="mo-modal">
+
+            <h3 id="mo-modal-title">Personalizar</h3>
+
+            <div id="mo-modal-body"></div>
+
+            <div class="mo-modal-actions">
+
+                <button type="button" class="mo-btn" id="mo-modal-close">Cerrar</button>
+
+                <button type="button" class="mo-btn mo-btn--test" id="mo-modal-save">Guardar</button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <script src="/socket.io/socket.io.js"></script>
+
+    <script>
+
+        const LS_PREFIX = 'tf_meta_goal_';
+
+        const OVERLAY_VER = '22';
+
+        /** Mismo aviso que en overlays.html al copiar enlaces de overlay. */
+        const MSG_OVERLAY_NEED_USER = '⚠️ Primero escribe un Usuario de TikTok en la barra principal y dale a CONECTAR.';
+
+
+
+        const GOAL_DEFS = {
+
+            likes: { sectionTitle: 'Likes', kind: 'likes', defaultMeta: 5000, defaultTitle: 'Like Goal', pctSuffix: 'Likes', pointKey: 'lp', defaultPoints: 1 },
+
+            follow: { sectionTitle: 'Follow', kind: 'follow', defaultMeta: 100, defaultTitle: 'Follow Goal', pctSuffix: 'Follows', pointKey: 'fp', defaultPoints: 10 },
+
+            share: { sectionTitle: 'Share', kind: 'share', defaultMeta: 200, defaultTitle: 'Share Goal', pctSuffix: 'Shares', pointKey: 'sp', defaultPoints: 8 },
+
+            viewers: { sectionTitle: 'Contador de Espectadores', kind: 'viewers', defaultMeta: 100, defaultTitle: 'Viewer Count Goal', pctSuffix: 'Viewers' },
+
+            coins: { sectionTitle: 'Monedas ganadas', kind: 'gift', defaultMeta: 500, defaultTitle: 'Coins Earned Goal', pctSuffix: 'Coins', pointKey: 'gp', defaultPoints: 1 },
+
+            superfan: { sectionTitle: 'Nuevos Super Fans', kind: 'member', defaultMeta: 50, defaultTitle: 'New Super Fans Goal', pctSuffix: 'Super Fans', pointKey: 'mp', defaultPoints: 1 },
+
+            hype: { sectionTitle: 'Hype general', kind: 'hype', defaultMeta: 100, defaultTitle: 'HYPE EN VIVO', pctSuffix: 'Hype', isHype: true, pointKey: 'lp', defaultPoints: 1 }
+
+        };
+
+
+
+        const socket = io();
+
+        const sockOk = () => socket && socket.connected;
+
+
+
+        function getUser() {
+
+            try {
+
+                const doc = window.parent.document;
+
+                const live = doc.getElementById('input-usuario');
+
+                const br = doc.getElementById('input-usuario-browser');
+
+                const v1 = live ? live.value.trim() : '';
+
+                const v2 = br ? br.value.trim() : '';
+
+                return v1 || v2;
+
+            } catch (e) { return ''; }
+
+        }
+
+
+
+        function loadGoal(id) {
+
+            const d = GOAL_DEFS[id];
+
+            const base = {
+
+                meta: d.defaultMeta,
+
+                title: d.defaultTitle,
+
+                whenReach: 'increase',
+
+                finishAction: '',
+
+                points: d.defaultPoints != null ? d.defaultPoints : 1
+
+            };
+
+            try {
+
+                const raw = localStorage.getItem(LS_PREFIX + id);
+
+                if (raw) return Object.assign(base, JSON.parse(raw));
+
+            } catch (e) {}
+
+            return base;
+
+        }
+
+
+
+        function saveGoal(id, cfg) {
+
+            try {
+
+                localStorage.setItem(LS_PREFIX + id, JSON.stringify(cfg));
+
+            } catch (e) {}
+
+        }
+
+
+
+        function buildUrl(id, preview) {
+
+            const d = GOAL_DEFS[id];
+
+            const c = loadGoal(id);
+
+            const user = preview ? 'preview' : getUser();
+
+            const q = new URLSearchParams();
+
+            q.set('user', (user && String(user).trim()) || 'preview');
+
+            q.set('m', String(c.meta));
+
+            q.set('goalId', id);
+
+            q.set('pct', '1');
+
+            q.set('displayTitle', c.title);
+
+            if (d.pctSuffix) q.set('pctSuffix', d.pctSuffix);
+
+            q.set('onReach', c.whenReach || 'increase');
+
+            q.set('overlayv', OVERLAY_VER);
+
+
+
+            if (d.isHype) {
+
+                q.set('titulo', 'hype');
+
+                q.set('lp', String(c.pointsHypeLike != null ? c.pointsHypeLike : 1));
+
+                q.set('fp', String(c.pointsHypeFollow != null ? c.pointsHypeFollow : 10));
+
+                q.set('sp', String(c.pointsHypeShare != null ? c.pointsHypeShare : 8));
+
+                q.set('subp', String(c.pointsHypeSub != null ? c.pointsHypeSub : 15));
+
+                q.set('gp', String(c.pointsHypeGift != null ? c.pointsHypeGift : 1));
+
+            } else {
+
+                q.set('goalKind', d.kind);
+
+                if (d.kind === 'likes') q.set('eventos', 'likes');
+
+                else if (d.kind === 'follow') q.set('eventos', 'follow');
+
+                else if (d.kind === 'share') q.set('eventos', 'share');
+
+                else if (d.kind === 'gift') q.set('eventos', 'gift');
+
+                if (d.pointKey) q.set(d.pointKey, String(c.points != null ? c.points : d.defaultPoints));
+
+            }
+
+
+
+            return window.location.origin + '/overlay_hypebar.html?' + q.toString();
+
+        }
+
+
+
+        function updateAllMetaUrlFields() {
+
+            document.querySelectorAll('.mo-card').forEach((card) => {
+
+                const id = card.dataset.goalId;
+
+                const urlEl = card.querySelector('.mo-url-field');
+
+                if (urlEl && id) urlEl.value = getUser() ? buildUrl(id, false) : '';
+
+            });
+
+        }
+
+
+
+        function bindParentUsuarioInputs() {
+
+            try {
+
+                const doc = window.parent.document;
+
+                ['input-usuario', 'input-usuario-browser'].forEach((id) => {
+
+                    const el = doc.getElementById(id);
+
+                    if (el && !el.dataset.metasOverlayBound) {
+
+                        el.dataset.metasOverlayBound = '1';
+
+                        el.addEventListener('input', updateAllMetaUrlFields);
+
+                        el.addEventListener('change', updateAllMetaUrlFields);
+
+                    }
+
+                });
+
+            } catch (e) {}
+
+        }
+
+
+
+        function renderCards() {
+
+            const root = document.getElementById('metas-cards-root');
+
+            root.innerHTML = '';
+
+            Object.keys(GOAL_DEFS).forEach((id) => {
+
+                const d = GOAL_DEFS[id];
+
+                const c = loadGoal(id);
+
+                const card = document.createElement('section');
+
+                card.className = 'mo-card';
+
+                card.dataset.goalId = id;
+
+                card.innerHTML = `
+
+                    <div class="mo-card-head"></div>
+
+                    <div class="mo-row">
+
+                        <div class="mo-field"><label>Meta</label><input type="number" class="mo-in-meta" min="1"></div>
+
+                        <div class="mo-field"><label>Título</label><input type="text" class="mo-in-title"></div>
+
+                        <div class="mo-field"><label>Cuando se alcanza</label>
+
+                            <select class="mo-sel-when">
+
+                                <option value="increase">Aumentar Meta</option>
+
+                                <option value="reset">Reiniciar progreso</option>
+
+                                <option value="keep">Detener en 100%</option>
+
+                            </select>
+
+                        </div>
+
+                        <div class="mo-field"><label>Acción al finalizar</label>
+
+                            <select class="mo-sel-finish">
+
+                                <option value="">Selecciona…</option>
+
+                                <option value="none">Ninguna</option>
+
+                                <option value="flash">Destello</option>
+
+                            </select>
+
+                        </div>
+
+                        <div class="mo-status mo-socket-status"><span class="dot"></span><span class="mo-st-text">Sin conexión</span></div>
+
+                    </div>
+
+                    <div class="mo-url-row">
+
+                        <input type="text" class="mo-url mo-url-field" readonly value="" placeholder="Primero escribe tu usuario de TikTok y pulsa Conectar en la barra principal.">
+
+                        <button type="button" class="mo-btn mo-btn--pri mo-copy">Copiar URL</button>
+
+                        <button type="button" class="mo-btn mo-btn--test mo-test">▶ Testear</button>
+
+                        <button type="button" class="mo-btn mo-btn--cut mo-cut">Cortar Meta</button>
+
+                        <button type="button" class="mo-btn mo-personal">⚙ Personalizar</button>
+
+                    </div>
+
+                    <div class="mo-preview-wrap">
+
+                        <div class="mo-preview-inner">
+
+                            <iframe class="mo-if"></iframe>
+
+                        </div>
+
+                        <span class="mo-preview-dim">Vista al ancho del panel · base OBS 900×120</span>
+
+                    </div>
+
+                `;
+
+                card.querySelector('.mo-card-head').textContent = d.sectionTitle;
+
+                card.querySelector('.mo-if').title = 'Preview ' + d.sectionTitle;
+
+                card.querySelector('.mo-in-meta').value = c.meta;
+
+                card.querySelector('.mo-in-title').value = c.title;
+
+                card.querySelector('.mo-sel-when').value = c.whenReach || 'increase';
+
+                card.querySelector('.mo-sel-finish').value = c.finishAction || '';
+
+                root.appendChild(card);
+
+
+
+                const urlEl = card.querySelector('.mo-url-field');
+
+                const iframe = card.querySelector('.mo-if');
+
+
+
+                function refresh() {
+
+                    const cfg = readCard(card);
+
+                    saveGoal(id, cfg);
+
+                    urlEl.value = getUser() ? buildUrl(id, false) : '';
+
+                    iframe.src = buildUrl(id, true);
+
+                }
+
+
+
+                card.querySelector('.mo-in-meta').addEventListener('change', refresh);
+
+                card.querySelector('.mo-in-title').addEventListener('change', refresh);
+
+                card.querySelector('.mo-sel-when').addEventListener('change', refresh);
+
+                card.querySelector('.mo-sel-finish').addEventListener('change', refresh);
+
+
+
+                card.querySelector('.mo-copy').addEventListener('click', () => {
+
+                    if (!getUser()) {
+
+                        alert(MSG_OVERLAY_NEED_USER);
+
+                        return;
+
+                    }
+
+                    refresh();
+
+                    const link = urlEl.value;
+
+                    navigator.clipboard.writeText(link).then(() => {
+
+                        alert('✅ ¡Enlace Copiado con Éxito!\n\nLink: ' + link + '\n\nYa puedes pegarlo en el navegador de tu OBS.');
+
+                    }).catch(() => {
+
+                        alert('❌ Error al copiar. Cópialo manualmente: ' + link);
+
+                    });
+
+                });
+
+                card.querySelector('.mo-test').addEventListener('click', () => {
+
+                    refresh();
+
+                    iframe.contentWindow.postMessage({ type: 'overlay_test', kind: 'hype' }, '*');
+
+                });
+
+                card.querySelector('.mo-cut').addEventListener('click', () => {
+
+                    socket.emit('goal_cut', { goalId: id });
+
+                });
+
+                card.querySelector('.mo-personal').addEventListener('click', () => openPersonalizar(id, card));
+
+
+
+                refresh();
+
+            });
+
+        }
+
+
+
+        function readCard(card) {
+
+            const id = card.dataset.goalId;
+
+            const prev = loadGoal(id);
+
+            return Object.assign({}, prev, {
+
+                meta: parseInt(card.querySelector('.mo-in-meta').value, 10) || GOAL_DEFS[id].defaultMeta,
+
+                title: card.querySelector('.mo-in-title').value.trim() || GOAL_DEFS[id].defaultTitle,
+
+                whenReach: card.querySelector('.mo-sel-when').value,
+
+                finishAction: card.querySelector('.mo-sel-finish').value
+
+            });
+
+        }
+
+
+
+        let modalGoalId = null;
+
+
+
+        function openPersonalizar(id, card) {
+
+            modalGoalId = id;
+
+            const d = GOAL_DEFS[id];
+
+            const c = loadGoal(id);
+
+            document.getElementById('mo-modal-title').textContent = 'Personalizar — ' + d.sectionTitle;
+
+            const body = document.getElementById('mo-modal-body');
+
+            if (d.isHype) {
+
+                body.innerHTML = `
+
+                    <div class="mo-field"><label>Puntos por like (batch)</label><input type="number" id="mo-p-lp" min="1" value="${c.pointsHypeLike != null ? c.pointsHypeLike : 1}"></div>
+
+                    <div class="mo-field"><label>Puntos por follow</label><input type="number" id="mo-p-fp" min="1" value="${c.pointsHypeFollow != null ? c.pointsHypeFollow : 10}"></div>
+
+                    <div class="mo-field"><label>Puntos por share</label><input type="number" id="mo-p-sp" min="1" value="${c.pointsHypeShare != null ? c.pointsHypeShare : 8}"></div>
+
+                    <div class="mo-field"><label>Puntos por suscriptor</label><input type="number" id="mo-p-sub" min="1" value="${c.pointsHypeSub != null ? c.pointsHypeSub : 15}"></div>
+
+                    <div class="mo-field"><label>Multiplicador regalo (× monedas)</label><input type="number" id="mo-p-gp" min="1" value="${c.pointsHypeGift != null ? c.pointsHypeGift : 1}"></div>
+
+                `;
+
+            } else if (d.pointKey) {
+
+                body.innerHTML = `
+
+                    <div class="mo-field"><label>Puntos por evento (o segundos de peso)</label><input type="number" id="mo-p-pts" min="1" value="${c.points != null ? c.points : d.defaultPoints}"></div>
+
+                    <p style="color:var(--mo-muted);font-size:12px;margin:0;">Likes: suma puntos × likes del batch. Monedas: suma todas las monedas del directo hacia la meta.</p>
+
+                `;
+
+            } else {
+
+                body.innerHTML = '<p style="color:var(--mo-muted)">Espectadores: la barra refleja el contador de espectadores en vivo (room user).</p>';
+
+            }
+
+            document.getElementById('mo-modal').classList.add('is-open');
+
+        }
+
+
+
+        document.getElementById('mo-modal-close').addEventListener('click', () => {
+
+            document.getElementById('mo-modal').classList.remove('is-open');
+
+        });
+
+
+
+        document.getElementById('mo-modal-save').addEventListener('click', () => {
+
+            if (!modalGoalId) return;
+
+            const id = modalGoalId;
+
+            const d = GOAL_DEFS[id];
+
+            const c = loadGoal(id);
+
+            if (d.isHype) {
+
+                c.pointsHypeLike = parseInt(document.getElementById('mo-p-lp').value, 10) || 1;
+
+                c.pointsHypeFollow = parseInt(document.getElementById('mo-p-fp').value, 10) || 10;
+
+                c.pointsHypeShare = parseInt(document.getElementById('mo-p-sp').value, 10) || 8;
+
+                c.pointsHypeSub = parseInt(document.getElementById('mo-p-sub').value, 10) || 15;
+
+                c.pointsHypeGift = parseInt(document.getElementById('mo-p-gp').value, 10) || 1;
+
+            } else if (d.pointKey && document.getElementById('mo-p-pts')) {
+
+                c.points = parseInt(document.getElementById('mo-p-pts').value, 10) || d.defaultPoints;
+
+            }
+
+            saveGoal(id, c);
+
+            document.getElementById('mo-modal').classList.remove('is-open');
+
+            renderCards();
+
+        });
+
+
+
+        function updateSocketStatuses() {
+
+            document.querySelectorAll('.mo-socket-status').forEach((el) => {
+
+                const ok = sockOk();
+
+                el.classList.toggle('ok', ok);
+
+                el.querySelector('.mo-st-text').textContent = ok ? 'Socket OK' : 'Sin conexión';
+
+            });
+
+        }
+
+
+
+        socket.on('connect', updateSocketStatuses);
+
+        socket.on('disconnect', updateSocketStatuses);
+
+
+
+        renderCards();
+
+        bindParentUsuarioInputs();
+
+        updateSocketStatuses();
+
+        setInterval(updateAllMetaUrlFields, 2500);
+
+    </script>
+
+</body>
+
+</html>
+

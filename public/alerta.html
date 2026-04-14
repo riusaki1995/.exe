@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alerta — Nuevo seguidor</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/js/overlay_room.js?v=1"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,800;0,900;1,800;1,900&display=swap');
+
+        *, *::before, *::after { box-sizing: border-box; }
+
+        :root {
+            --al-g1: #00ffff;
+            --al-g2: #7c3aed;
+            --al-g3: #ff00ff;
+            --al-name: #ffffff;
+            --al-sub: #f8fafc;
+        }
+
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: transparent;
+            font-family: 'Montserrat', system-ui, sans-serif;
+        }
+
+        /* Contenedor centrado abajo; sube al activarse */
+        #alert {
+            position: absolute;
+            left: 50%;
+            bottom: -420px;
+            transform: translateX(-50%);
+            width: min(92vw, 720px);
+            padding: 28px 32px 32px;
+            opacity: 0;
+            transition: bottom 0.75s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.45s ease;
+            pointer-events: none;
+        }
+
+        #alert.active {
+            bottom: 6vh;
+            opacity: 1;
+        }
+
+        .alert-inner {
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Rayos de fondo */
+        .god-rays {
+            position: absolute;
+            inset: -80px -120px -60px;
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0.85;
+            background:
+                repeating-conic-gradient(
+                    from 0deg at 50% 55%,
+                    transparent 0deg 6deg,
+                    rgba(0, 255, 255, 0.06) 6deg 8deg,
+                    transparent 8deg 14deg
+                );
+            mask-image: radial-gradient(ellipse 70% 60% at 50% 50%, black 15%, transparent 72%);
+            animation: rays-spin 12s linear infinite;
+        }
+
+        @keyframes rays-spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Partículas / polvo */
+        .dust {
+            position: absolute;
+            inset: -40px;
+            z-index: 1;
+            pointer-events: none;
+            overflow: visible;
+        }
+
+        .dust span {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            animation: dust-float 2.2s ease-in-out infinite;
+        }
+
+        .dust span:nth-child(odd) { background: rgba(255, 0, 255, 0.85); box-shadow: 0 0 8px #ff00ff; }
+        .dust span:nth-child(even) { background: rgba(0, 255, 255, 0.9); box-shadow: 0 0 8px #00ffff; }
+
+        .dust span:nth-child(1) { left: 8%; top: 30%; animation-delay: 0s; }
+        .dust span:nth-child(2) { left: 18%; top: 55%; animation-delay: 0.2s; }
+        .dust span:nth-child(3) { left: 28%; top: 22%; animation-delay: 0.4s; }
+        .dust span:nth-child(4) { left: 72%; top: 38%; animation-delay: 0.1s; }
+        .dust span:nth-child(5) { left: 82%; top: 62%; animation-delay: 0.35s; }
+        .dust span:nth-child(6) { left: 88%; top: 28%; animation-delay: 0.5s; }
+        .dust span:nth-child(7) { left: 45%; top: 12%; animation-delay: 0.15s; }
+        .dust span:nth-child(8) { left: 55%; top: 78%; animation-delay: 0.25s; }
+        .dust span:nth-child(9) { left: 12%; top: 70%; animation-delay: 0.45s; }
+        .dust span:nth-child(10) { left: 92%; top: 48%; animation-delay: 0.05s; }
+
+        @keyframes dust-float {
+            0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.75; }
+            50% { transform: translate(6px, -10px) scale(1.15); opacity: 1; }
+        }
+
+        /* Triángulos / fragmentos */
+        .shard {
+            position: absolute;
+            z-index: 1;
+            pointer-events: none;
+            opacity: 0.55;
+            animation: shard-drift 3s ease-in-out infinite;
+        }
+
+        .shard.s1 {
+            width: 48px; height: 56px;
+            top: 8%; left: 4%;
+            background: linear-gradient(135deg, rgba(0, 255, 255, 0.5), rgba(0, 255, 255, 0.05));
+            clip-path: polygon(50% 0%, 100% 100%, 0% 85%);
+            filter: blur(0.5px);
+        }
+
+        .shard.s2 {
+            width: 40px; height: 50px;
+            top: 18%; right: 6%;
+            background: linear-gradient(225deg, rgba(255, 0, 255, 0.45), rgba(255, 0, 255, 0.05));
+            clip-path: polygon(0% 0%, 100% 30%, 40% 100%);
+            animation-delay: -0.8s;
+        }
+
+        .shard.s3 {
+            width: 36px; height: 44px;
+            bottom: 22%; left: 10%;
+            background: linear-gradient(180deg, rgba(0, 255, 255, 0.35), transparent);
+            clip-path: polygon(20% 0%, 100% 40%, 0% 100%);
+            animation-delay: -1.2s;
+        }
+
+        .shard.s4 {
+            width: 44px; height: 48px;
+            bottom: 18%; right: 12%;
+            background: linear-gradient(0deg, rgba(255, 0, 255, 0.4), transparent);
+            clip-path: polygon(80% 0%, 100% 100%, 0% 60%);
+            animation-delay: -0.4s;
+        }
+
+        @keyframes shard-drift {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            50% { transform: translate(4px, -6px) rotate(4deg); }
+        }
+
+        /* Destellos estrella */
+        .glint {
+            position: absolute;
+            z-index: 3;
+            width: 14px;
+            height: 14px;
+            background: #fff;
+            clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+            filter: drop-shadow(0 0 6px #fff) drop-shadow(0 0 12px rgba(0, 255, 255, 0.8));
+            opacity: 0.95;
+            animation: glint-pulse 1.4s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        .glint.g1 { top: 12%; left: 22%; animation-delay: 0s; }
+        .glint.g2 { top: 28%; right: 18%; animation-delay: 0.3s; transform: scale(0.75); }
+        .glint.g3 { bottom: 30%; left: 30%; animation-delay: 0.6s; transform: scale(0.6); }
+
+        @keyframes glint-pulse {
+            0%, 100% { opacity: 0.6; transform: scale(0.85); }
+            50% { opacity: 1; transform: scale(1); }
+        }
+
+        .glint.g2 { animation-name: glint-pulse-2; }
+        .glint.g3 { animation-name: glint-pulse-3; }
+
+        @keyframes glint-pulse-2 {
+            0%, 100% { opacity: 0.5; transform: scale(0.65); }
+            50% { opacity: 1; transform: scale(0.9); }
+        }
+
+        @keyframes glint-pulse-3 {
+            0%, 100% { opacity: 0.45; transform: scale(0.55); }
+            50% { opacity: 0.95; transform: scale(0.75); }
+        }
+
+        /* Fila principal: avatar + titular */
+        .row-main {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 22px 28px;
+            flex-wrap: wrap;
+        }
+
+        .avatar-wrap {
+            flex-shrink: 0;
+            width: 112px;
+            height: 112px;
+            padding: 4px;
+            border-radius: 50%;
+            background: linear-gradient(165deg, var(--al-g1) 0%, var(--al-g2) 50%, var(--al-g3) 100%);
+            box-shadow:
+                0 0 16px rgba(0, 255, 255, 0.55),
+                0 0 32px rgba(255, 0, 255, 0.4),
+                inset 0 0 12px rgba(255, 255, 255, 0.15);
+        }
+
+        .avatar-wrap.is-hidden {
+            display: none !important;
+        }
+
+        .avatar-inner {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            overflow: hidden;
+            background: #1a0a2e;
+            border: 3px solid #2b0054;
+        }
+
+        .avatar-inner img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .headline-block {
+            text-align: left;
+            min-width: 0;
+        }
+
+        .headline {
+            margin: 0;
+            font-size: clamp(28px, 5.5vw, 46px);
+            font-weight: 900;
+            font-style: italic;
+            line-height: 0.95;
+            letter-spacing: -0.02em;
+            text-transform: uppercase;
+            background: linear-gradient(180deg, var(--al-g1) 0%, var(--al-g2) 45%, var(--al-g3) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 1px rgba(255, 255, 255, 0.95))
+                drop-shadow(0 2px 0 #2b0054)
+                drop-shadow(0 0 18px rgba(255, 0, 255, 0.75))
+                drop-shadow(0 0 28px rgba(0, 255, 255, 0.35));
+        }
+
+        .headline-line2.is-hidden {
+            display: none;
+        }
+
+        .follower-name {
+            margin: 10px 0 0;
+            font-size: clamp(18px, 3.2vw, 26px);
+            font-weight: 800;
+            font-style: italic;
+            color: var(--al-name);
+            text-shadow:
+                0 0 12px rgba(0, 255, 255, 0.5),
+                0 2px 8px rgba(43, 0, 84, 0.95),
+                0 0 24px rgba(255, 0, 255, 0.35);
+            word-break: break-word;
+            max-width: 380px;
+        }
+
+        .subtext {
+            margin-top: 18px;
+            text-align: center;
+        }
+
+        .subtext p {
+            margin: 4px 0;
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--al-sub);
+            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.85), 0 0 12px rgba(43, 0, 84, 0.6);
+        }
+
+        .subtext p.is-hidden {
+            display: none;
+        }
+
+        .fx-hidden {
+            display: none !important;
+        }
+
+        /* Fuegos (partículas que suben al activar) */
+        .fw {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            opacity: 0;
+            z-index: 5;
+        }
+
+        #alert.active .fw.f1 { animation: up1 1s ease-out 0.08s forwards; top: 0; left: 35%; background: #00ffff; box-shadow: 0 0 10px #00ffff; }
+        #alert.active .fw.f2 { animation: up2 1s ease-out 0.08s forwards; top: 0; left: 48%; background: #ff00ff; box-shadow: 0 0 10px #ff00ff; }
+        #alert.active .fw.f3 { animation: up3 1s ease-out 0.08s forwards; top: 0; left: 58%; background: #00ffff; box-shadow: 0 0 10px #00ffff; }
+        #alert.active .fw.f4 { animation: up4 1s ease-out 0.08s forwards; top: 0; left: 68%; background: #ff00ff; box-shadow: 0 0 10px #ff00ff; }
+
+        @keyframes up1 {
+            0% { transform: translateY(0) scale(1); opacity: 1; }
+            100% { transform: translate(-35px, -130px) scale(0); opacity: 0; }
+        }
+        @keyframes up2 {
+            0% { transform: translateY(0) scale(1); opacity: 1; }
+            100% { transform: translate(-8px, -160px) scale(0); opacity: 0; }
+        }
+        @keyframes up3 {
+            0% { transform: translateY(0) scale(1); opacity: 1; }
+            100% { transform: translate(12px, -170px) scale(0); opacity: 0; }
+        }
+        @keyframes up4 {
+            0% { transform: translateY(0) scale(1); opacity: 1; }
+            100% { transform: translate(42px, -140px) scale(0); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div id="alert">
+        <div class="god-rays" id="fx-rays" aria-hidden="true"></div>
+        <div class="dust" id="fx-dust" aria-hidden="true">
+            <span></span><span></span><span></span><span></span><span></span>
+            <span></span><span></span><span></span><span></span><span></span>
+        </div>
+        <div class="shard s1" aria-hidden="true"></div>
+        <div class="shard s2" aria-hidden="true"></div>
+        <div class="shard s3" aria-hidden="true"></div>
+        <div class="shard s4" aria-hidden="true"></div>
+        <div class="glint g1" aria-hidden="true"></div>
+        <div class="glint g2" aria-hidden="true"></div>
+        <div class="glint g3" aria-hidden="true"></div>
+
+        <div class="fw f1"></div>
+        <div class="fw f2"></div>
+        <div class="fw f3"></div>
+        <div class="fw f4"></div>
+
+        <div class="alert-inner">
+            <div class="row-main">
+                <div class="avatar-wrap">
+                    <div class="avatar-inner">
+                        <img id="u-img" src="" alt="">
+                    </div>
+                </div>
+                <div class="headline-block">
+                    <p class="headline" id="headline-l1">¡NUEVO</p>
+                    <p class="headline headline-line2" id="headline-l2">SEGUIDOR!</p>
+                    <p id="u-name" class="follower-name"></p>
+                </div>
+            </div>
+            <div class="subtext">
+                <p id="sub-l1">¡Bienvenido/a a la comunidad!</p>
+                <p id="sub-l2">Sigue interactuando</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const socket = io();
+        const params = new URLSearchParams(window.location.search);
+        const streamerId = params.get('user');
+        const isPreviewEmbed = params.get('preview_embed') === '1';
+        if (streamerId) {
+            setupOverlaySocketRoom(socket, streamerId);
+        }
+
+        const DEFAULT_AVATAR = 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png';
+        const q = [];
+        let p = false;
+        let hideTimer = null;
+        let hidePhase2Timer = null;
+
+        function defaultAlertConfig() {
+            return {
+                headline1: '¡NUEVO',
+                headline2: 'SEGUIDOR!',
+                sub1: '¡Bienvenido/a a la comunidad!',
+                sub2: 'Sigue interactuando',
+                durationSec: 5,
+                grad1: '#00ffff',
+                grad2: '#7c3aed',
+                grad3: '#ff00ff',
+                nameColor: '#ffffff',
+                subColor: '#f8fafc',
+                showAvatar: true,
+                showShards: true,
+                showRays: true,
+                showDust: true,
+                soundUrl: '',
+                soundVol: 80,
+                tiktok: true,
+                kick: true
+            };
+        }
+
+        function normalizeHex(c) {
+            if (c == null || c === '') return null;
+            let s = String(c).trim();
+            if (!s.startsWith('#')) s = '#' + s;
+            return s;
+        }
+
+        function parseBool(v, def) {
+            if (v === null || v === undefined || v === '') return def;
+            return v === '1' || v === 'true' || v === 'yes';
+        }
+
+        function parseConfigFromSearch() {
+            const c = defaultAlertConfig();
+            const p = params;
+            if (p.has('h1')) c.headline1 = p.get('h1') || '';
+            if (p.has('h2')) c.headline2 = p.get('h2') || '';
+            if (p.has('s1')) c.sub1 = p.get('s1') || '';
+            if (p.has('s2')) c.sub2 = p.get('s2') || '';
+            if (p.has('dur')) {
+                const n = parseInt(p.get('dur'), 10);
+                if (!isNaN(n)) c.durationSec = Math.min(120, Math.max(2, n));
+            }
+            ['g1', 'g2', 'g3'].forEach((k, i) => {
+                const key = ['grad1', 'grad2', 'grad3'][i];
+                if (p.has(k)) {
+                    const h = normalizeHex(p.get(k));
+                    if (h) c[key] = h;
+                }
+            });
+            if (p.has('nc')) {
+                const h = normalizeHex(p.get('nc'));
+                if (h) c.nameColor = h;
+            }
+            if (p.has('sc')) {
+                const h = normalizeHex(p.get('sc'));
+                if (h) c.subColor = h;
+            }
+            if (p.has('av')) c.showAvatar = parseBool(p.get('av'), true);
+            if (p.has('sh')) c.showShards = parseBool(p.get('sh'), true);
+            if (p.has('ray')) c.showRays = parseBool(p.get('ray'), true);
+            if (p.has('dust')) c.showDust = parseBool(p.get('dust'), true);
+            if (p.has('snd')) {
+                c.soundUrl = (p.get('snd') || '').trim();
+            }
+            if (p.has('sv')) {
+                const n = parseInt(p.get('sv'), 10);
+                if (!isNaN(n)) c.soundVol = Math.min(100, Math.max(0, n));
+            }
+            if (p.has('tt')) c.tiktok = parseBool(p.get('tt'), true);
+            if (p.has('kick')) c.kick = parseBool(p.get('kick'), true);
+            return c;
+        }
+
+        let alertConfig = parseConfigFromSearch();
+
+        function mergeAlertConfig(patch) {
+            if (!patch || typeof patch !== 'object') return;
+            alertConfig = Object.assign({}, defaultAlertConfig(), alertConfig, patch);
+        }
+
+        function applyConfigToDom() {
+            const c = alertConfig;
+            const root = document.documentElement;
+            root.style.setProperty('--al-g1', c.grad1);
+            root.style.setProperty('--al-g2', c.grad2);
+            root.style.setProperty('--al-g3', c.grad3);
+            root.style.setProperty('--al-name', c.nameColor);
+            root.style.setProperty('--al-sub', c.subColor);
+
+            const l1 = document.getElementById('headline-l1');
+            const l2 = document.getElementById('headline-l2');
+            if (l1) l1.textContent = c.headline1 || ' ';
+            if (l2) {
+                const t2 = (c.headline2 || '').trim();
+                l2.textContent = t2 || ' ';
+                l2.classList.toggle('is-hidden', !t2);
+            }
+
+            const sl1 = document.getElementById('sub-l1');
+            const sl2 = document.getElementById('sub-l2');
+            if (sl1) {
+                sl1.textContent = c.sub1 || ' ';
+                sl1.classList.toggle('is-hidden', !(c.sub1 || '').trim());
+            }
+            if (sl2) {
+                sl2.textContent = c.sub2 || ' ';
+                sl2.classList.toggle('is-hidden', !(c.sub2 || '').trim());
+            }
+
+            const av = document.querySelector('.avatar-wrap');
+            if (av) av.classList.toggle('is-hidden', !c.showAvatar);
+
+            const rays = document.getElementById('fx-rays');
+            if (rays) rays.classList.toggle('fx-hidden', !c.showRays);
+
+            const dust = document.getElementById('fx-dust');
+            if (dust) dust.classList.toggle('fx-hidden', !c.showDust);
+
+            document.querySelectorAll('.shard').forEach((el) => {
+                el.classList.toggle('fx-hidden', !c.showShards);
+            });
+
+            document.querySelectorAll('.glint').forEach((el) => {
+                el.classList.toggle('fx-hidden', !c.showShards);
+            });
+        }
+
+        applyConfigToDom();
+
+        let lastAudio = null;
+        function playAlertSound() {
+            const url = (alertConfig.soundUrl || '').trim();
+            if (!url) return;
+            try {
+                if (lastAudio) {
+                    lastAudio.pause();
+                    lastAudio = null;
+                }
+                const a = new Audio(url);
+                lastAudio = a;
+                a.volume = Math.max(0, Math.min(1, (Number(alertConfig.soundVol) || 80) / 100));
+                a.play().catch(function () {});
+            } catch (e) {}
+        }
+
+        function clearHideTimers() {
+            if (hideTimer) {
+                clearTimeout(hideTimer);
+                hideTimer = null;
+            }
+            if (hidePhase2Timer) {
+                clearTimeout(hidePhase2Timer);
+                hidePhase2Timer = null;
+            }
+        }
+
+        function displayName(d) {
+            const nick = (d.nickname || d.nickName || '').trim();
+            const id = (d.uniqueId || '').trim();
+            if (nick) return nick;
+            if (id) return '@' + id;
+            return 'Seguidor';
+        }
+
+        function pickProfilePic(d) {
+            let u = (d.profilePictureUrl || d.userProfilePictureUrl || '').trim();
+            if (u) return u;
+            const urls = d.userDetails && d.userDetails.profilePictureUrls;
+            if (Array.isArray(urls) && urls[0]) return String(urls[0]).trim();
+            return '';
+        }
+
+        socket.on('follow', (d) => {
+            if (isPreviewEmbed) return;
+            q.push(d);
+            show();
+        });
+
+        socket.on('nuevo_live', () => {
+            if (isPreviewEmbed) return;
+            q.length = 0;
+            p = false;
+            clearHideTimers();
+            document.getElementById('alert').classList.remove('active');
+        });
+
+        socket.on('test_follow', () => {
+            if (isPreviewEmbed) return;
+            q.push({
+                uniqueId: 'preview_fan',
+                nickname: 'PreviewFan',
+                profilePictureUrl: DEFAULT_AVATAR
+            });
+            show();
+        });
+
+        /** Panel Diseño / mismo usuario: sincronía en vivo con OBS · Live Studio (sala join_room). */
+        socket.on('alerta_overlay_config', (data) => {
+            if (!data || !data.config) return;
+            mergeAlertConfig(data.config);
+            applyConfigToDom();
+        });
+
+        window.addEventListener('message', (event) => {
+            const d = event && event.data;
+            if (!d || typeof d !== 'object') return;
+            if (d.type === 'alerta_config' && d.config) {
+                mergeAlertConfig(d.config);
+                applyConfigToDom();
+                if (isPreviewEmbed) {
+                    const b = document.getElementById('alert');
+                    if (b && !b.classList.contains('active')) showStickyPreview(false);
+                }
+                return;
+            }
+            if (d.type !== 'overlay_test' || d.kind !== 'alerta_follow') return;
+            if (d.config) {
+                mergeAlertConfig(d.config);
+                applyConfigToDom();
+            }
+            if (isPreviewEmbed) {
+                showStickyPreview(true);
+                return;
+            }
+            q.push({
+                uniqueId: 'preview_fan',
+                nickname: 'PreviewFan',
+                profilePictureUrl: DEFAULT_AVATAR
+            });
+            show();
+        });
+
+        function applyFollowerData(u) {
+            const imgEl = document.getElementById('u-img');
+            imgEl.onerror = function () {
+                this.onerror = null;
+                this.src = DEFAULT_AVATAR;
+            };
+            imgEl.src = pickProfilePic(u) || DEFAULT_AVATAR;
+            imgEl.alt = displayName(u);
+            document.getElementById('u-name').textContent = displayName(u);
+        }
+
+        /** Vista previa en panel Diseño: solo postMessage, sin ocultar sola. */
+        function showStickyPreview(withSound) {
+            clearHideTimers();
+            p = false;
+            q.length = 0;
+            const u = {
+                uniqueId: 'preview_fan',
+                nickname: 'PreviewFan',
+                profilePictureUrl: DEFAULT_AVATAR
+            };
+            applyFollowerData(u);
+            if (withSound !== false) playAlertSound();
+            const b = document.getElementById('alert');
+            b.classList.remove('active');
+            void b.offsetWidth;
+            b.classList.add('active');
+        }
+
+        function show() {
+            if (p || q.length === 0) return;
+            p = true;
+            const u = q.shift();
+            applyFollowerData(u);
+
+            const b = document.getElementById('alert');
+            b.classList.add('active');
+            playAlertSound();
+
+            const ms = Math.min(120000, Math.max(2000, (Number(alertConfig.durationSec) || 5) * 1000));
+
+            clearHideTimers();
+            hideTimer = setTimeout(() => {
+                b.classList.remove('active');
+                hideTimer = null;
+                hidePhase2Timer = setTimeout(() => {
+                    hidePhase2Timer = null;
+                    p = false;
+                    show();
+                }, 1000);
+            }, ms);
+        }
+
+        if (isPreviewEmbed) {
+            requestAnimationFrame(function () {
+                showStickyPreview(false);
+            });
+        }
+    </script>
+</body>
+</html>

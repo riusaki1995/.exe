@@ -1,0 +1,1643 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Panel de Videos | Agencia ELArbol</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+
+        :root {
+            --tf-bg: #0c0e14;
+            --tf-surface: #151a22;
+            --tf-surface-elevated: #1a2029;
+            --tf-border: rgba(100, 116, 139, 0.32);
+            --tf-teal: #3dd6c3;
+            --tf-teal-soft: rgba(61, 214, 195, 0.18);
+            --tf-pink: #f472b6;
+            --tf-pink-deep: #db2777;
+            --tf-text: #e8edf4;
+            --tf-muted: #8b95a8;
+        }
+
+        * { box-sizing: border-box; }
+        html, body { height: 100%; margin: 0; }
+        body {
+            background: var(--tf-bg);
+            color: var(--tf-text);
+            font-family: 'Inter', sans-serif;
+            font-size: 12px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            min-height: 100%;
+            overflow: hidden;
+        }
+
+        .glass {
+            background: var(--tf-surface);
+            border: 1px solid var(--tf-border);
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            overflow-y: auto;
+            min-height: 0;
+        }
+
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(61, 214, 195, 0.35); border-radius: 8px; }
+
+        /* —— Misma familia visual que Acciones / Alertas (index) —— */
+        #videos-panel-root.aa-panel {
+            width: 100%;
+            padding: 7px 9px !important;
+            border-radius: 8px;
+            border: 1px solid rgba(56, 189, 248, 0.2);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+            border-left: 3px solid var(--tf-teal);
+        }
+        #videos-panel-root .aa-panel__title {
+            margin: 0 0 5px;
+            font-size: 14px;
+            font-weight: 800;
+            color: #74b72e;
+            letter-spacing: 0.02em;
+        }
+        #videos-panel-root .aa-panel__hint {
+            margin: 0 0 7px;
+            padding: 6px 8px;
+            font-size: 10px;
+            line-height: 1.4;
+            color: #94a3b8;
+            background: rgba(0, 0, 0, 0.38);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 6px;
+        }
+        #videos-panel-root .aa-panel__toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 7px;
+            margin-bottom: 8px;
+            min-width: 0;
+        }
+        #videos-panel-root .aa-panel__toolbar-left,
+        #videos-panel-root .aa-panel__toolbar-right {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 6px;
+        }
+        #videos-panel-root .btn-crear-alerta,
+        #videos-panel-root .btn-guardar-alertas {
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 12px;
+            cursor: pointer;
+            transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-family: inherit;
+            border: 1px solid var(--tf-teal);
+            background: transparent;
+            color: var(--tf-teal);
+        }
+        #videos-panel-root .btn-crear-alerta:hover {
+            background: var(--tf-teal-soft);
+        }
+        #videos-panel-root .btn-guardar-alertas {
+            background: #0d9488;
+            border-color: #14b8a6;
+            color: #fff;
+        }
+        #videos-panel-root .btn-guardar-alertas:hover {
+            background: #0f766e;
+        }
+        #videos-panel-root .btn-videos-panico {
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-weight: 800;
+            font-size: 11px;
+            cursor: pointer;
+            font-family: inherit;
+            background: transparent;
+            border: 2px solid #f87171;
+            color: #f87171;
+            transition: 0.2s;
+        }
+        #videos-panel-root .btn-videos-panico:hover {
+            background: rgba(248, 113, 113, 0.15);
+            color: #fecaca;
+        }
+
+        /* Modal (misma familia que «Configurar acción» en index) */
+        .modal-accion-panel {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 1000020;
+            align-items: center;
+            justify-content: center;
+            padding: 12px;
+            box-sizing: border-box;
+        }
+        .modal-accion-panel.show { display: flex; }
+        .modal-accion-backdrop {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            background: rgba(6, 8, 14, 0.88);
+            backdrop-filter: blur(4px);
+        }
+        .modal-accion-box {
+            position: relative;
+            z-index: 1;
+            width: min(520px, 100%);
+            max-height: min(92vh, 880px);
+            display: flex;
+            flex-direction: column;
+            background: var(--tf-surface);
+            border: 1px solid var(--tf-border);
+            border-radius: 12px;
+            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+            overflow: hidden;
+        }
+        .modal-accion-box::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(180deg, #74b72e, #14b8a6);
+            opacity: 0.85;
+            pointer-events: none;
+            border-radius: 0 12px 12px 0;
+        }
+        .modal-accion-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 14px;
+            border-bottom: 1px solid var(--tf-border);
+            background: rgba(0, 0, 0, 0.25);
+            flex-shrink: 0;
+        }
+        .modal-accion-head h2 {
+            margin: 0;
+            font-size: 16px;
+            font-weight: 800;
+            color: #fff;
+        }
+        .modal-accion-close {
+            background: transparent;
+            border: none;
+            color: var(--tf-muted);
+            font-size: 26px;
+            line-height: 1;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 6px;
+        }
+        .modal-accion-close:hover {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.06);
+        }
+        .modal-accion-body {
+            padding: 12px 14px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            min-height: 0;
+        }
+        .modal-accion-label {
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--tf-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+        .modal-accion-input {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 8px 10px;
+            border-radius: 8px;
+            border: 1px solid var(--tf-border);
+            background: rgba(10, 12, 18, 0.9);
+            color: var(--tf-text);
+            font-size: 13px;
+            font-family: inherit;
+        }
+        .modal-accion-seccion {
+            margin-top: 2px;
+            border: 1px solid rgba(100, 116, 139, 0.35);
+            border-radius: 8px;
+            overflow: visible;
+            background: rgba(0, 0, 0, 0.2);
+        }
+        .modal-accion-seccion-head {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: baseline;
+            gap: 6px;
+            padding: 7px 10px;
+            background: rgba(255, 255, 255, 0.04);
+            border-bottom: 1px solid rgba(100, 116, 139, 0.25);
+            font-size: 11px;
+            font-weight: 800;
+            color: #e2e8f0;
+        }
+        .modal-accion-seccion-ico { color: #74b72e; font-weight: 900; }
+        .modal-accion-seccion-sub {
+            font-size: 9px;
+            font-weight: 600;
+            color: var(--tf-muted);
+        }
+        .modal-accion-seccion-body {
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .modal-accion-keystroke-block {
+            border: 1px solid rgba(116, 183, 46, 0.35);
+            border-radius: 8px;
+            padding: 10px;
+            background: rgba(116, 183, 46, 0.06);
+        }
+        .modal-accion-keystroke-title {
+            margin: 0 0 6px;
+            font-size: 12px;
+            font-weight: 800;
+            color: #74b72e;
+        }
+        .modal-accion-keystroke-hint {
+            margin: 0 0 8px;
+            font-size: 10px;
+            color: var(--tf-muted);
+            line-height: 1.35;
+        }
+        .modal-accion-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            padding: 10px 14px;
+            border-top: 1px solid var(--tf-border);
+            background: rgba(0, 0, 0, 0.2);
+            flex-shrink: 0;
+        }
+        .modal-accion-btn-cancel {
+            background: transparent;
+            border: 1px solid var(--tf-border);
+            color: var(--tf-muted);
+            padding: 7px 14px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 12px;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        .modal-accion-btn-cancel:hover {
+            background: rgba(255, 255, 255, 0.06);
+            color: var(--tf-text);
+        }
+        #modal-video-alerta-panel .fila-video-fields .select-oscuro { margin-bottom: 0; }
+        #modal-video-alerta-panel .fila-video-fields .input-valor,
+        #modal-video-alerta-panel .fila-video-fields .input-nombre-texto,
+        #modal-video-alerta-panel .fila-video-fields .input-comando,
+        #modal-video-alerta-panel .fila-video-fields .input-comando-usuario {
+            margin-top: 0;
+        }
+
+        /* Catálogo de regalos (misma ventana que alerta sonora en index) */
+        .fila-video-fields .custom-dropdown-menu {
+            display: none !important;
+        }
+        .modal-seleccion-regalo {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 1000030;
+            align-items: center;
+            justify-content: center;
+            padding: 12px;
+            background: rgba(8, 10, 16, 0.92);
+            backdrop-filter: blur(6px);
+            box-sizing: border-box;
+        }
+        .modal-seleccion-regalo.show { display: flex; }
+        .modal-seleccion-regalo-inner {
+            width: min(96vw, 1400px);
+            height: min(92vh, 900px);
+            max-height: 92vh;
+            background: var(--tf-surface);
+            border: 1px solid var(--tf-border);
+            border-radius: 14px;
+            box-shadow: 0 24px 60px rgba(0,0,0,0.55);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            min-height: 0;
+        }
+        .modal-seleccion-regalo-header {
+            flex-shrink: 0;
+            padding: 14px 18px;
+            border-bottom: 1px solid var(--tf-border);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            background: var(--tf-surface-elevated);
+        }
+        .modal-seleccion-regalo-header h3 {
+            margin: 0;
+            font-size: 17px;
+            font-weight: 800;
+            color: #fff;
+            flex: 1 1 auto;
+        }
+        .regalo-modal-filtro {
+            flex: 1 1 200px;
+            max-width: 360px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid var(--tf-border);
+            background: rgba(10, 12, 18, 0.9);
+            color: var(--tf-text);
+            font-size: 13px;
+            outline: none;
+            font-family: inherit;
+        }
+        .regalo-modal-filtro:focus { border-color: var(--tf-teal); }
+        .btn-cerrar-modal-regalo {
+            background: transparent;
+            border: none;
+            color: var(--tf-muted);
+            font-size: 26px;
+            line-height: 1;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 6px;
+        }
+        .btn-cerrar-modal-regalo:hover { color: #fff; background: rgba(255,255,255,0.06); }
+        #regalo-modal-scroll {
+            flex: 1;
+            min-height: 0;
+            overflow: hidden;
+            padding: 14px 16px 18px;
+            background: var(--tf-bg);
+        }
+        #grid-regalos-modal {
+            display: grid;
+            gap: 8px;
+            align-content: start;
+            justify-items: stretch;
+            width: 100%;
+            min-height: 0;
+        }
+        .regalo-modal-tile {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 6px;
+            padding: 10px 6px;
+            border: 1px solid var(--tf-border);
+            border-radius: 10px;
+            background: rgba(15, 18, 26, 0.95);
+            cursor: pointer;
+            font-family: inherit;
+            color: var(--tf-text);
+            transition: border-color 0.15s, background 0.15s, transform 0.12s;
+            min-width: 0;
+            min-height: 88px;
+        }
+        .regalo-modal-tile:hover {
+            border-color: var(--tf-teal);
+            background: rgba(61, 214, 195, 0.1);
+            transform: translateY(-1px);
+        }
+        .regalo-modal-tile img {
+            width: 44px;
+            height: 44px;
+            object-fit: contain;
+            flex-shrink: 0;
+        }
+        .regalo-modal-tile-name {
+            font-size: 10px;
+            font-weight: 600;
+            text-align: center;
+            line-height: 1.25;
+            word-break: break-word;
+            text-transform: capitalize;
+            color: #e2e8f0;
+            max-width: 100%;
+        }
+
+        .url-info-box {
+            background: rgba(0, 0, 0, 0.28);
+            padding: 6px 8px;
+            border-radius: 6px;
+            border: 1px solid rgba(61, 214, 195, 0.28);
+            margin-bottom: 8px;
+        }
+        .tabla-cabecera.tabla-cabecera--videos .th-acciones-dots {
+            font-size: 14px;
+            line-height: 1;
+            color: #86efac;
+            opacity: 0.85;
+        }
+        .url-info-box .url-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: stretch;
+            margin-top: 8px;
+        }
+        #url-overlay-videos {
+            flex: 1 1 220px;
+            min-width: 0;
+            background: rgba(10, 12, 18, 0.75);
+            border: 1px solid var(--tf-border);
+            border-radius: 6px;
+            padding: 8px 10px;
+            color: var(--tf-teal);
+            font-family: ui-monospace, monospace;
+            font-size: 11px;
+        }
+        #url-overlay-videos.url-overlay-videos--need-user {
+            color: var(--tf-muted);
+            font-family: inherit;
+            font-style: italic;
+        }
+        .btn-copiar-enlace:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+            filter: none;
+        }
+        .btn-copiar-enlace {
+            flex: 0 0 auto;
+            padding: 8px 14px;
+            border-radius: 8px;
+            border: 1px solid var(--tf-pink);
+            background: rgba(244, 114, 182, 0.12);
+            color: var(--tf-pink);
+            font-weight: 700;
+            font-size: 11px;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        .btn-copiar-enlace:hover { filter: brightness(1.1); }
+
+        #videos-panel-root .aa-panel__table-wrap {
+            border: 1px solid rgba(100, 116, 139, 0.4);
+            border-radius: 6px;
+            overflow: hidden;
+            background: rgba(6, 8, 12, 0.55);
+            margin-bottom: 4px;
+        }
+        #videos-panel-root .aa-panel__table-wrap--acciones {
+            overflow-x: auto;
+            overflow-y: visible;
+            scrollbar-width: thin;
+        }
+        #videos-panel-root .tabla-contenedor-v.tabla-contenedor--aa {
+            border-radius: 0;
+            overflow: visible;
+            border: none;
+            background: linear-gradient(180deg, rgba(15, 18, 26, 0.98) 0%, rgba(8, 10, 14, 0.92) 100%);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+            width: 100%;
+            min-width: 0;
+            box-sizing: border-box;
+        }
+        .tabla-cabecera.tabla-cabecera--videos {
+            display: grid;
+            grid-template-columns: 40px minmax(56px, 0.9fr) minmax(72px, 1.35fr) minmax(56px, 1fr) 92px;
+            gap: 0;
+            column-gap: 8px;
+            padding: 0;
+            margin: 0;
+            font-size: 8px;
+            font-weight: 800;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            color: #86efac;
+            background: linear-gradient(90deg, rgba(22, 101, 52, 0.35) 0%, rgba(15, 23, 42, 0.95) 45%, rgba(15, 23, 42, 0.98) 100%);
+            border-bottom: 1px solid rgba(116, 183, 46, 0.35);
+            align-items: stretch;
+            min-height: 30px;
+        }
+        .tabla-cabecera.tabla-cabecera--videos > div {
+            display: flex;
+            align-items: center;
+            padding: 5px 4px;
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            min-width: 0;
+        }
+        .tabla-cabecera.tabla-cabecera--videos > div:last-child {
+            border-right: none;
+        }
+        .tabla-cabecera.tabla-cabecera--videos .th-center {
+            justify-content: center;
+            text-align: center;
+        }
+        .fila-video {
+            display: grid;
+            grid-template-columns: 40px minmax(56px, 0.9fr) minmax(72px, 1.35fr) minmax(56px, 1fr) 92px;
+            gap: 0;
+            column-gap: 8px;
+            padding: 6px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            align-items: start;
+            background: rgba(0, 0, 0, 0.12);
+            transition: background 0.15s ease;
+        }
+        .fila-video > div {
+            padding: 4px;
+            min-width: 0;
+            border-right: 1px solid rgba(255, 255, 255, 0.04);
+        }
+        .fila-video > div:last-child {
+            border-right: none;
+        }
+        .fila-video:hover { background: rgba(116, 183, 46, 0.06); }
+        .fila-video:last-child { border-bottom: none; }
+        .fila-video .cell-acciones {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .fila-video .cell-piloto {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding-top: 4px;
+        }
+        .fila-video-col-nombre,
+        .fila-video-col-evento,
+        .fila-video-col-archivo {
+            font-size: 11px;
+            line-height: 1.3;
+            color: var(--tf-text);
+            display: flex;
+            align-items: center;
+            min-width: 0;
+        }
+        .fila-video-col-nombre { font-weight: 600; color: #cbd5e1; }
+        .fila-video-col-evento { color: #94a3b8; }
+        .fila-video-col-archivo { color: var(--tf-muted); font-size: 10px; }
+        .vv-nombre, .vv-archivo {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            width: 100%;
+        }
+        .vv-evento {
+            display: inline-flex;
+            align-items: center;
+            justify-content: flex-start;
+            min-width: 0;
+            width: 100%;
+            overflow: hidden;
+        }
+        .vv-evento-wrap {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            min-width: 0;
+        }
+        .vv-evento-img {
+            width: 20px;
+            height: 20px;
+            object-fit: contain;
+            flex-shrink: 0;
+        }
+        .vv-evento-ico {
+            flex-shrink: 0;
+            font-size: 16px;
+            line-height: 1;
+        }
+        .fila-video .cell-acciones.vv-actions { gap: 2px; flex-wrap: nowrap; }
+        .fila-video .cell-acciones.vv-actions .btn-icono {
+            width: 26px;
+            height: 26px;
+            font-size: 13px;
+        }
+        /* En la lista compacta el bloque de campos va oculto; al moverlo al modal ya no es hijo de .fila-video */
+        .fila-video > .fila-video-fields { display: none; }
+        #modal-video-alerta-body-slot .fila-video-fields {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .acciones-fila { display: flex; gap: 6px; }
+        .btn-icono {
+            background: none;
+            border: none;
+            font-size: 15px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 30px;
+            height: 30px;
+            border-radius: 6px;
+            color: var(--tf-muted);
+        }
+        .btn-icono:hover { background: rgba(255, 255, 255, 0.06); color: var(--tf-text); }
+
+        input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--tf-teal); cursor: pointer; }
+
+        .select-oscuro {
+            background: rgba(10, 12, 18, 0.85);
+            border: 1px solid var(--tf-border);
+            padding: 6px 10px;
+            border-radius: 6px;
+            color: var(--tf-text);
+            width: 100%;
+            outline: none;
+            font-family: inherit;
+            font-size: 12px;
+        }
+        .input-valor, .input-nombre-texto, .input-comando, .input-comando-usuario {
+            background: rgba(10, 12, 18, 0.85);
+            border: 1px solid var(--tf-border);
+            padding: 6px 10px;
+            border-radius: 6px;
+            color: var(--tf-text);
+            width: 100%;
+            outline: none;
+            display: none;
+            margin-top: 5px;
+            font-size: 12px;
+        }
+        .input-comando-usuario { font-size: 11px; }
+        .input-comando-usuario::placeholder { color: #64748b; font-size: 10px; }
+        .input-valor:focus, .input-nombre-texto:focus, .input-comando:focus, .input-comando-usuario:focus, .select-oscuro:focus, .modal-accion-input:focus {
+            border-color: var(--tf-teal);
+            box-shadow: 0 0 0 2px var(--tf-teal-soft);
+        }
+
+        .custom-dropdown-container { position: relative; width: 100%; margin-top: 5px; display: none; }
+        .custom-dropdown-btn {
+            background: rgba(10, 12, 18, 0.85);
+            border: 1px solid var(--tf-border);
+            padding: 5px 10px;
+            border-radius: 6px;
+            color: var(--tf-text);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .custom-dropdown-btn:hover { border-color: var(--tf-teal); }
+        .cd-btn-img { width: 20px; height: 20px; object-fit: contain; display: none; }
+
+        .custom-dropdown-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            background: var(--tf-surface-elevated);
+            border: 1px solid var(--tf-border);
+            border-radius: 6px;
+            margin-top: 4px;
+            z-index: 999999;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+        }
+        .custom-dropdown-menu.show { display: block; }
+        .cd-search {
+            width: 100%;
+            box-sizing: border-box;
+            background: rgba(10, 12, 18, 0.85);
+            border: none;
+            border-bottom: 1px solid var(--tf-border);
+            padding: 8px;
+            color: var(--tf-text);
+            outline: none;
+            font-size: 12px;
+        }
+        .cd-list { max-height: 200px; overflow-y: auto; display: flex; flex-direction: column; }
+        .cd-item {
+            padding: 6px 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            border-bottom: 1px solid rgba(100, 116, 139, 0.12);
+        }
+        .cd-item:hover { background: rgba(255, 255, 255, 0.06); }
+        .cd-item-img { width: 22px; height: 22px; object-fit: contain; }
+        .cd-item-name { font-size: 12px; color: var(--tf-text); font-weight: 500; text-transform: capitalize; }
+
+        .video-selector { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; min-width: 0; }
+        .btn-subir-video {
+            background: var(--tf-teal-soft);
+            border: 1px solid var(--tf-teal);
+            color: var(--tf-teal);
+            padding: 5px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 11px;
+            white-space: nowrap;
+            font-family: inherit;
+            font-weight: 600;
+        }
+        .btn-subir-video:hover { filter: brightness(1.08); }
+        .nombre-archivo {
+            font-size: 11px;
+            color: var(--tf-muted);
+            max-width: 160px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        @media (max-width: 900px) {
+            html, body { overflow-x: hidden; max-width: 100vw; }
+            body { padding: 8px; }
+            .glass { padding: 10px; }
+            .tabla-cabecera.tabla-cabecera--videos, .fila-video {
+                grid-template-columns: 36px minmax(52px, 0.85fr) minmax(64px, 1.2fr) minmax(48px, 0.9fr) 88px;
+                min-width: 420px;
+            }
+            #videos-panel-root .aa-panel__table-wrap--acciones { -webkit-overflow-scrolling: touch; }
+        }
+    </style>
+</head>
+<body>
+
+    <section id="videos-panel-root" class="glass aa-panel aa-panel--videos">
+        <h2 class="aa-panel__title">Alertas de video</h2>
+        <p class="aa-panel__hint">
+            Vista compacta. <strong>Configurar</strong> (lápiz) abre el mismo estilo de ventana que al editar una acción. Los cambios se guardan solos al <strong>Listo</strong> del editor o al <strong>borrar</strong> una fila (nube si hay sesión). Comando de chat repetido en varias filas: usa <strong>@usuario</strong> distinto por fila si quieres videos distintos.
+            <br>
+            <strong>Plan gratuito:</strong> 5 alertas · <strong>Premium:</strong> ilimitadas.
+        </p>
+        <div class="aa-panel__toolbar">
+            <div class="aa-panel__toolbar-left">
+                <button type="button" id="btn-crear" class="btn-crear-alerta">➕ Añadir video</button>
+
+            </div>
+            <div class="aa-panel__toolbar-right">
+                <button type="button" id="btn-panico" class="btn-videos-panico" title="Corta al instante cualquier video que esté en pantalla">🛑 Cortar videos (pánico)</button>
+            </div>
+        </div>
+
+        <div class="url-info-box">
+            <p style="margin: 0; font-size: 11px; color: var(--tf-text); line-height: 1.5;">
+                <strong>Enlace para OBS / Live Studio</strong> (mismo criterio que en Overlays: usa el usuario de la barra principal y el origen actual — localhost en PC o tu dominio en web).
+            </p>
+            <div class="url-row">
+                <input type="text" id="url-overlay-videos" readonly value="" aria-label="URL del overlay de videos">
+                <button type="button" class="btn-copiar-enlace" id="btn-copiar-overlay-videos" disabled>🔗 Copiar enlace inteligente</button>
+            </div>
+            <p id="url-overlay-videos-foot" style="margin: 8px 0 0; font-size: 10px; color: var(--tf-muted); line-height: 1.45;"></p>
+        </div>
+
+        <div class="aa-panel__table-wrap aa-panel__table-wrap--acciones">
+            <div class="tabla-contenedor-v tabla-contenedor--aa">
+                <div class="tabla-cabecera tabla-cabecera--videos">
+                    <div class="th-center" title="Activo en automático">On</div>
+                    <div>Nombre</div>
+                    <div>Evento</div>
+                    <div>Video</div>
+                    <div class="th-center" title="Configurar, probar, borrar"><span class="th-acciones-dots" aria-hidden="true">···</span></div>
+                </div>
+                <div id="lista-videos"></div>
+            </div>
+        </div>
+    </section>
+
+    <div id="modal-video-alerta-panel" class="modal-accion-panel" aria-hidden="true">
+        <div class="modal-accion-backdrop" id="modal-video-alerta-backdrop"></div>
+        <div class="modal-accion-box" role="dialog" aria-modal="true" aria-labelledby="modal-video-alerta-titulo">
+            <div class="modal-accion-head">
+                <h2 id="modal-video-alerta-titulo">Configurar alerta de video</h2>
+                <button type="button" class="modal-accion-close" id="modal-video-alerta-cerrar" aria-label="Cerrar">×</button>
+            </div>
+            <div class="modal-accion-body" id="modal-video-alerta-body-slot"></div>
+            <div class="modal-accion-footer">
+                <button type="button" class="modal-accion-btn-cancel" id="modal-video-alerta-listo">Listo</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-seleccion-regalo" class="modal-seleccion-regalo" aria-hidden="true">
+        <div class="modal-seleccion-regalo-inner" role="dialog" aria-labelledby="regalo-modal-titulo">
+            <div class="modal-seleccion-regalo-header">
+                <h3 id="regalo-modal-titulo">🎁 Elegir regalo</h3>
+                <input type="search" id="regalo-modal-filtro" class="regalo-modal-filtro" placeholder="Filtrar por nombre o número…" autocomplete="off">
+                <button type="button" class="btn-cerrar-modal-regalo" id="btn-cerrar-modal-regalo" title="Cerrar">×</button>
+            </div>
+            <div id="regalo-modal-scroll">
+                <div id="grid-regalos-modal"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        let salaVideos = '';
+        socket.on('connect', function () { salaVideos = ''; });
+        var OVERLAY_VIDEO_LINK_VER = '20';
+        var OVERLAY_VIDEOS_SIN_USUARIO_MSG = '(Conecta un usuario en la barra principal)';
+
+        function obtenerUsuarioBarraPrincipal() {
+            try {
+                var el = window.parent.document.getElementById('input-usuario');
+                if (!el) return '';
+                return String(el.value || '').trim().replace(/^@+/, '');
+            } catch (e) {
+                return '';
+            }
+        }
+
+        function construirUrlOverlayVideos() {
+            var user = obtenerUsuarioBarraPrincipal();
+            if (!user) return '';
+            return window.location.origin + '/overlay_videos.html?user=' + encodeURIComponent(user) + '&overlayv=' + OVERLAY_VIDEO_LINK_VER;
+        }
+
+        function actualizarUrlOverlayVideosMostrada() {
+            var inp = document.getElementById('url-overlay-videos');
+            var foot = document.getElementById('url-overlay-videos-foot');
+            var btn = document.getElementById('btn-copiar-overlay-videos');
+            var user = obtenerUsuarioBarraPrincipal();
+            var url = construirUrlOverlayVideos();
+            if (inp) {
+                if (url) {
+                    inp.value = url;
+                    inp.classList.remove('url-overlay-videos--need-user');
+                } else {
+                    inp.value = OVERLAY_VIDEOS_SIN_USUARIO_MSG;
+                    inp.classList.add('url-overlay-videos--need-user');
+                }
+            }
+            if (btn) btn.disabled = !url;
+            if (foot) {
+                if (url) {
+                    foot.innerHTML = 'Se actualiza con el @usuario de la barra principal. Incluye <code style="font-size:10px;">?user=</code> y caché <code style="font-size:10px;">overlayv</code>.';
+                } else {
+                    foot.textContent = 'Primero escribe tu usuario de TikTok en la barra principal (Inicio) y pulsa Conectar, igual que en los otros enlaces de Overlays.';
+                }
+            }
+        }
+
+        setInterval(actualizarUrlOverlayVideosMostrada, 400);
+
+        (function initEnlaceOverlayVideos() {
+            actualizarUrlOverlayVideosMostrada();
+            try {
+                var pinp = window.parent.document.getElementById('input-usuario');
+                if (pinp && !pinp.dataset.videosOverlayBound) {
+                    pinp.dataset.videosOverlayBound = '1';
+                    pinp.addEventListener('input', actualizarUrlOverlayVideosMostrada);
+                    pinp.addEventListener('change', actualizarUrlOverlayVideosMostrada);
+                }
+            } catch (e) {}
+            var btnCopiar = document.getElementById('btn-copiar-overlay-videos');
+            if (btnCopiar) {
+                btnCopiar.addEventListener('click', function () {
+                    var user = obtenerUsuarioBarraPrincipal();
+                    if (!user) {
+                        alert('⚠️ Primero escribe un usuario de TikTok en la barra principal y dale a CONECTAR, igual que en Overlays.');
+                        return;
+                    }
+                    var link = construirUrlOverlayVideos();
+                    if (!link) return;
+                    if (navigator.clipboard && navigator.clipboard.writeText) {
+                        navigator.clipboard.writeText(link).then(function () {
+                            alert('✅ Enlace copiado.\n\n' + link + '\n\nPégalo en el navegador de OBS o Live Studio.');
+                        }).catch(function () {
+                            prompt('Copia manualmente:', link);
+                        });
+                    } else {
+                        prompt('Copia este enlace:', link);
+                    }
+                });
+            }
+        })();
+
+        function urlVideoAbs(url) {
+            if (!url) return '';
+            if (String(url).startsWith('http')) return url;
+            try { return new URL(url, window.location.origin).href; } catch (e) { return url; }
+        }
+
+        setInterval(function () {
+            try {
+                const inputUsuario = window.parent.document.getElementById('input-usuario');
+                var usuario = inputUsuario ? inputUsuario.value.trim().toLowerCase().replace(/^@+/, '') : '';
+                const btnDesconectar = window.parent.document.getElementById('btn-desconectar');
+                const conectado = btnDesconectar && window.getComputedStyle(btnDesconectar).display !== 'none';
+                if (usuario && conectado && salaVideos !== usuario) {
+                    socket.emit('join_room', usuario);
+                    salaVideos = usuario;
+                } else if (!conectado && salaVideos !== '') {
+                    salaVideos = '';
+                }
+            } catch (e) {}
+        }, 1000);
+
+        document.getElementById('btn-panico').addEventListener('click', function () {
+            socket.emit('stop_video');
+            const btn = document.getElementById('btn-panico');
+            btn.innerText = '¡Videos cortados!';
+            setTimeout(function () { btn.innerText = '🛑 Cortar videos (pánico)'; }, 2000);
+        });
+
+        let catalogoRegalos = [
+            { nombre: 'rose_1', imagen: 'https://p16-webcast.tiktokcdn.com/img/maliva/some_simulated_rose_hash.png' },
+            { nombre: 'tiktok_1', imagen: 'https://p16-webcast.tiktokcdn.com/img/maliva/some_simulated_tiktok_logo_hash.png' }
+        ];
+
+        async function inicializarCatalogo() {
+            try {
+                const res = await fetch('/lista-regalos-locales');
+                const locales = await res.json();
+                if (locales && locales.length > 0) {
+                    catalogoRegalos = locales.map(function (l) { return { nombre: l.archivo, imagen: l.url }; });
+                }
+            } catch (e) {}
+        }
+
+        var regaloModalTargetContainer = null;
+        function aplicarRegaloAlContenedor(container, regalo) {
+            if (!container || !regalo) return;
+            container.dataset.value = regalo.nombre;
+            var img = container.querySelector('.cd-btn-img');
+            var txt = container.querySelector('.cd-text');
+            if (img) img.src = regalo.imagen;
+            if (txt) txt.textContent = regalo.nombre.replace(/_/g, ' ');
+        }
+        function cerrarModalSeleccionRegalo() {
+            var m = document.getElementById('modal-seleccion-regalo');
+            if (m) { m.classList.remove('show'); m.setAttribute('aria-hidden', 'true'); }
+            regaloModalTargetContainer = null;
+        }
+        function ajustarColumnasGridRegalos() {
+            var grid = document.getElementById('grid-regalos-modal');
+            var scrollEl = document.getElementById('regalo-modal-scroll');
+            if (!grid || !scrollEl || grid.children.length === 0) return;
+            var n = grid.children.length;
+            var availH = Math.max(100, scrollEl.clientHeight - 8);
+            var cols = Math.max(4, Math.min(n, Math.floor(Math.max(200, scrollEl.clientWidth - 8) / 68)));
+            grid.style.gridTemplateColumns = 'repeat(' + cols + ', minmax(0, 1fr))';
+            var guard = 0;
+            while (grid.scrollHeight > availH + 3 && cols < n && guard < 600) {
+                cols += 1;
+                grid.style.gridTemplateColumns = 'repeat(' + cols + ', minmax(0, 1fr))';
+                guard += 1;
+            }
+            scrollEl.style.overflowY = grid.scrollHeight > availH + 4 ? 'auto' : 'hidden';
+        }
+        function refrescarGridRegalosModal() {
+            var grid = document.getElementById('grid-regalos-modal');
+            var filtroEl = document.getElementById('regalo-modal-filtro');
+            var filtro = ((filtroEl && filtroEl.value) || '').trim().toLowerCase();
+            if (!grid) return;
+            grid.innerHTML = '';
+            var list = catalogoRegalos.filter(function (r) { return !filtro || String(r.nombre).toLowerCase().indexOf(filtro) !== -1; });
+            list.forEach(function (regalo) {
+                var b = document.createElement('button');
+                b.type = 'button';
+                b.className = 'regalo-modal-tile';
+                b.innerHTML = '<img src="' + regalo.imagen + '" alt=""><span class="regalo-modal-tile-name">' + String(regalo.nombre).replace(/_/g, ' ') + '</span>';
+                b.addEventListener('click', function () {
+                    var cont = regaloModalTargetContainer;
+                    if (cont) aplicarRegaloAlContenedor(cont, regalo);
+                    var filaVid = cont && cont.closest && cont.closest('.fila-video');
+                    cerrarModalSeleccionRegalo();
+                    if (filaVid && typeof actualizarResumenFila === 'function') actualizarResumenFila(filaVid);
+                });
+                grid.appendChild(b);
+            });
+            requestAnimationFrame(function () { ajustarColumnasGridRegalos(); });
+        }
+        function abrirModalSeleccionRegalo(container) {
+            regaloModalTargetContainer = container;
+            var modal = document.getElementById('modal-seleccion-regalo');
+            var filtro = document.getElementById('regalo-modal-filtro');
+            if (filtro) filtro.value = '';
+            if (modal) {
+                modal.classList.add('show');
+                modal.setAttribute('aria-hidden', 'false');
+            }
+            refrescarGridRegalosModal();
+            setTimeout(function () {
+                try { if (filtro) filtro.focus(); } catch (e) {}
+                ajustarColumnasGridRegalos();
+            }, 50);
+        }
+        (function initModalRegalosVideos() {
+            var modal = document.getElementById('modal-seleccion-regalo');
+            var btnX = document.getElementById('btn-cerrar-modal-regalo');
+            var filtro = document.getElementById('regalo-modal-filtro');
+            if (btnX) btnX.addEventListener('click', function (e) { e.stopPropagation(); cerrarModalSeleccionRegalo(); });
+            if (modal) modal.addEventListener('click', function (e) { if (e.target === modal) cerrarModalSeleccionRegalo(); });
+            if (filtro) filtro.addEventListener('input', function () { refrescarGridRegalosModal(); });
+            window.addEventListener('resize', function () {
+                if (modal && modal.classList.contains('show')) ajustarColumnasGridRegalos();
+            });
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape' && modal && modal.classList.contains('show')) cerrarModalSeleccionRegalo();
+            });
+        })();
+
+        document.addEventListener('click', function (e) {
+            if (!e.target.closest('.custom-dropdown-container')) {
+                document.querySelectorAll('.custom-dropdown-menu').forEach(function (menu) { menu.classList.remove('show'); });
+            }
+        });
+
+        const PLAN_GRATIS_MAX_ALERTAS_VIDEO = 5;
+        function esPlanPremiumPanel() {
+            try {
+                return localStorage.getItem('elarbol_plan') === 'premium';
+            } catch (e) {
+                return false;
+            }
+        }
+        function puedeAgregarAlertaVideo() {
+            if (esPlanPremiumPanel()) return true;
+            return document.querySelectorAll('#lista-videos .fila-video').length < PLAN_GRATIS_MAX_ALERTAS_VIDEO;
+        }
+
+        var modalVideoFila = null;
+        function firebaseDbRoot() {
+            try {
+                if (window.parent && window.parent !== window && window.parent.firebase && window.parent.firebase.database) {
+                    return window.parent.firebase.database();
+                }
+                if (window.firebase && window.firebase.database) return window.firebase.database();
+            } catch (e) {}
+            return null;
+        }
+        function obtenerDatosVideosDesdeDom() {
+            return Array.from(document.querySelectorAll('.fila-video')).map(function (f) {
+                var nn = filaQuery(f, '.nombre-archivo');
+                var st = filaQuery(f, '.select-trigger');
+                var iv = filaQuery(f, '.input-valor');
+                var nt = filaQuery(f, '.input-nombre-texto');
+                var ic = filaQuery(f, '.input-comando');
+                var iu = filaQuery(f, '.input-comando-usuario');
+                var dd = filaQuery(f, '.custom-dropdown-container');
+                var inl = filaQuery(f, '.input-nombre-lista');
+                return {
+                    enabled: f.querySelector('.check-enabled').checked,
+                    nombreLista: (inl && inl.value) || '',
+                    trigger: st ? st.value : '',
+                    valor: iv ? iv.value : '',
+                    nombreTexto: nt ? nt.value : '',
+                    comandoChat: ic ? ic.value : '',
+                    soloUsuarioChat: iu ? iu.value : '',
+                    nombreRegalo: (dd && dd.dataset.value) || '',
+                    videoUrl: f.dataset.videoUrl || '',
+                    videoName: nn ? nn.textContent : ''
+                };
+            });
+        }
+        function persistirVideosEnNube() {
+            var data = obtenerDatosVideosDesdeDom();
+            var modOnly = false;
+            var subOnly = false;
+            var useParent = false;
+            try {
+                useParent = window.parent && window.parent !== window;
+            } catch (e0) {
+                useParent = false;
+            }
+            var targetOrigin = '';
+            try {
+                targetOrigin = window.location.origin || '';
+            } catch (e1) {}
+            if (useParent && targetOrigin && targetOrigin !== 'null') {
+                try {
+                    window.parent.postMessage({
+                        type: 'mitikfinity_persist_videos',
+                        payload: { data: data, modOnly: modOnly, subOnly: subOnly }
+                    }, targetOrigin);
+                } catch (e2) {}
+            } else if (useParent) {
+                try {
+                    window.parent.postMessage({
+                        type: 'mitikfinity_persist_videos',
+                        payload: { data: data, modOnly: modOnly, subOnly: subOnly }
+                    }, '*');
+                } catch (e3) {}
+            }
+            try {
+                localStorage.setItem('videos_mod_only', modOnly);
+                localStorage.setItem('videos_sub_only', subOnly);
+                localStorage.setItem('videos_elarbol', JSON.stringify(data));
+            } catch (e) {}
+            if (!useParent) {
+                var u = localStorage.getItem('elarbol_usuario');
+                if (u) {
+                    var pdb = firebaseDbRoot();
+                    if (pdb) {
+                        try {
+                            pdb.ref('usuarios_vip/' + u).update({
+                                config_videos: data,
+                                config_videos_mod_only: modOnly,
+                                config_videos_sub_only: subOnly
+                            });
+                        } catch (e2) {}
+                    }
+                }
+            }
+        }
+        function filaQuery(fila, selector) {
+            var fields = fila.querySelector('.fila-video-fields');
+            if (fields) return fields.querySelector(selector);
+            if (modalVideoFila === fila) {
+                var slot = document.getElementById('modal-video-alerta-body-slot');
+                if (slot) {
+                    fields = slot.querySelector('.fila-video-fields');
+                    if (fields) return fields.querySelector(selector);
+                }
+            }
+            return null;
+        }
+        function cerrarModalVideo(opts) {
+            opts = opts || {};
+            var regPan = document.getElementById('modal-seleccion-regalo');
+            if (regPan && regPan.classList.contains('show')) cerrarModalSeleccionRegalo();
+            var slot = document.getElementById('modal-video-alerta-body-slot');
+            var panel = document.getElementById('modal-video-alerta-panel');
+            if (!modalVideoFila) {
+                panel.classList.remove('show');
+                panel.setAttribute('aria-hidden', 'true');
+                return;
+            }
+            var fields = slot.querySelector('.fila-video-fields');
+            if (fields && modalVideoFila.isConnected) modalVideoFila.appendChild(fields);
+            actualizarResumenFila(modalVideoFila);
+            modalVideoFila = null;
+            panel.classList.remove('show');
+            panel.setAttribute('aria-hidden', 'true');
+            if (opts.persist) persistirVideosEnNube();
+        }
+        function abrirModalVideo(fila) {
+            cerrarModalVideo();
+            modalVideoFila = fila;
+            var slot = document.getElementById('modal-video-alerta-body-slot');
+            var fields = fila.querySelector('.fila-video-fields');
+            if (!fields) return;
+            slot.appendChild(fields);
+            var panel = document.getElementById('modal-video-alerta-panel');
+            panel.classList.add('show');
+            panel.setAttribute('aria-hidden', 'false');
+            var st = filaQuery(fila, '.select-trigger');
+            if (st) st.dispatchEvent(new Event('change'));
+            var n = filaQuery(fila, '.input-nombre-lista');
+            if (n) try { n.focus(); } catch (e) {}
+        }
+        const VIDEO_RESUMEN_TRIGGER = {
+            chat_command: { ico: '\uD83D\uDCAC', txt: 'Comando de chat' },
+            any_gift: { ico: '\uD83C\uDF81', txt: 'Cualquier regalo' },
+            coins_exact: { ico: '\uD83D\uDC8E', txt: 'Valor exacto (monedas)' },
+            coins_min: { ico: '\uD83D\uDC8E', txt: 'Valor mínimo (monedas)' },
+            gift_dropdown: null,
+            gift_text: null,
+            like_count: { ico: '\u2764\uFE0F', txt: 'Likes (por usuario)' },
+            like_total: { ico: '\uD83C\uDF0E', txt: 'Likes (globales)' },
+            share: { ico: '\u21AA\uFE0F', txt: 'Compartida' },
+            subscribe: { ico: '\u2B50', txt: 'Nuevo suscriptor' },
+            follow: { ico: '\uD83D\uDC64', txt: 'Nuevo seguidor' }
+        };
+
+        function textoResumenEvento(fila) {
+            var st = filaQuery(fila, '.select-trigger');
+            if (!st) return '—';
+            var v = st.value;
+            var vnum = filaQuery(fila, '.input-valor');
+            var val = vnum && vnum.value ? vnum.value : '';
+            var nt = filaQuery(fila, '.input-nombre-texto');
+            var ntval = nt && nt.value ? nt.value : '';
+            var cmd = filaQuery(fila, '.input-comando');
+            var cmdv = cmd && cmd.value ? cmd.value : '';
+            var su = filaQuery(fila, '.input-comando-usuario');
+            var suv = su && su.value ? (' @' + String(su.value).replace(/^@+/, '')) : '';
+            var dd = filaQuery(fila, '.custom-dropdown-container');
+            var reg = dd && dd.dataset.value ? String(dd.dataset.value).replace(/_/g, ' ') : '';
+            if (v === 'chat_command') return (cmdv || '—') + suv;
+            if (v === 'any_gift') return 'Cualquier regalo';
+            if (v === 'coins_exact') return '= ' + val + ' monedas';
+            if (v === 'coins_min') return '≥ ' + val + ' monedas';
+            if (v === 'gift_text') return ntval || 'Regalo (texto)';
+            if (v === 'gift_dropdown') return reg || 'Regalo (lista)';
+            if (v === 'like_count') return 'Likes usr / ' + val;
+            if (v === 'like_total') return 'Likes total / ' + val;
+            if (v === 'share') return 'Compartir';
+            if (v === 'subscribe') return 'Suscriptor';
+            if (v === 'follow') return 'Seguidor';
+            return v;
+        }
+        function actualizarResumenFila(fila) {
+            var nIn = filaQuery(fila, '.input-nombre-lista');
+            var nombre = (nIn && nIn.value.trim()) ? nIn.value.trim() : '';
+            var nn = fila.querySelector('.vv-nombre');
+            var ne = fila.querySelector('.vv-evento');
+            var na = fila.querySelector('.vv-archivo');
+            if (nn) nn.textContent = nombre || '(sin nombre)';
+            if (ne) {
+                ne.textContent = '';
+                ne.removeAttribute('title');
+                var stEv = filaQuery(fila, '.select-trigger');
+                var trigger = stEv ? stEv.value : '';
+                var wrap = document.createElement('span');
+                wrap.className = 'vv-evento-wrap';
+                if (trigger === 'gift_dropdown') {
+                    var ddEv = filaQuery(fila, '.custom-dropdown-container');
+                    var keyEv = (ddEv && ddEv.dataset && ddEv.dataset.value) ? String(ddEv.dataset.value).trim() : '';
+                    var foundEv = keyEv && typeof catalogoRegalos !== 'undefined'
+                        ? catalogoRegalos.find(function (r) { return r.nombre === keyEv; })
+                        : null;
+                    var urlImg = (foundEv && foundEv.imagen) ? foundEv.imagen : '';
+                    if (!urlImg && ddEv) {
+                        var bi = ddEv.querySelector('.cd-btn-img');
+                        var srcRaw = bi ? (bi.getAttribute('src') || '').trim() : '';
+                        if (srcRaw) urlImg = srcRaw;
+                    }
+                    if (urlImg) {
+                        var im = document.createElement('img');
+                        im.className = 'vv-evento-img';
+                        im.src = urlImg;
+                        im.alt = '';
+                        im.loading = 'lazy';
+                        wrap.appendChild(im);
+                    } else {
+                        var ph = document.createElement('span');
+                        ph.className = 'vv-evento-ico';
+                        ph.textContent = '\uD83C\uDFAF';
+                        wrap.appendChild(ph);
+                    }
+                } else if (trigger === 'gift_text') {
+                    var icoGt = document.createElement('span');
+                    icoGt.className = 'vv-evento-ico';
+                    icoGt.textContent = '\u270D\uFE0F';
+                    wrap.appendChild(icoGt);
+                } else {
+                    var metaEv = VIDEO_RESUMEN_TRIGGER[trigger];
+                    if (metaEv && metaEv.ico) {
+                        var icoEv = document.createElement('span');
+                        icoEv.className = 'vv-evento-ico';
+                        icoEv.textContent = metaEv.ico;
+                        wrap.appendChild(icoEv);
+                    }
+                }
+                if (wrap.childNodes.length) {
+                    ne.appendChild(wrap);
+                    var tip = textoResumenEvento(fila);
+                    if (tip && tip !== '—') ne.title = tip;
+                } else {
+                    ne.textContent = '—';
+                }
+            }
+            if (na) {
+                var arch = filaQuery(fila, '.nombre-archivo');
+                var archTxt = arch ? arch.textContent.trim() : 'Sin archivo';
+                na.textContent = archTxt.length > 28 ? archTxt.slice(0, 26) + '…' : archTxt;
+            }
+        }
+        const opcionesDesplegable = '\n' +
+            '            <option value="chat_command">💬 Comando de chat (!video)</option>\n' +
+            '            <option value="any_gift">🎁 Cualquier regalo</option>\n' +
+            '            <option value="coins_exact">💎 Regalo: valor exacto (monedas)</option>\n' +
+            '            <option value="coins_min">💎 Regalo: valor mínimo (monedas)</option>\n' +
+            '            <option value="gift_dropdown">🎯 Regalo específico (lista)</option>\n' +
+            '            <option value="gift_text">✍️ Regalo específico (nombre)</option>\n' +
+            '            <option value="like_count">❤️ Likes (por usuario)</option>\n' +
+            '            <option value="like_total">🌎 Likes (globales)</option>\n' +
+            '            <option value="share">↪️ Compartir</option>\n' +
+            '            <option value="subscribe">⭐ Nuevo suscriptor</option>\n' +
+            '            <option value="follow">👤 Nuevo seguidor</option>\n';
+
+        function crearFilaVideo(datos) {
+            const lista = document.getElementById('lista-videos');
+            const fila = document.createElement('div');
+            fila.className = 'fila-video';
+            fila.id = 'fila-vid-' + Date.now();
+
+            fila.innerHTML =
+                '<div class="cell-piloto" title="Desmarca para que no salga autom\xe1ticamente">' +
+                '    <input type="checkbox" class="check-enabled" checked style="width:18px;height:18px;cursor:pointer;">' +
+                '</div>' +
+                '<div class="fila-video-col-nombre"><span class="vv-nombre"></span></div>' +
+                '<div class="fila-video-col-evento"><span class="vv-evento"></span></div>' +
+                '<div class="fila-video-col-archivo"><span class="vv-archivo"></span></div>' +
+                '<div class="acciones-fila cell-acciones vv-actions">' +
+                '    <button type="button" class="btn-icono btn-editar-video" title="Configurar">\u270e</button>' +
+                '    <button type="button" class="btn-icono btn-play" title="Probar video en OBS">\u25b6</button>' +
+                '    <button type="button" class="btn-icono btn-borrar" title="Borrar esta fila">\uD83D\uDDD1</button>' +
+                '</div>' +
+                '<div class="fila-video-fields">' +
+                '    <label class="modal-accion-label">Nombre en la lista</label>' +
+                '    <input type="text" class="modal-accion-input input-nombre-lista" maxlength="120" placeholder="ej. Susto, lleg\xf3 Juan\u2026" autocomplete="off">' +
+                '    <div class="modal-accion-seccion">' +
+                '        <div class="modal-accion-seccion-head">' +
+                '            <span class="modal-accion-seccion-ico" aria-hidden="true">\xbb</span>' +
+                '            <span>Evento TikTok</span>' +
+                '            <span class="modal-accion-seccion-sub">(regalos, likes, comando de chat\u2026)</span>' +
+                '        </div>' +
+                '        <div class="modal-accion-seccion-body">' +
+                '            <select class="select-oscuro select-trigger">' + opcionesDesplegable + '</select>' +
+                '            <input type="number" class="input-valor" placeholder="Cantidad / monedas..." min="1">' +
+                '            <input type="text" class="input-nombre-texto" placeholder="Nombre exacto del regalo...">' +
+                '            <input type="text" class="input-comando" placeholder="Comando exacto: ej. !clip, !susto" autocomplete="off">' +
+                '            <input type="text" class="input-comando-usuario" placeholder="Solo este @usuario (vac\xedo = cualquiera con permiso)" autocomplete="off">' +
+                '            <div class="custom-dropdown-container" data-value="">' +
+                '                <div class="custom-dropdown-btn" title="Abrir catálogo de regalos (como alerta sonora)">' +
+                '                    <img src="" class="cd-btn-img" alt="">' +
+                '                    <span class="cd-text" style="text-transform:capitalize;">Seleccionar regalo...</span>' +
+                '                    <span style="margin-left:auto;color:var(--tf-muted);font-size:9px;">\u25bc</span>' +
+                '                </div>' +
+                '                <div class="custom-dropdown-menu"><input type="text" class="cd-search" placeholder="Buscar..."><div class="cd-list"></div></div>' +
+                '            </div>' +
+                '        </div>' +
+                '    </div>' +
+                '    <div class="modal-accion-keystroke-block">' +
+                '        <h3 class="modal-accion-keystroke-title">Archivo de video</h3>' +
+                '        <p class="modal-accion-keystroke-hint">Sube MP4 o WebM. La lista se guarda al pulsar \xabListo\xbb o al borrar una fila.</p>' +
+                '        <div class="video-selector">' +
+                '            <button type="button" class="btn-subir-video">Subir video</button>' +
+                '            <span class="nombre-archivo">Ning\xfan archivo</span>' +
+                '            <input type="file" class="input-file-video" accept="video/mp4,video/webm" style="display:none;">' +
+                '        </div>' +
+                '    </div>' +
+                '</div>';
+
+            lista.appendChild(fila);
+
+            const fieldsEl = fila.querySelector('.fila-video-fields');
+            const selectTrigger = fieldsEl.querySelector('.select-trigger');
+            const inputValor = fieldsEl.querySelector('.input-valor');
+            const inputTexto = fieldsEl.querySelector('.input-nombre-texto');
+            const inputComando = fieldsEl.querySelector('.input-comando');
+            const inputComandoUsuario = fieldsEl.querySelector('.input-comando-usuario');
+            const customDropdown = fieldsEl.querySelector('.custom-dropdown-container');
+            const inputNombreLista = fieldsEl.querySelector('.input-nombre-lista');
+
+            function onFieldInput() { actualizarResumenFila(fila); }
+            inputNombreLista.addEventListener('input', onFieldInput);
+            inputComando.addEventListener('input', onFieldInput);
+            inputComandoUsuario.addEventListener('input', onFieldInput);
+            inputTexto.addEventListener('input', onFieldInput);
+            inputValor.addEventListener('input', onFieldInput);
+
+            selectTrigger.addEventListener('change', function () {
+                inputValor.style.display = 'none';
+                customDropdown.style.display = 'none';
+                inputTexto.style.display = 'none';
+                inputComando.style.display = 'none';
+                inputComandoUsuario.style.display = 'none';
+                if (['coins_exact', 'coins_min', 'like_count', 'like_total'].indexOf(selectTrigger.value) !== -1) inputValor.style.display = 'block';
+                else if (selectTrigger.value === 'gift_dropdown') customDropdown.style.display = 'block';
+                else if (selectTrigger.value === 'gift_text') inputTexto.style.display = 'block';
+                else if (selectTrigger.value === 'chat_command') {
+                    inputComando.style.display = 'block';
+                    inputComandoUsuario.style.display = 'block';
+                }
+                actualizarResumenFila(fila);
+            });
+
+            filaQuery(fila, '.custom-dropdown-btn').addEventListener('click', function (e) {
+                e.stopPropagation();
+                var dd = filaQuery(fila, '.custom-dropdown-container');
+                if (dd) abrirModalSeleccionRegalo(dd);
+            });
+
+            filaQuery(fila, '.btn-subir-video').addEventListener('click', function () { filaQuery(fila, '.input-file-video').click(); });
+            filaQuery(fila, '.input-file-video').addEventListener('change', async function (e) {
+                if (!e.target.files.length) return;
+                const formData = new FormData();
+                formData.append('video', e.target.files[0]);
+                var na = filaQuery(fila, '.nombre-archivo');
+                if (na) na.textContent = '\u23f3 Subiendo...';
+                try {
+                    const response = await fetch('/upload-video', { method: 'POST', body: formData });
+                    const result = await response.json();
+                    fila.dataset.videoUrl = result.url;
+                    if (na) na.textContent = result.name;
+                } catch (err) {
+                    if (na) na.textContent = '\u274c Error';
+                }
+                actualizarResumenFila(fila);
+            });
+
+            fila.querySelector('.btn-editar-video').addEventListener('click', function () { abrirModalVideo(fila); });
+            fila.querySelector('.btn-play').addEventListener('click', function () {
+                if (fila.dataset.videoUrl) socket.emit('play_video', urlVideoAbs(fila.dataset.videoUrl));
+            });
+            fila.querySelector('.btn-borrar').addEventListener('click', function () {
+                if (modalVideoFila === fila) cerrarModalVideo();
+                fila.remove();
+                persistirVideosEnNube();
+            });
+
+            if (datos) {
+                fila.querySelector('.check-enabled').checked = datos.enabled;
+                selectTrigger.value = datos.trigger;
+                inputValor.value = datos.valor || '';
+                if (datos.nombreLista) inputNombreLista.value = datos.nombreLista;
+                if (datos.nombreTexto) inputTexto.value = datos.nombreTexto;
+                if (datos.comandoChat) inputComando.value = datos.comandoChat;
+                if (datos.soloUsuarioChat) inputComandoUsuario.value = datos.soloUsuarioChat;
+                if (datos.nombreRegalo) {
+                    customDropdown.dataset.value = datos.nombreRegalo;
+                    var cdt = filaQuery(fila, '.cd-text');
+                    if (cdt) cdt.textContent = datos.nombreRegalo.replace(/_/g, ' ');
+                    const found = catalogoRegalos.find(function (r) { return r.nombre === datos.nombreRegalo; });
+                    if (found) {
+                        var ci = filaQuery(fila, '.cd-btn-img');
+                        if (ci) { ci.src = found.imagen; ci.style.display = 'block'; }
+                    }
+                }
+                if (datos.videoUrl) {
+                    fila.dataset.videoUrl = datos.videoUrl;
+                    var na2 = filaQuery(fila, '.nombre-archivo');
+                    if (na2) na2.textContent = datos.videoName || 'Video guardado';
+                }
+            }
+            selectTrigger.dispatchEvent(new Event('change'));
+            actualizarResumenFila(fila);
+            return fila;
+        }
+
+        document.getElementById('btn-crear').addEventListener('click', function () {
+            if (!puedeAgregarAlertaVideo()) {
+                alert('Plan gratuito: solo puedes tener hasta ' + PLAN_GRATIS_MAX_ALERTAS_VIDEO + ' alertas de video. Pasa a Premium para ilimitadas.');
+                return;
+            }
+            var filaN = crearFilaVideo(null);
+            abrirModalVideo(filaN);
+        });
+
+        document.getElementById('modal-video-alerta-cerrar').addEventListener('click', function () { cerrarModalVideo(); });
+        document.getElementById('modal-video-alerta-listo').addEventListener('click', function () { cerrarModalVideo({ persist: true }); });
+        document.getElementById('modal-video-alerta-backdrop').addEventListener('click', function () { cerrarModalVideo(); });
+
+        let likesPorUsuario = {};
+        let totalLikesGlobales = 0;
+
+        function normalizarTextoChat(s) {
+            return String(s || '').trim().toLowerCase();
+        }
+
+        function mensajeCoincideComando(mensajeNorm, comandoNorm) {
+            if (!comandoNorm) return false;
+            if (mensajeNorm === comandoNorm) return true;
+            var primera = mensajeNorm.split(/\s+/)[0];
+            return primera === comandoNorm;
+        }
+
+        socket.on('chat', function (data) {
+            var mensajeRaw = (data.comment || data.texto || data.text || data.query || '').trim();
+            var mensaje = normalizarTextoChat(mensajeRaw);
+            if (!mensaje) return;
+
+            document.querySelectorAll('.fila-video').forEach(function (fila) {
+                if (!fila.querySelector('.check-enabled').checked || !fila.dataset.videoUrl) return;
+                var st = filaQuery(fila, '.select-trigger');
+                var ic = filaQuery(fila, '.input-comando');
+                if (!st || !ic) return;
+                var trigger = st.value;
+                var comandoAsignado = normalizarTextoChat(ic.value);
+                if (trigger === 'chat_command' && mensajeCoincideComando(mensaje, comandoAsignado)) {
+                    var iu = filaQuery(fila, '.input-comando-usuario');
+                    var soloRaw = (iu && iu.value) || '';
+                    var soloU = normalizarTextoChat(String(soloRaw).replace(/^@+/, ''));
+                    if (soloU) {
+                        var quienChat = normalizarTextoChat(String(data.uniqueId || data.user || '').replace(/^@+/, ''));
+                        if (quienChat !== soloU) return;
+                    }
+                    socket.emit('play_video', urlVideoAbs(fila.dataset.videoUrl));
+                }
+            });
+        });
+
+        socket.on('gift', function (data) {
+            let monedasBase = data.diamondCount !== undefined ? data.diamondCount : (data.giftDetails && data.giftDetails.diamondCount || 0);
+            let nombreTikTok = (data.giftName || '').toLowerCase();
+
+            document.querySelectorAll('.fila-video').forEach(function (fila) {
+                if (!fila.querySelector('.check-enabled').checked || !fila.dataset.videoUrl) return;
+                var st = filaQuery(fila, '.select-trigger');
+                var iv = filaQuery(fila, '.input-valor');
+                var intxt = filaQuery(fila, '.input-nombre-texto');
+                var dd = filaQuery(fila, '.custom-dropdown-container');
+                if (!st) return;
+                const trigger = st.value;
+                const valorRequerido = parseInt(iv && iv.value, 10) || 0;
+                const nombreTextoRequerido = (intxt && intxt.value || '').toLowerCase();
+                const nombreRegaloRequerido = (dd && dd.dataset.value || '').toLowerCase();
+
+                let reproducir = false;
+                if (trigger === 'any_gift') reproducir = true;
+                if (trigger === 'coins_exact' && monedasBase === valorRequerido) reproducir = true;
+                if (trigger === 'coins_min' && monedasBase >= valorRequerido) reproducir = true;
+                if (trigger === 'gift_text' && nombreTikTok.indexOf(nombreTextoRequerido) !== -1) reproducir = true;
+                if (trigger === 'gift_dropdown') {
+                    const partes = nombreRegaloRequerido.split('_');
+                    const idRegaloConfig = partes[partes.length - 1];
+                    const nombreLimpioConfig = partes.slice(0, -1).join(' ');
+                    if (String(data.giftId) === String(idRegaloConfig) || nombreTikTok.indexOf(nombreLimpioConfig) !== -1) {
+                        reproducir = true;
+                    }
+                }
+                if (reproducir) socket.emit('play_video', urlVideoAbs(fila.dataset.videoUrl));
+            });
+        });
+
+        socket.on('like', function (data) {
+            if (!likesPorUsuario[data.uniqueId]) likesPorUsuario[data.uniqueId] = 0;
+            likesPorUsuario[data.uniqueId] += data.likeCount;
+            totalLikesGlobales += data.likeCount;
+
+            document.querySelectorAll('.fila-video').forEach(function (fila) {
+                if (!fila.querySelector('.check-enabled').checked || !fila.dataset.videoUrl) return;
+                var st = filaQuery(fila, '.select-trigger');
+                var iv = filaQuery(fila, '.input-valor');
+                if (!st || !iv) return;
+                const trigger = st.value;
+                const valorRequerido = parseInt(iv.value, 10) || 0;
+                let reproducir = false;
+                if (trigger === 'like_count' && valorRequerido > 0) {
+                    let likesPrevios = likesPorUsuario[data.uniqueId] - data.likeCount;
+                    let metasCruzadas = Math.floor(likesPorUsuario[data.uniqueId] / valorRequerido) - Math.floor(likesPrevios / valorRequerido);
+                    if (metasCruzadas > 0) reproducir = true;
+                }
+                if (trigger === 'like_total' && valorRequerido > 0) {
+                    let likesPrevios = totalLikesGlobales - data.likeCount;
+                    let metasCruzadas = Math.floor(totalLikesGlobales / valorRequerido) - Math.floor(likesPrevios / valorRequerido);
+                    if (metasCruzadas > 0) reproducir = true;
+                }
+                if (reproducir) socket.emit('play_video', urlVideoAbs(fila.dataset.videoUrl));
+            });
+        });
+
+        socket.on('follow', function () { procesarEventoSimple('follow'); });
+        socket.on('subscribe', function () { procesarEventoSimple('subscribe'); });
+        socket.on('share', function () { procesarEventoSimple('share'); });
+
+        function procesarEventoSimple(tipo) {
+            document.querySelectorAll('.fila-video').forEach(function (fila) {
+                if (!fila.querySelector('.check-enabled').checked || !fila.dataset.videoUrl) return;
+                var st = filaQuery(fila, '.select-trigger');
+                if (st && st.value === tipo) {
+                    socket.emit('play_video', urlVideoAbs(fila.dataset.videoUrl));
+                }
+            });
+        }
+
+        async function inicializarVideosPanelDesdeStorage() {
+            await inicializarCatalogo();
+            cerrarModalVideo();
+            cerrarModalSeleccionRegalo();
+            var lista = document.getElementById('lista-videos');
+            if (lista) lista.innerHTML = '';
+            var savedVideos = [];
+            try {
+                var raw = localStorage.getItem('videos_elarbol');
+                if (raw) savedVideos = JSON.parse(raw);
+            } catch (e) {}
+            if (!Array.isArray(savedVideos)) savedVideos = [];
+            if (!esPlanPremiumPanel() && savedVideos.length > PLAN_GRATIS_MAX_ALERTAS_VIDEO) {
+                savedVideos = savedVideos.slice(0, PLAN_GRATIS_MAX_ALERTAS_VIDEO);
+                try {
+                    localStorage.setItem('videos_elarbol', JSON.stringify(savedVideos));
+                } catch (e2) {}
+            }
+            savedVideos.forEach(function (s) { crearFilaVideo(s); });
+            if (savedVideos.length === 0) crearFilaVideo(null);
+        }
+        window.addEventListener('message', function (e) {
+            try {
+                if (!e.data || e.data.type !== 'mitikfinity_videos_reload') return;
+                if (e.origin && e.origin !== window.location.origin && window.location.origin && window.location.origin !== 'null') return;
+                void inicializarVideosPanelDesdeStorage();
+            } catch (err) {}
+        });
+        window.addEventListener('load', function () {
+            void inicializarVideosPanelDesdeStorage();
+        });
+    </script>
+</body>
+</html>

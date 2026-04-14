@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Overlay Comandos Música</title>
+  <style>
+    body { margin: 0; background: transparent; font-family: Inter, Arial, sans-serif; }
+    .box { width: 430px; margin: 16px; background: rgba(10,14,24,.75); border: 1px solid rgba(29,185,84,.45); border-radius: 12px; padding: 10px; }
+    .title { color: #1db954; font-size: 12px; font-weight: 900; margin-bottom: 8px; }
+    .item { color: #e2e8f0; font-size: 13px; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,.08); }
+    .item:last-child { border-bottom: 0; }
+    .u { color: #22d3ee; font-weight: 700; }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <div class="title">COMANDOS DE MÚSICA</div>
+    <div id="list"></div>
+  </div>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/js/overlay_room.js?v=1"></script>
+  <script>
+    const socket = io();
+    const params = new URLSearchParams(window.location.search);
+    const user = (params.get('user') || '').trim().toLowerCase().replace(/^@+/, '');
+    if (user) setupOverlaySocketRoom(socket, user);
+
+    const list = document.getElementById('list');
+    const logs = [];
+    function push(text) {
+      logs.unshift(text);
+      if (logs.length > 5) logs.pop();
+      list.innerHTML = logs.map(x => `<div class="item">${x}</div>`).join('');
+    }
+    socket.on('spotify_request', (d) => push(`<span class="u">@${d?.user || 'usuario'}</span> pidió: ${d?.query || '(sin texto)'}`));
+    socket.on('spotify_skip', (d) => push(`<span class="u">@${d?.user || 'usuario'}</span> ejecutó !skip`));
+    socket.on('nuevo_live', () => {
+      logs.length = 0;
+      list.innerHTML = '';
+    });
+    window.addEventListener('message', (event) => {
+      if (!event?.data || event.data.type !== 'overlay_test') return;
+      if (event.data.kind !== 'musica') return;
+      push(`<span class="u">@test_user</span> pidió: Bad Bunny - Monaco`);
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,3875 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gifts Overlays — Mejor regalo y racha</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+        :root {
+            --tf-bg: #0a0c12;
+            --tf-surface: #121826;
+            --tf-surface-2: #161d2e;
+            --tf-surface-elevated: #1a2336;
+            --tf-border: rgba(100, 116, 139, 0.28);
+            --tf-teal: #3dd6c3;
+            --tf-teal-dim: rgba(61, 214, 195, 0.12);
+            --tf-text: #e8edf4;
+            --tf-muted: #8b95a8;
+            --accent: #22c55e;
+            --accent-glow: rgba(34, 197, 94, 0.35);
+        }
+
+        * { box-sizing: border-box; }
+        html, body { height: 100%; margin: 0; width: 100%; }
+        body {
+            background: var(--tf-bg);
+            color: var(--tf-text);
+            font-family: 'Inter', system-ui, sans-serif;
+            font-size: 12px;
+            min-height: 100%;
+            overflow: auto;
+            letter-spacing: 0.01em;
+        }
+
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(61, 214, 195, 0.28); border-radius: 6px; }
+
+        .shell {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            min-height: 100%;
+            width: 100%;
+            padding: 12px 14px 16px;
+            box-sizing: border-box;
+        }
+
+        .panel-hero {
+            margin-bottom: 14px;
+            padding: 10px 12px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, rgba(61, 214, 195, 0.08) 0%, transparent 55%);
+            border: 1px solid var(--tf-border);
+            border-left: 3px solid var(--tf-teal);
+        }
+        .panel-hero__row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 12px;
+        }
+        .panel-hero h1 {
+            margin: 0;
+            font-size: 13px;
+            font-weight: 800;
+            color: var(--tf-text);
+            letter-spacing: 0.04em;
+        }
+        .panel-hero p {
+            margin: 4px 0 0;
+            font-size: 11px;
+            color: var(--tf-muted);
+            line-height: 1.45;
+            max-width: 720px;
+        }
+        .panel-hero p strong { color: #c8d0dc; font-weight: 600; }
+
+        .sock {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: rgba(30, 41, 59, 0.85);
+            border: 1px solid var(--tf-border);
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--tf-muted);
+            flex-shrink: 0;
+        }
+        .sock.ok { color: #86efac; border-color: rgba(34, 197, 94, 0.3); }
+        .sock .dot { width: 7px; height: 7px; border-radius: 50%; background: #ef4444; }
+        .sock.ok .dot { background: var(--accent); }
+
+        .card-actions {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .tb-btn {
+            position: relative;
+            border: 1px solid var(--tf-border);
+            background: linear-gradient(180deg, var(--tf-surface-2) 0%, #0f141f 100%);
+            color: var(--tf-text);
+            border-radius: 8px;
+            padding: 7px 14px;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+        }
+        .tb-btn:hover {
+            transform: translateY(-1px);
+            border-color: rgba(100, 116, 139, 0.5);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.45);
+        }
+        .tb-btn:active {
+            transform: translateY(0) scale(0.97);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+        }
+        .tb-btn.primary {
+            background: linear-gradient(180deg, rgba(34, 197, 94, 0.22) 0%, rgba(22, 101, 52, 0.35) 100%);
+            border-color: rgba(34, 197, 94, 0.45);
+            color: var(--accent);
+        }
+        .tb-btn.primary:hover {
+            border-color: rgba(34, 197, 94, 0.65);
+            box-shadow: 0 4px 14px var(--accent-glow);
+        }
+
+        .btn-copy {
+            flex-shrink: 0;
+            padding: 7px 12px;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+        }
+
+        .stack-scroll {
+            flex: 1 1 auto;
+            min-height: 0;
+            overflow-y: auto;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            padding-right: 4px;
+        }
+
+        .glass {
+            background: var(--tf-surface);
+            border: 1px solid var(--tf-border);
+            box-shadow: 0 6px 28px rgba(0, 0, 0, 0.4);
+            border-radius: 12px;
+        }
+
+        .card {
+            padding: 16px;
+            border-radius: 12px;
+            flex-shrink: 0;
+            position: relative;
+            overflow: hidden;
+        }
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 3px;
+            height: 100%;
+            background: linear-gradient(180deg, var(--tf-teal), transparent);
+            opacity: 0.7;
+            border-radius: 12px 0 0 12px;
+        }
+        .card h2 {
+            margin: 0 0 8px 0;
+            font-size: 15px;
+            color: var(--tf-teal);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+        }
+        .card-desc {
+            margin: 0;
+            color: var(--tf-muted);
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        .card--premium-gated { position: relative; }
+        .premium-gate {
+            position: absolute;
+            inset: 0;
+            z-index: 8;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px 16px;
+            background: rgba(8, 10, 16, 0.88);
+            backdrop-filter: blur(8px);
+            border-radius: 12px;
+        }
+        .premium-gate[hidden] { display: none !important; }
+        .card--premium-gated.is-locked .premium-gate__content {
+            filter: blur(1.5px);
+            pointer-events: none;
+            user-select: none;
+            opacity: 0.55;
+        }
+        .premium-gate__icon { font-size: 28px; line-height: 1; margin-bottom: 8px; }
+        .premium-gate__title {
+            font-size: 13px;
+            font-weight: 800;
+            color: #fbbf24;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+        .premium-gate__sub {
+            font-size: 11px;
+            color: var(--tf-muted);
+            line-height: 1.45;
+            max-width: 260px;
+        }
+        /* Candado ligero: se ve el overlay detrás (Mejor regalo y Gift VS multi) */
+        .premium-gate--peek {
+            background: rgba(8, 10, 16, 0.38);
+            backdrop-filter: blur(1.5px);
+        }
+        .card--premium-mejor.is-locked .premium-gate__content,
+        .card--premium-gvm.is-locked .premium-gate__content,
+        .card--premium-batalla.is-locked .premium-gate__content,
+        .card--premium-batalla-likes.is-locked .premium-gate__content {
+            filter: none;
+            opacity: 0.97;
+            pointer-events: none;
+            user-select: none;
+        }
+
+        .overlay-card-content {
+            display: flex;
+            gap: 18px;
+            align-items: flex-start;
+            flex-wrap: wrap;
+        }
+        .overlay-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 200px;
+            padding-left: 4px;
+        }
+
+        .url-row {
+            display: flex;
+            gap: 8px;
+            align-items: stretch;
+            margin-top: 12px;
+        }
+        .url-box {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            align-items: center;
+            background: rgba(8, 10, 16, 0.85);
+            padding: 8px 10px;
+            border-radius: 8px;
+            border: 1px solid var(--tf-border);
+        }
+        .url-input {
+            flex-grow: 1;
+            min-width: 0;
+            background: transparent;
+            border: none;
+            color: var(--tf-teal);
+            font-family: ui-monospace, monospace;
+            font-size: 10px;
+            outline: none;
+            padding: 0;
+        }
+
+        .overlay-preview-container {
+            width: 260px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+        .preview-label {
+            font-size: 10px;
+            color: var(--tf-muted);
+            text-transform: uppercase;
+            font-weight: 700;
+            text-align: center;
+            letter-spacing: 0.08em;
+        }
+
+        .preview-box {
+            container-type: inline-size;
+            width: 100%;
+            height: calc(260px * 450 / 800);
+            max-height: 200px;
+            border-radius: 8px;
+            border: 1px solid var(--tf-border);
+            overflow: hidden;
+            background-color: #0a0c10;
+            background-image:
+                linear-gradient(45deg, #12151c 25%, transparent 25%, transparent 75%, #12151c 75%, #12151c),
+                linear-gradient(45deg, #12151c 25%, transparent 25%, transparent 75%, #12151c 75%, #12151c);
+            background-size: 18px 18px;
+            background-position: 0 0, 9px 9px;
+            position: relative;
+        }
+        .preview-shim {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+        .preview-shim iframe {
+            border: none;
+            pointer-events: none;
+            flex-shrink: 0;
+            transform-origin: top center;
+            width: 800px;
+            height: 450px;
+            position: absolute;
+            left: 50%;
+            top: 0;
+            transform: translateX(-50%) scale(calc(100cqw / 800px));
+        }
+        .preview-box--gvg {
+            height: calc(260px * 520 / 850);
+            max-height: 210px;
+        }
+        .preview-shim--gvg iframe {
+            width: 850px;
+            height: 520px;
+            transform: translateX(-50%) scale(calc(100cqw / 850px));
+        }
+
+        /* Altura fija: con height:auto el shim (height:100%) colapsa y el iframe absolute no deja de verse. */
+        .preview-box--batalla {
+            height: 300px;
+            max-height: 320px;
+        }
+        .preview-shim--batalla iframe {
+            width: 400px;
+            height: 520px;
+            transform: translateX(-50%) scale(calc(100cqw / 400px));
+        }
+
+        .gvs-config-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 10px 12px;
+            margin-bottom: 12px;
+            align-items: end;
+        }
+        .gvs-actions-extra {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 10px;
+        }
+        .gvs-manual-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px 16px;
+            align-items: center;
+            margin-top: 8px;
+            padding: 8px 0;
+            border-top: 1px solid rgba(100, 116, 139, 0.2);
+        }
+        .gvs-manual-block {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 11px;
+            color: var(--tf-muted);
+            font-weight: 600;
+        }
+        .gvs-manual-block span.num {
+            min-width: 28px;
+            text-align: center;
+            color: var(--tf-text);
+            font-weight: 800;
+            font-size: 13px;
+        }
+        .gvs-mini {
+            padding: 4px 10px;
+            font-size: 11px;
+            min-width: 32px;
+        }
+        .gvs-pick-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .gvs-thumb {
+            flex-shrink: 0;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            border: 1px solid var(--tf-border);
+            object-fit: cover;
+            background: rgba(0, 0, 0, 0.35);
+            display: none;
+        }
+        .gvs-thumb.is-on {
+            display: block;
+        }
+        .gvm-row-tools {
+            display: flex;
+            gap: 8px;
+            align-items: flex-end;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+        .gvm-rows-count-input {
+            width: 52px;
+            padding: 6px 8px;
+            font-size: 12px;
+        }
+        .gvm-sides {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px 20px;
+            align-items: start;
+            margin-bottom: 10px;
+        }
+        @media (max-width: 520px) {
+            .gvm-sides {
+                grid-template-columns: 1fr;
+            }
+        }
+        .gvm-side {
+            min-width: 0;
+            padding: 0;
+            border: none;
+            background: transparent;
+        }
+        .gvm-side-title {
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            color: var(--tf-teal);
+            margin-bottom: 8px;
+        }
+        .gvm-slot {
+            margin-bottom: 8px;
+        }
+        .gvm-slot:last-child {
+            margin-bottom: 0;
+        }
+        .gvm-slot .gvs-pick-row {
+            margin: 0;
+        }
+        /* Misma vista previa que Gift VS Gift: iframe 850×520 */
+        .preview-box--gvm {
+            height: calc(260px * 520 / 850);
+            max-height: 210px;
+        }
+        .preview-shim--gvm iframe {
+            width: 850px;
+            height: 520px;
+            transform: translateX(-50%) scale(calc(100cqw / 850px));
+        }
+        .gvs-pick-btn {
+            flex-shrink: 0;
+            white-space: nowrap;
+            padding: 8px 12px;
+            font-size: 11px;
+        }
+
+        /* Modal rejilla regalos (mismo patrón que index.html) */
+        .gvs-modal-seleccion-regalo {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 1000040;
+            align-items: center;
+            justify-content: center;
+            padding: 12px;
+            background: rgba(8, 10, 16, 0.92);
+            backdrop-filter: blur(6px);
+            box-sizing: border-box;
+        }
+        .gvs-modal-seleccion-regalo.show { display: flex; }
+        .gvs-modal-seleccion-regalo-inner {
+            width: min(96vw, 1400px);
+            height: min(92vh, 900px);
+            max-height: 92vh;
+            background: var(--tf-surface);
+            border: 1px solid var(--tf-border);
+            border-radius: 14px;
+            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            min-height: 0;
+        }
+        .gvs-modal-seleccion-regalo-header {
+            flex-shrink: 0;
+            padding: 14px 18px;
+            border-bottom: 1px solid var(--tf-border);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            background: var(--tf-surface-elevated);
+        }
+        .gvs-modal-seleccion-regalo-header h3 {
+            margin: 0;
+            font-size: 17px;
+            font-weight: 800;
+            color: #fff;
+            flex: 1 1 auto;
+        }
+        .gvs-regalo-modal-filtro {
+            flex: 1 1 200px;
+            max-width: 360px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid var(--tf-border);
+            background: rgba(10, 12, 18, 0.9);
+            color: var(--tf-text);
+            font-size: 13px;
+            outline: none;
+        }
+        .gvs-regalo-modal-filtro:focus { border-color: var(--tf-teal); }
+        .gvs-btn-cerrar-modal-regalo {
+            background: transparent;
+            border: none;
+            color: var(--tf-muted);
+            font-size: 26px;
+            line-height: 1;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 6px;
+        }
+        .gvs-btn-cerrar-modal-regalo:hover { color: #fff; background: rgba(255, 255, 255, 0.06); }
+        #gvs-regalo-modal-scroll {
+            flex: 1;
+            min-height: 0;
+            overflow: hidden;
+            padding: 14px 16px 18px;
+            background: var(--tf-bg);
+        }
+        #gvs-grid-regalos-modal {
+            display: grid;
+            gap: 8px;
+            align-content: start;
+            justify-items: stretch;
+            width: 100%;
+            min-height: 0;
+        }
+        .gvs-modal-seleccion-regalo .regalo-modal-tile {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 6px;
+            padding: 10px 6px;
+            border: 1px solid var(--tf-border);
+            border-radius: 10px;
+            background: rgba(15, 18, 26, 0.95);
+            cursor: pointer;
+            font-family: inherit;
+            color: var(--tf-text);
+            transition: border-color 0.15s, background 0.15s, transform 0.12s, box-shadow 0.15s;
+            min-width: 0;
+            min-height: 88px;
+        }
+        .gvs-modal-seleccion-regalo .regalo-modal-tile:hover {
+            border-color: var(--tf-teal);
+            background: rgba(61, 214, 195, 0.1);
+            transform: translateY(-1px);
+        }
+        .gvs-modal-seleccion-regalo .regalo-modal-tile.is-selected {
+            border-color: #22c55e;
+            box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.35);
+        }
+        .gvs-modal-seleccion-regalo .regalo-modal-tile img {
+            width: 44px;
+            height: 44px;
+            object-fit: contain;
+            flex-shrink: 0;
+        }
+        .gvs-modal-seleccion-regalo .regalo-modal-tile-name {
+            font-size: 10px;
+            font-weight: 600;
+            text-align: center;
+            line-height: 1.25;
+            word-break: break-word;
+            text-transform: capitalize;
+            color: #e2e8f0;
+            max-width: 100%;
+        }
+
+        @media (max-width: 720px) {
+            .overlay-preview-container {
+                width: 100%;
+                max-width: 280px;
+                margin-left: auto;
+                margin-right: auto;
+            }
+        }
+
+        /* Modal (mismo patrón que rankings) */
+        .modal-backdrop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 1000;
+            background: rgba(4, 6, 12, 0.72);
+            backdrop-filter: blur(6px);
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            animation: fadeIn 0.2s ease;
+        }
+        .modal-backdrop.open { display: flex; }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .modal-panel {
+            width: 100%;
+            max-width: 420px;
+            max-height: 90vh;
+            overflow-y: auto;
+            background: var(--tf-surface);
+            border: 1px solid var(--tf-border);
+            border-radius: 14px;
+            box-shadow: 0 24px 56px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(61, 214, 195, 0.06);
+            animation: modalIn 0.22s ease;
+        }
+        @keyframes modalIn {
+            from { opacity: 0; transform: scale(0.96) translateY(8px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .modal-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--tf-border);
+            background: var(--tf-teal-dim);
+        }
+        .modal-head h2 { margin: 0; font-size: 14px; font-weight: 800; color: var(--tf-text); }
+        .modal-close {
+            background: transparent;
+            border: none;
+            color: var(--tf-muted);
+            font-size: 22px;
+            line-height: 1;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 8px;
+            transition: background 0.15s, color 0.15s, transform 0.15s;
+        }
+        .modal-close:hover { color: var(--tf-text); background: rgba(0, 0, 0, 0.25); }
+        .modal-close:active { transform: scale(0.92); }
+        .modal-body { padding: 16px 18px; }
+        .modal-foot {
+            padding: 12px 16px;
+            border-top: 1px solid var(--tf-border);
+            display: flex;
+            justify-content: flex-end;
+        }
+        .modal-foot .tb-btn.primary { min-width: 100px; }
+
+        .gift-config-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 12px 14px;
+            align-items: end;
+        }
+        .gf-field { display: flex; flex-direction: column; gap: 6px; }
+        .gf-field label { font-size: 10px; color: var(--tf-muted); font-weight: 600; }
+        .gf-field input[type="text"],
+        .gf-field input[type="number"],
+        .gf-field select {
+            width: 100%;
+            padding: 8px 10px;
+            border-radius: 8px;
+            border: 1px solid var(--tf-border);
+            background: rgba(8, 10, 16, 0.9);
+            color: var(--tf-text);
+            font-size: 12px;
+        }
+        .gf-field select:disabled {
+            opacity: 0.55;
+            cursor: not-allowed;
+        }
+        .gf-field input[type="color"] {
+            width: 100%;
+            height: 36px;
+            border: 1px solid var(--tf-border);
+            border-radius: 8px;
+            padding: 3px;
+            cursor: pointer;
+            background: #0d1117;
+        }
+        .gf-check {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            font-size: 12px;
+            color: #c5cdd8;
+            line-height: 1.45;
+            grid-column: 1 / -1;
+            margin-bottom: 8px;
+        }
+        .gf-check input {
+            margin-top: 3px;
+            accent-color: var(--accent);
+            width: 16px;
+            height: 16px;
+            flex-shrink: 0;
+        }
+        .gf-hint {
+            font-size: 10px;
+            color: var(--tf-muted);
+            margin: 12px 0 0;
+            line-height: 1.5;
+            grid-column: 1 / -1;
+        }
+        .gf-hint code {
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.06);
+            color: #a5b4fc;
+        }
+    </style>
+</head>
+<body>
+    <div class="shell">
+        <header class="panel-hero">
+            <div class="panel-hero__row">
+                <div>
+                    <h1>Gifts overlays</h1>
+                    <p>
+                        <strong>Mejor regalo</strong>: regalo individual más grande (monedas × cantidad) en la sesión.
+                        <strong>Mejor racha</strong>: combo ×n más alto en el directo.
+                        Conecta TikTok en <strong>Inicio</strong> con el mismo usuario que en la URL. Fuente navegador en OBS (800×450). <strong>Gift VS Gift</strong>, <strong>Gift VS multi</strong> y <strong>MVP Top 1</strong>: 850×520; indica los <strong>ID de regalo</strong> de cada equipo (monedas acumuladas por regalo). <strong>Guerra de Héroes</strong> y <strong>Batalla de Likes</strong>: ranking con VS solo entre 1.º y 2.º; <strong>2 o 3</strong> filas visibles; colores y textos desde <strong>Configurar</strong> (likes incluye icono).
+                    </p>
+                </div>
+                <div class="sock" id="sock-status"><span class="dot"></span><span id="sock-txt">Sin conexión</span></div>
+            </div>
+        </header>
+
+        <div class="stack-scroll">
+            <div class="card glass card--premium-gated card--premium-mejor" id="card-premium-mejor-regalo">
+                <div class="premium-gate premium-gate--peek" id="premium-gate-mejor-regalo" hidden>
+                    <span class="premium-gate__icon" aria-hidden="true">🔒</span>
+                    <span class="premium-gate__title">Solo Premium Plus</span>
+                    <span class="premium-gate__sub">Así se ve el overlay; desbloquéalo con Premium para copiar el enlace y configurarlo.</span>
+                </div>
+                <div class="overlay-card-content premium-gate__content">
+                    <div class="overlay-info">
+                        <div class="card-actions">
+                            <button type="button" class="tb-btn" onclick="resetIframe('gift')">Reset</button>
+                            <button type="button" class="tb-btn" onclick="testear('gift')">Testear</button>
+                            <button type="button" class="tb-btn primary" onclick="openConfig('gift')">Configurar</button>
+                        </div>
+                        <h2>🎁 Mejor regalo <span style="font-size:11px;font-weight:700;color:var(--tf-muted);">TikTok · Kick</span></h2>
+                        <p class="card-desc">El usuario que envió el regalo más grande (en monedas) en esta sesión en vivo.</p>
+                        <div class="url-row">
+                            <div class="url-box">
+                                <input type="text" class="url-input" id="url-gift" readonly title="URL OBS" aria-label="URL Mejor regalo">
+                            </div>
+                            <button type="button" class="tb-btn primary btn-copy" onclick="copiar('gift')">Copiar enlace</button>
+                        </div>
+                    </div>
+                    <div class="overlay-preview-container">
+                        <div class="preview-label">Vista previa (en vivo)</div>
+                        <div class="preview-box">
+                            <div class="preview-shim">
+                                <iframe id="if-gift" title="Vista previa Mejor regalo" src="about:blank"></iframe>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card glass">
+                <div class="overlay-card-content">
+                    <div class="overlay-info">
+                        <div class="card-actions">
+                            <button type="button" class="tb-btn" onclick="resetIframe('streak')">Reset</button>
+                            <button type="button" class="tb-btn" onclick="testear('streak')">Testear</button>
+                            <button type="button" class="tb-btn primary" onclick="openConfig('streak')">Configurar</button>
+                        </div>
+                        <h2>🔥 Mejor racha <span style="font-size:11px;font-weight:700;color:var(--tf-muted);">TikTok</span></h2>
+                        <p class="card-desc">La racha de combo más alta (×n) durante el directo.</p>
+                        <div class="url-row">
+                            <div class="url-box">
+                                <input type="text" class="url-input" id="url-streak" readonly title="URL OBS" aria-label="URL Mejor racha">
+                            </div>
+                            <button type="button" class="tb-btn primary btn-copy" onclick="copiar('streak')">Copiar enlace</button>
+                        </div>
+                    </div>
+                    <div class="overlay-preview-container">
+                        <div class="preview-label">Vista previa (en vivo)</div>
+                        <div class="preview-box">
+                            <div class="preview-shim">
+                                <iframe id="if-streak" title="Vista previa Mejor racha" src="about:blank"></iframe>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card glass">
+                <div class="overlay-card-content">
+                    <div class="overlay-info">
+                        <div class="card-actions">
+                            <button type="button" class="tb-btn" onclick="resetIframe('top1')">Reset</button>
+                            <button type="button" class="tb-btn" onclick="testear('top1')">Testear</button>
+                            <button type="button" class="tb-btn primary" onclick="openConfig('top1')">Configurar</button>
+                        </div>
+                        <h2>👑 MVP: Top 1 donador <span style="font-size:11px;font-weight:700;color:var(--tf-muted);">TikTok</span></h2>
+                        <p class="card-desc">Destaca al máximo donador de regalos (monedas) de la sesión, con cabecera y corona. Misma resolución que Gift VS (850×520).</p>
+                        <div class="url-row">
+                            <div class="url-box">
+                                <input type="text" class="url-input" id="url-top1" readonly title="URL OBS" aria-label="URL MVP Top 1">
+                            </div>
+                            <button type="button" class="tb-btn primary btn-copy" onclick="copiar('top1')">Copiar enlace</button>
+                        </div>
+                    </div>
+                    <div class="overlay-preview-container">
+                        <div class="preview-label">Vista previa (850×520)</div>
+                        <div class="preview-box preview-box--gvg">
+                            <div class="preview-shim preview-shim--gvg">
+                                <iframe id="if-top1" title="Vista previa MVP Top 1" src="about:blank"></iframe>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card glass card--premium-gated card--premium-batalla" id="card-premium-batalla">
+                <div class="premium-gate premium-gate--peek" id="premium-gate-batalla" hidden>
+                    <span class="premium-gate__icon" aria-hidden="true">&#128274;</span>
+                    <span class="premium-gate__title">Solo Premium Plus</span>
+                    <span class="premium-gate__sub">Así se ve el overlay; desbloquéalo con Premium para copiar el enlace y configurarlo.</span>
+                </div>
+                <div class="overlay-card-content premium-gate__content">
+                    <div class="overlay-info">
+                        <div class="card-actions">
+                            <button type="button" class="tb-btn" onclick="resetIframe('batalla')">Reset</button>
+                            <button type="button" class="tb-btn" onclick="testear('batalla')">Testear</button>
+                            <button type="button" class="tb-btn primary" onclick="openConfig('batalla')">Configurar</button>
+                        </div>
+                        <h2>Guerra de Héroes (monedas) <span style="font-size:11px;font-weight:700;color:var(--tf-muted);">TikTok</span></h2>
+                        <p class="card-desc">Top donadores por monedas de regalos. El <strong>VS</strong> solo entre el 1.º y el 2.º. Solo <strong>2 o 3</strong> filas visibles. Personaliza colores y textos en <strong>Configurar</strong>.</p>
+                        <div class="gf-field" style="margin: 10px 0 0;">
+                            <label for="bat-limit-inline">Filas (2 o 3)</label>
+                            <input type="number" id="bat-limit-inline" min="2" max="3" value="3" step="1" style="max-width: 72px; padding: 6px 8px; border-radius: 8px; border: 1px solid var(--tf-border); background: rgba(8,10,16,0.85); color: var(--tf-text); font-size: 12px;">
+                        </div>
+                        <div class="url-row">
+                            <div class="url-box">
+                                <input type="text" class="url-input" id="url-batalla" readonly title="URL OBS" aria-label="URL Guerra de Héroes">
+                            </div>
+                            <button type="button" class="tb-btn primary btn-copy" onclick="copiar('batalla')">Copiar enlace</button>
+                        </div>
+                    </div>
+                    <div class="overlay-preview-container">
+                        <div class="preview-label">Vista previa (en vivo)</div>
+                        <div class="preview-box preview-box--batalla">
+                            <div class="preview-shim preview-shim--batalla">
+                                <iframe id="if-batalla" title="Vista previa Guerra de Héroes" src="about:blank"></iframe>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card glass card--premium-gated card--premium-batalla-likes" id="card-premium-batalla-likes">
+                <div class="premium-gate premium-gate--peek" id="premium-gate-batalla-likes" hidden>
+                    <span class="premium-gate__icon" aria-hidden="true">&#128274;</span>
+                    <span class="premium-gate__title">Solo Premium Plus</span>
+                    <span class="premium-gate__sub">Así se ve el overlay; desbloquéalo con Premium para copiar el enlace y configurarlo.</span>
+                </div>
+                <div class="overlay-card-content premium-gate__content">
+                    <div class="overlay-info">
+                        <div class="card-actions">
+                            <button type="button" class="tb-btn" onclick="resetIframe('batalla_likes')">Reset</button>
+                            <button type="button" class="tb-btn" onclick="testear('batalla_likes')">Testear</button>
+                            <button type="button" class="tb-btn primary" onclick="openConfig('batalla_likes')">Configurar</button>
+                        </div>
+                        <h2>Batalla de Likes <span style="font-size:11px;font-weight:700;color:var(--tf-muted);">TikTok</span></h2>
+                        <p class="card-desc">Ranking por likes en vivo. El <strong>VS</strong> solo entre 1.º y 2.º. Solo <strong>2 o 3</strong> filas visibles. Colores, icono y textos en <strong>Configurar</strong>.</p>
+                        <div class="gf-field" style="margin: 10px 0 0;">
+                            <label for="blk-limit-inline">Filas (2 o 3)</label>
+                            <input type="number" id="blk-limit-inline" min="2" max="3" value="3" step="1" style="max-width: 72px; padding: 6px 8px; border-radius: 8px; border: 1px solid var(--tf-border); background: rgba(8,10,16,0.85); color: var(--tf-text); font-size: 12px;">
+                        </div>
+                        <div class="url-row">
+                            <div class="url-box">
+                                <input type="text" class="url-input" id="url-batalla-likes" readonly title="URL OBS" aria-label="URL Batalla de Likes">
+                            </div>
+                            <button type="button" class="tb-btn primary btn-copy" onclick="copiar('batalla_likes')">Copiar enlace</button>
+                        </div>
+                    </div>
+                    <div class="overlay-preview-container">
+                        <div class="preview-label">Vista previa (en vivo)</div>
+                        <div class="preview-box preview-box--batalla">
+                            <div class="preview-shim preview-shim--batalla">
+                                <iframe id="if-batalla-likes" title="Vista previa Batalla de Likes" src="about:blank"></iframe>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card glass">
+                <div class="overlay-card-content">
+                    <div class="overlay-info">
+                        <div class="card-actions">
+                            <button type="button" class="tb-btn" onclick="resetIframe('gvg')">Reset</button>
+                            <button type="button" class="tb-btn" onclick="testear('gvg')">Testear</button>
+                            <button type="button" class="tb-btn" onclick="refreshGvgIframe()">Refrescar</button>
+                            <button type="button" class="tb-btn" onclick="gvsStop()">Parar</button>
+                        </div>
+                        <h2>⚔️ Gift VS Gift <span style="font-size:11px;font-weight:700;color:var(--tf-muted);">TikTok</span></h2>
+                        <p class="card-desc">Elige dos regalos de la <strong>misma lista</strong> que ya usas en el panel (carpeta de regalos / selector con miniaturas). El archivo suele llamarse <code>nombre_idDeTikTok</code>: en directo se reconoce por ese ID o por el nombre del regalo.</p>
+
+                        <div class="gvs-config-grid">
+                            <div class="gf-field">
+                                <label for="gvs-meta">Meta</label>
+                                <input type="number" id="gvs-meta" value="500" min="1" step="1">
+                            </div>
+                            <div class="gf-field">
+                                <label for="gvs-og">Cuando se alcanza</label>
+                                <select id="gvs-og">
+                                    <option value="increase" selected>Aumentar meta</option>
+                                    <option value="reset">Reiniciar puntos</option>
+                                    <option value="none">Solo aviso (no reinicia)</option>
+                                </select>
+                            </div>
+                            <div class="gf-field">
+                                <label for="gvs-gs">Subir meta en (+)</label>
+                                <input type="number" id="gvs-gs" value="500" min="1" step="1" title="Cuando eliges Aumentar meta">
+                            </div>
+                            <div class="gf-field">
+                                <label for="gvs-win-l">Acción win izq.</label>
+                                <select id="gvs-win-l" disabled title="Próximamente">
+                                    <option>Ninguna</option>
+                                </select>
+                            </div>
+                            <div class="gf-field">
+                                <label for="gvs-win-r">Acción win der.</label>
+                                <select id="gvs-win-r" disabled title="Próximamente">
+                                    <option>Ninguna</option>
+                                </select>
+                            </div>
+                            <div class="gf-field" style="grid-column: 1 / -1;">
+                                <div class="gvs-pick-row">
+                                    <img id="gvs-thumb-l" class="gvs-thumb" alt="">
+                                    <input type="hidden" id="gvs-gl" value="" autocomplete="off">
+                                    <button type="button" class="tb-btn primary gvs-pick-btn" onclick="abrirModalRegaloGvs('L')" title="Abrir lista de regalos">Elegir regalo</button>
+                                </div>
+                            </div>
+                            <div class="gf-field" style="grid-column: 1 / -1;">
+                                <div class="gvs-pick-row">
+                                    <img id="gvs-thumb-r" class="gvs-thumb" alt="">
+                                    <input type="hidden" id="gvs-gr" value="" autocomplete="off">
+                                    <button type="button" class="tb-btn primary gvs-pick-btn" onclick="abrirModalRegaloGvs('R')" title="Abrir lista de regalos">Elegir regalo</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="url-row">
+                            <div class="url-box">
+                                <input type="text" class="url-input" id="url-gvg" readonly title="URL OBS / Live Studio" aria-label="URL Gift VS Gift">
+                            </div>
+                            <button type="button" class="tb-btn primary btn-copy" onclick="copiar('gvg')">Copiar enlace</button>
+                        </div>
+
+                        <div class="gvs-manual-row">
+                            <div class="gvs-manual-block">
+                                Puntos izq. <span class="num" id="gvs-disp-l">0</span>
+                                <button type="button" class="tb-btn gvs-mini" onclick="gvsManual('L', 1)">+</button>
+                                <button type="button" class="tb-btn gvs-mini" onclick="gvsManual('L', -1)">−</button>
+                            </div>
+                            <div class="gvs-manual-block">
+                                Puntos der. <span class="num" id="gvs-disp-r">0</span>
+                                <button type="button" class="tb-btn gvs-mini" onclick="gvsManual('R', 1)">+</button>
+                                <button type="button" class="tb-btn gvs-mini" onclick="gvsManual('R', -1)">−</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="overlay-preview-container">
+                        <div class="preview-label">Vista previa (850×520)</div>
+                        <div class="preview-box preview-box--gvg">
+                            <div class="preview-shim preview-shim--gvg">
+                                <iframe id="if-gvg" title="Vista previa Gift VS Gift" src="about:blank"></iframe>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card glass card--premium-gated card--premium-gvm" id="card-premium-gvm">
+                <div class="premium-gate premium-gate--peek" id="premium-gate-gvm" hidden>
+                    <span class="premium-gate__icon" aria-hidden="true">🔒</span>
+                    <span class="premium-gate__title">Solo Premium Plus</span>
+                    <span class="premium-gate__sub">Así se ve el overlay; desbloquéalo con Premium para copiar el enlace y configurarlo.</span>
+                </div>
+                <div class="overlay-card-content premium-gate__content">
+                    <div class="overlay-info">
+                        <div class="card-actions">
+                            <button type="button" class="tb-btn" onclick="resetIframe('gvm')">Reset</button>
+                            <button type="button" class="tb-btn" onclick="testear('gvm')">Testear</button>
+                            <button type="button" class="tb-btn" onclick="refreshGvmIframe()">Refrescar</button>
+                            <button type="button" class="tb-btn" onclick="gvmStop()">Parar</button>
+                        </div>
+                        <h2>⚔️ Gift VS multi <span style="font-size:11px;font-weight:700;color:var(--tf-muted);">TikTok</span></h2>
+                        <p class="card-desc">Un solo VS en pantalla: las miniaturas son las del <strong>primer</strong> regalo de Lado A y Lado B. Añade más filas en cada columna para contar más tipos; los puntos suman diamantes (× repetición) de cualquier regalo que elijas en ese lado.</p>
+
+                        <div class="gvm-row-tools">
+                            <div class="gf-field" style="margin:0;min-width:100px;">
+                                <label for="gvm-rows-count">Tipos por lado</label>
+                                <input type="number" id="gvm-rows-count" class="gvm-rows-count-input" value="2" min="1" max="12" step="1" title="Cuántos regalos distintos por bando">
+                            </div>
+                            <button type="button" class="tb-btn primary" onclick="gvmAddRow()">+ Añadir</button>
+                            <button type="button" class="tb-btn" onclick="gvmRemoveRow()">− Quitar</button>
+                        </div>
+
+                        <div class="gvs-config-grid" style="margin-bottom:10px;">
+                            <div class="gf-field">
+                                <label for="gvm-meta">Meta</label>
+                                <input type="number" id="gvm-meta" value="500" min="1" step="1">
+                            </div>
+                            <div class="gf-field">
+                                <label for="gvm-og">Al alcanzar meta</label>
+                                <select id="gvm-og">
+                                    <option value="increase" selected>Aumentar meta</option>
+                                    <option value="reset">Reiniciar puntos</option>
+                                    <option value="none">Solo aviso</option>
+                                </select>
+                            </div>
+                            <div class="gf-field">
+                                <label for="gvm-gs">Subir meta (+)</label>
+                                <input type="number" id="gvm-gs" value="500" min="1" step="1">
+                            </div>
+                        </div>
+
+                        <div id="gvm-rows-wrap"></div>
+
+                        <div class="url-row">
+                            <div class="url-box">
+                                <input type="text" class="url-input" id="url-gvm" readonly title="URL OBS / Live Studio" aria-label="URL Gift VS multi">
+                            </div>
+                            <button type="button" class="tb-btn primary btn-copy" onclick="copiar('gvm')">Copiar enlace</button>
+                        </div>
+                    </div>
+                    <div class="overlay-preview-container overlay-preview-container--gvm">
+                        <div class="preview-label">Vista previa (850×520)</div>
+                        <div class="preview-box preview-box--gvm">
+                            <div class="preview-shim preview-shim--gvm">
+                                <iframe id="if-gvm" title="Vista previa Gift VS multi" src="about:blank"></iframe>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="gvs-modal-seleccion-regalo" class="gvs-modal-seleccion-regalo" aria-hidden="true">
+        <div class="gvs-modal-seleccion-regalo-inner" role="dialog" aria-labelledby="gvs-regalo-modal-titulo">
+            <div class="gvs-modal-seleccion-regalo-header">
+                <h3 id="gvs-regalo-modal-titulo">🎁 Elegir regalo</h3>
+                <input type="search" id="gvs-regalo-modal-filtro" class="gvs-regalo-modal-filtro" placeholder="Filtrar por nombre o número…" autocomplete="off">
+                <button type="button" class="gvs-btn-cerrar-modal-regalo" id="gvs-btn-cerrar-modal-regalo" title="Cerrar">×</button>
+            </div>
+            <div id="gvs-regalo-modal-scroll">
+                <div id="gvs-grid-regalos-modal"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-backdrop" id="config-modal-gift" role="dialog" aria-modal="true" aria-labelledby="modal-gift-title">
+        <div class="modal-panel" onclick="event.stopPropagation()">
+            <div class="modal-head">
+                <h2 id="modal-gift-title">Mejor regalo — Apariencia</h2>
+                <button type="button" class="modal-close" onclick="closeConfig('gift')" aria-label="Cerrar">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="gift-config-grid">
+                    <label class="gf-check">
+                        <input type="checkbox" id="gift-title-rainbow" checked>
+                        Título «MEJOR REGALO» con arcoíris (si no, gradiente de 3 colores)
+                    </label>
+                    <div class="gf-field">
+                        <label for="gift-tc1">Gradiente — color 1</label>
+                        <input type="color" id="gift-tc1" value="#ff00aa">
+                    </div>
+                    <div class="gf-field">
+                        <label for="gift-tc2">Gradiente — color 2</label>
+                        <input type="color" id="gift-tc2" value="#00ddff">
+                    </div>
+                    <div class="gf-field">
+                        <label for="gift-tc3">Gradiente — color 3</label>
+                        <input type="color" id="gift-tc3" value="#ffcc00">
+                    </div>
+                    <div class="gf-field">
+                        <label for="gift-nc">Relleno nombre</label>
+                        <input type="color" id="gift-nc" value="#e4e4ee">
+                    </div>
+                    <div class="gf-field">
+                        <label for="gift-ns">Contorno nombre</label>
+                        <input type="color" id="gift-ns" value="#3d3d4a">
+                    </div>
+                    <div class="gf-field">
+                        <label for="gift-vc">Relleno valor</label>
+                        <input type="color" id="gift-vc" value="#e8c4a0">
+                    </div>
+                    <div class="gf-field">
+                        <label for="gift-vs">Contorno valor</label>
+                        <input type="color" id="gift-vs" value="#4a3d2e">
+                    </div>
+                    <div class="gf-field" style="grid-column: 1 / -1;">
+                        <label for="gift-cl">Texto del valor (monedas, COINS…)</label>
+                        <input type="text" id="gift-cl" value="monedas" maxlength="24" placeholder="monedas">
+                    </div>
+                    <p class="gf-hint">Los ajustes se guardan en este navegador y se añaden a la URL de OBS.</p>
+                </div>
+            </div>
+            <div class="modal-foot">
+                <button type="button" class="tb-btn primary" onclick="closeConfig('gift')">Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-backdrop" id="config-modal-streak" role="dialog" aria-modal="true" aria-labelledby="modal-streak-title">
+        <div class="modal-panel" onclick="event.stopPropagation()">
+            <div class="modal-head">
+                <h2 id="modal-streak-title">Mejor racha — Apariencia</h2>
+                <button type="button" class="modal-close" onclick="closeConfig('streak')" aria-label="Cerrar">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="gift-config-grid">
+                    <label class="gf-check">
+                        <input type="checkbox" id="streak-title-rainbow" checked>
+                        Título «MEJOR RACHA» con arcoíris (si no, gradiente de 3 colores)
+                    </label>
+                    <div class="gf-field">
+                        <label for="streak-tc1">Gradiente — color 1</label>
+                        <input type="color" id="streak-tc1" value="#ff00aa">
+                    </div>
+                    <div class="gf-field">
+                        <label for="streak-tc2">Gradiente — color 2</label>
+                        <input type="color" id="streak-tc2" value="#00ddff">
+                    </div>
+                    <div class="gf-field">
+                        <label for="streak-tc3">Gradiente — color 3</label>
+                        <input type="color" id="streak-tc3" value="#ffcc00">
+                    </div>
+                    <div class="gf-field">
+                        <label for="streak-nc">Relleno nombre</label>
+                        <input type="color" id="streak-nc" value="#e4e4ee">
+                    </div>
+                    <div class="gf-field">
+                        <label for="streak-ns">Contorno nombre</label>
+                        <input type="color" id="streak-ns" value="#3d3d4a">
+                    </div>
+                    <div class="gf-field">
+                        <label for="streak-vc">Relleno valor (×n)</label>
+                        <input type="color" id="streak-vc" value="#e8c4a0">
+                    </div>
+                    <div class="gf-field">
+                        <label for="streak-vs">Contorno valor</label>
+                        <input type="color" id="streak-vs" value="#4a3d2e">
+                    </div>
+                    <p class="gf-hint">Mismos parámetros en la URL. Vista previa de imagen: <code>/videos/mejorracha.png</code></p>
+                </div>
+            </div>
+            <div class="modal-foot">
+                <button type="button" class="tb-btn primary" onclick="closeConfig('streak')">Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-backdrop" id="config-modal-top1" role="dialog" aria-modal="true" aria-labelledby="modal-top1-title">
+        <div class="modal-panel" onclick="event.stopPropagation()">
+            <div class="modal-head">
+                <h2 id="modal-top1-title">MVP Top 1 — Apariencia</h2>
+                <button type="button" class="modal-close" onclick="closeConfig('top1')" aria-label="Cerrar">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="gift-config-grid">
+                    <div class="gf-field" style="grid-column: 1 / -1;">
+                        <label for="top1-header-title">Texto de la cabecera</label>
+                        <input type="text" id="top1-header-title" value="MVP: Top 1 Donador" maxlength="80" placeholder="MVP: Top 1 Donador">
+                    </div>
+                    <label class="gf-check">
+                        <input type="checkbox" id="top1-header-rainbow">
+                        Cabecera con arcoíris animado (si no, gradiente de 3 colores)
+                    </label>
+                    <div class="gf-field">
+                        <label for="top1-hc1">Cabecera — color 1</label>
+                        <input type="color" id="top1-hc1" value="#22d3ee">
+                    </div>
+                    <div class="gf-field">
+                        <label for="top1-hc2">Cabecera — color 2</label>
+                        <input type="color" id="top1-hc2" value="#06b6d4">
+                    </div>
+                    <div class="gf-field">
+                        <label for="top1-hc3">Cabecera — color 3</label>
+                        <input type="color" id="top1-hc3" value="#2dd4bf">
+                    </div>
+                    <div class="gf-field">
+                        <label for="top1-ng1">Nombre — degradado 1</label>
+                        <input type="color" id="top1-ng1" value="#fffef5">
+                    </div>
+                    <div class="gf-field">
+                        <label for="top1-ng2">Nombre — degradado 2</label>
+                        <input type="color" id="top1-ng2" value="#ffe066">
+                    </div>
+                    <div class="gf-field">
+                        <label for="top1-ng3">Nombre — degradado 3</label>
+                        <input type="color" id="top1-ng3" value="#daa520">
+                    </div>
+                    <div class="gf-field">
+                        <label for="top1-vc">Color cantidad</label>
+                        <input type="color" id="top1-vc" value="#e8e8ff">
+                    </div>
+                    <div class="gf-field">
+                        <label for="top1-vs">Sombra / contorno cantidad</label>
+                        <input type="color" id="top1-vs" value="#000000">
+                    </div>
+                    <div class="gf-field">
+                        <label for="top1-cc">Color icono moneda</label>
+                        <input type="color" id="top1-cc" value="#ffd700">
+                    </div>
+                    <div class="gf-field" style="grid-column: 1 / -1;">
+                        <label for="top1-cl">Texto tras el número (opcional)</label>
+                        <input type="text" id="top1-cl" value="" maxlength="32" placeholder="Ej. monedas">
+                    </div>
+                    <label class="gf-check">
+                        <input type="checkbox" id="top1-sh" checked>
+                        Mostrar cabecera (corona + título)
+                    </label>
+                    <label class="gf-check">
+                        <input type="checkbox" id="top1-sc" checked>
+                        Mostrar corona sobre el avatar
+                    </label>
+                    <label class="gf-check">
+                        <input type="checkbox" id="top1-fx" checked>
+                        Efectos (monedas/gemas/chispas animadas)
+                    </label>
+                    <p class="gf-hint">Los ajustes se guardan en este navegador y se añaden a la URL de OBS (850×520).</p>
+                </div>
+            </div>
+            <div class="modal-foot">
+                <button type="button" class="tb-btn primary" onclick="closeConfig('top1')">Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-backdrop" id="config-modal-batalla" role="dialog" aria-modal="true" aria-labelledby="modal-batalla-title">
+        <div class="modal-panel" onclick="event.stopPropagation()">
+            <div class="modal-head">
+                <h2 id="modal-batalla-title">Guerra de Héroes — Apariencia</h2>
+                <button type="button" class="modal-close" onclick="closeConfig('batalla')" aria-label="Cerrar">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="gift-config-grid">
+                    <div class="gf-field">
+                        <label for="bat-limit">Filas visibles (2 o 3)</label>
+                        <input type="number" id="bat-limit" min="2" max="3" value="3" step="1">
+                    </div>
+                    <div class="gf-field">
+                        <label for="bat-rg">Separación entre filas (px)</label>
+                        <input type="number" id="bat-rg" min="0" max="24" value="4" step="1">
+                    </div>
+                    <div class="gf-field" style="grid-column: 1 / -1;">
+                        <label for="bat-ph">Texto mientras no hay datos</label>
+                        <input type="text" id="bat-ph" value="Esperando regalos..." maxlength="120">
+                    </div>
+                    <label class="gf-check">
+                        <input type="checkbox" id="bat-nr" checked>
+                        Nombres con arcoíris animado (si no, gradiente de 3 colores)
+                    </label>
+                    <div class="gf-field">
+                        <label for="bat-ng1">Nombre — color 1</label>
+                        <input type="color" id="bat-ng1" value="#ff006e">
+                    </div>
+                    <div class="gf-field">
+                        <label for="bat-ng2">Nombre — color 2</label>
+                        <input type="color" id="bat-ng2" value="#3a86ff">
+                    </div>
+                    <div class="gf-field">
+                        <label for="bat-ng3">Nombre — color 3</label>
+                        <input type="color" id="bat-ng3" value="#ffbe0b">
+                    </div>
+                    <label class="gf-check">
+                        <input type="checkbox" id="bat-sc" checked>
+                        Mostrar corona en el 1.º
+                    </label>
+                    <div class="gf-field">
+                        <label for="bat-vc">Color cantidad (monedas)</label>
+                        <input type="color" id="bat-vc" value="#fde68a">
+                    </div>
+                    <div class="gf-field">
+                        <label for="bat-vg">Brillo cantidad (color)</label>
+                        <input type="color" id="bat-vg" value="#facc15">
+                    </div>
+                    <div class="gf-field">
+                        <label for="bat-vga">Opacidad brillo cantidad</label>
+                        <input type="number" id="bat-vga" min="0" max="1" step="0.05" value="0.45">
+                    </div>
+                    <div class="gf-field">
+                        <label for="bat-cc">Moneda — relleno</label>
+                        <input type="color" id="bat-cc" value="#ffd700">
+                    </div>
+                    <div class="gf-field">
+                        <label for="bat-cg">Moneda — brillo</label>
+                        <input type="color" id="bat-cg" value="#ffd700">
+                    </div>
+                    <div class="gf-field">
+                        <label for="bat-cga">Opacidad brillo moneda</label>
+                        <input type="number" id="bat-cga" min="0" max="1" step="0.05" value="0.65">
+                    </div>
+                    <p class="gf-hint" style="grid-column:1/-1;margin:0;">Texto <strong>VS</strong></p>
+                    <div class="gf-field">
+                        <label for="bat-vs1">VS — arriba</label>
+                        <input type="color" id="bat-vs1" value="#fff5e6">
+                    </div>
+                    <div class="gf-field">
+                        <label for="bat-vs2">VS — medio</label>
+                        <input type="color" id="bat-vs2" value="#ff6b35">
+                    </div>
+                    <div class="gf-field">
+                        <label for="bat-vs3">VS — abajo</label>
+                        <input type="color" id="bat-vs3" value="#c41e3a">
+                    </div>
+                    <div class="gf-field">
+                        <label for="bat-vxg1">VS — resplandor 1</label>
+                        <input type="color" id="bat-vxg1" value="#38bdf8">
+                    </div>
+                    <div class="gf-field">
+                        <label for="bat-vxga1">Opacidad respl. 1</label>
+                        <input type="number" id="bat-vxga1" min="0" max="1" step="0.05" value="0.55">
+                    </div>
+                    <div class="gf-field">
+                        <label for="bat-vxg2">VS — resplandor 2</label>
+                        <input type="color" id="bat-vxg2" value="#facc15">
+                    </div>
+                    <div class="gf-field">
+                        <label for="bat-vxga2">Opacidad respl. 2</label>
+                        <input type="number" id="bat-vxga2" min="0" max="1" step="0.05" value="0.35">
+                    </div>
+                    <p class="gf-hint" style="grid-column:1/-1;margin:0;">Tarjeta 1.º</p>
+                    <div class="gf-field">
+                        <label for="bat-c1b">Fondo</label>
+                        <input type="color" id="bat-c1b" value="#243040">
+                    </div>
+                    <div class="gf-field">
+                        <label for="bat-c1ba">Opacidad fondo</label>
+                        <input type="number" id="bat-c1ba" min="0" max="1" step="0.05" value="0.72">
+                    </div>
+                    <div class="gf-field">
+                        <label for="bat-c1d">Borde</label>
+                        <input type="color" id="bat-c1d" value="#94a3b8">
+                    </div>
+                    <div class="gf-field">
+                        <label for="bat-c1da">Opacidad borde</label>
+                        <input type="number" id="bat-c1da" min="0" max="1" step="0.05" value="0.5">
+                    </div>
+                    <div class="gf-field">
+                        <label for="bat-c1i1">Interior brillo 1</label>
+                        <input type="color" id="bat-c1i1" value="#38bdf8">
+                    </div>
+                    <div class="gf-field">
+                        <label for="bat-c1i1a">Opac. interior 1</label>
+                        <input type="number" id="bat-c1i1a" min="0" max="1" step="0.05" value="0.08">
+                    </div>
+                    <div class="gf-field">
+                        <label for="bat-c1i2">Interior brillo 2</label>
+                        <input type="color" id="bat-c1i2" value="#94a3b8">
+                    </div>
+                    <div class="gf-field">
+                        <label for="bat-c1i2a">Opac. interior 2</label>
+                        <input type="number" id="bat-c1i2a" min="0" max="1" step="0.05" value="0.06">
+                    </div>
+                    <p class="gf-hint" style="grid-column:1/-1;margin:0;">Tarjeta 2.º</p>
+                    <div class="gf-field">
+                        <label for="bat-c2b">Fondo</label>
+                        <input type="color" id="bat-c2b" value="#1a1c22">
+                    </div>
+                    <div class="gf-field">
+                        <label for="bat-c2ba">Opacidad fondo</label>
+                        <input type="number" id="bat-c2ba" min="0" max="1" step="0.05" value="0.72">
+                    </div>
+                    <div class="gf-field">
+                        <label for="bat-c2d">Borde</label>
+                        <input type="color" id="bat-c2d" value="#646e7d">
+                    </div>
+                    <div class="gf-field">
+                        <label for="bat-c2da">Opacidad borde</label>
+                        <input type="number" id="bat-c2da" min="0" max="1" step="0.05" value="0.75">
+                    </div>
+                    <p class="gf-hint" style="grid-column:1/-1;margin:0;">Tarjetas 3.º en adelante</p>
+                    <div class="gf-field">
+                        <label for="bat-crb">Fondo</label>
+                        <input type="color" id="bat-crb" value="#12161e">
+                    </div>
+                    <div class="gf-field">
+                        <label for="bat-crba">Opacidad fondo</label>
+                        <input type="number" id="bat-crba" min="0" max="1" step="0.05" value="0.75">
+                    </div>
+                    <div class="gf-field">
+                        <label for="bat-crd">Borde</label>
+                        <input type="color" id="bat-crd" value="#5a6476">
+                    </div>
+                    <div class="gf-field">
+                        <label for="bat-crda">Opacidad borde</label>
+                        <input type="number" id="bat-crda" min="0" max="1" step="0.05" value="0.55">
+                    </div>
+                    <p class="gf-hint" style="grid-column:1/-1;margin:0;">Hexágonos de rango</p>
+                    <div class="gf-field">
+                        <label for="bat-h1a">1.º — tono claro</label>
+                        <input type="color" id="bat-h1a" value="#fff8e1">
+                    </div>
+                    <div class="gf-field">
+                        <label for="bat-h1b">1.º — tono oscuro</label>
+                        <input type="color" id="bat-h1b" value="#b8860b">
+                    </div>
+                    <div class="gf-field">
+                        <label for="bat-h2a">2.º — tono claro</label>
+                        <input type="color" id="bat-h2a" value="#f8fafc">
+                    </div>
+                    <div class="gf-field">
+                        <label for="bat-h2b">2.º — tono oscuro</label>
+                        <input type="color" id="bat-h2b" value="#78909c">
+                    </div>
+                    <div class="gf-field">
+                        <label for="bat-h3a">Resto — tono claro</label>
+                        <input type="color" id="bat-h3a" value="#efebe9">
+                    </div>
+                    <div class="gf-field">
+                        <label for="bat-h3b">Resto — tono oscuro</label>
+                        <input type="color" id="bat-h3b" value="#6d4c41">
+                    </div>
+                    <div class="gf-field">
+                        <label for="bat-ht">Número en hexágono</label>
+                        <input type="color" id="bat-ht" value="#1a1206">
+                    </div>
+                    <p class="gf-hint" style="grid-column:1/-1;margin:0;">Avatares</p>
+                    <div class="gf-field">
+                        <label for="bat-a1b">1.º borde</label>
+                        <input type="color" id="bat-a1b" value="#bae6fd">
+                    </div>
+                    <div class="gf-field">
+                        <label for="bat-a1ba">Opac. borde 1.º</label>
+                        <input type="number" id="bat-a1ba" min="0" max="1" step="0.05" value="0.5">
+                    </div>
+                    <div class="gf-field">
+                        <label for="bat-a1g">1.º halo</label>
+                        <input type="color" id="bat-a1g" value="#38bdf8">
+                    </div>
+                    <div class="gf-field">
+                        <label for="bat-a1ga">Opac. halo 1.º</label>
+                        <input type="number" id="bat-a1ga" min="0" max="1" step="0.05" value="0.22">
+                    </div>
+                    <div class="gf-field">
+                        <label for="bat-a2b">2.º borde</label>
+                        <input type="color" id="bat-a2b" value="#b4c5d4">
+                    </div>
+                    <div class="gf-field">
+                        <label for="bat-a2ba">Opac. borde 2.º</label>
+                        <input type="number" id="bat-a2ba" min="0" max="1" step="0.05" value="0.65">
+                    </div>
+                    <div class="gf-field">
+                        <label for="bat-a2g">2.º halo</label>
+                        <input type="color" id="bat-a2g" value="#b4c4d8">
+                    </div>
+                    <div class="gf-field">
+                     
+<div class="modal-backdrop" id="config-modal-batalla-likes" role="dialog" aria-modal="true" aria-labelledby="modal-batalla-likes-title">
+        <div class="modal-panel" onclick="event.stopPropagation()">
+            <div class="modal-head">
+                <h2 id="modal-batalla-likes-title">Batalla de Likes — Apariencia</h2>
+                <button type="button" class="modal-close" onclick="closeConfig('batalla_likes')" aria-label="Cerrar">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="gift-config-grid">
+                    <div class="gf-field">
+                        <label for="blk-limit">Filas visibles (2 o 3)</label>
+                        <input type="number" id="blk-limit" min="2" max="3" value="3" step="1">
+                    </div>
+                    <div class="gf-field">
+                        <label for="blk-rg">Separación entre filas (px)</label>
+                        <input type="number" id="blk-rg" min="0" max="24" value="4" step="1">
+                    </div>
+                    <div class="gf-field" style="grid-column: 1 / -1;">
+                        <label for="blk-ph">Texto mientras no hay datos</label>
+                        <input type="text" id="blk-ph" value="Esperando combatientes..." maxlength="120">
+                    </div>
+                    <div class="gf-field" style="grid-column: 1 / -1;">
+                        <label for="blk-ic">Icono junto a los likes (emoji)</label>
+                        <input type="text" id="blk-ic" value="❤️" maxlength="8" autocomplete="off">
+                    </div>
+                    <label class="gf-check">
+                        <input type="checkbox" id="blk-nr" checked>
+                        Nombres con arcoíris animado (si no, gradiente de 3 colores)
+                    </label>
+                    <div class="gf-field">
+                        <label for="blk-ng1">Nombre — color 1</label>
+                        <input type="color" id="blk-ng1" value="#ff006e">
+                    </div>
+                    <div class="gf-field">
+                        <label for="blk-ng2">Nombre — color 2</label>
+                        <input type="color" id="blk-ng2" value="#3a86ff">
+                    </div>
+                    <div class="gf-field">
+                        <label for="blk-ng3">Nombre — color 3</label>
+                        <input type="color" id="blk-ng3" value="#ffbe0b">
+                    </div>
+                    <label class="gf-check">
+                        <input type="checkbox" id="blk-sc" checked>
+                        Mostrar corona en el 1.º
+                    </label>
+                    <div class="gf-field">
+                        <label for="blk-vc">Color cantidad (monedas)</label>
+                        <input type="color" id="blk-vc" value="#fde68a">
+                    </div>
+                    <div class="gf-field">
+                        <label for="blk-vg">Brillo cantidad (color)</label>
+                        <input type="color" id="blk-vg" value="#facc15">
+                    </div>
+                    <div class="gf-field">
+                        <label for="blk-vga">Opacidad brillo cantidad</label>
+                        <input type="number" id="blk-vga" min="0" max="1" step="0.05" value="0.45">
+                    </div>
+                    <div class="gf-field">
+                        <label for="blk-cc">Moneda — relleno</label>
+                        <input type="color" id="blk-cc" value="#ffd700">
+                    </div>
+                    <div class="gf-field">
+                        <label for="blk-cg">Moneda — brillo</label>
+                        <input type="color" id="blk-cg" value="#ffd700">
+                    </div>
+                    <div class="gf-field">
+                        <label for="blk-cga">Opacidad brillo moneda</label>
+                        <input type="number" id="blk-cga" min="0" max="1" step="0.05" value="0.65">
+                    </div>
+                    <p class="gf-hint" style="grid-column:1/-1;margin:0;">Texto <strong>VS</strong></p>
+                    <div class="gf-field">
+                        <label for="blk-vs1">VS — arriba</label>
+                        <input type="color" id="blk-vs1" value="#fff5e6">
+                    </div>
+                    <div class="gf-field">
+                        <label for="blk-vs2">VS — medio</label>
+                        <input type="color" id="blk-vs2" value="#ff6b35">
+                    </div>
+                    <div class="gf-field">
+                        <label for="blk-vs3">VS — abajo</label>
+                        <input type="color" id="blk-vs3" value="#c41e3a">
+                    </div>
+                    <div class="gf-field">
+                        <label for="blk-vxg1">VS — resplandor 1</label>
+                        <input type="color" id="blk-vxg1" value="#38bdf8">
+                    </div>
+                    <div class="gf-field">
+                        <label for="blk-vxga1">Opacidad respl. 1</label>
+                        <input type="number" id="blk-vxga1" min="0" max="1" step="0.05" value="0.55">
+                    </div>
+                    <div class="gf-field">
+                        <label for="blk-vxg2">VS — resplandor 2</label>
+                        <input type="color" id="blk-vxg2" value="#facc15">
+                    </div>
+                    <div class="gf-field">
+                        <label for="blk-vxga2">Opacidad respl. 2</label>
+                        <input type="number" id="blk-vxga2" min="0" max="1" step="0.05" value="0.35">
+                    </div>
+                    <p class="gf-hint" style="grid-column:1/-1;margin:0;">Tarjeta 1.º</p>
+                    <div class="gf-field">
+                        <label for="blk-c1b">Fondo</label>
+                        <input type="color" id="blk-c1b" value="#243040">
+                    </div>
+                    <div class="gf-field">
+                        <label for="blk-c1ba">Opacidad fondo</label>
+                        <input type="number" id="blk-c1ba" min="0" max="1" step="0.05" value="0.72">
+                    </div>
+                    <div class="gf-field">
+                        <label for="blk-c1d">Borde</label>
+                        <input type="color" id="blk-c1d" value="#94a3b8">
+                    </div>
+                    <div class="gf-field">
+                        <label for="blk-c1da">Opacidad borde</label>
+                        <input type="number" id="blk-c1da" min="0" max="1" step="0.05" value="0.5">
+                    </div>
+                    <div class="gf-field">
+                        <label for="blk-c1i1">Interior brillo 1</label>
+                        <input type="color" id="blk-c1i1" value="#38bdf8">
+                    </div>
+                    <div class="gf-field">
+                        <label for="blk-c1i1a">Opac. interior 1</label>
+                        <input type="number" id="blk-c1i1a" min="0" max="1" step="0.05" value="0.08">
+                    </div>
+                    <div class="gf-field">
+                        <label for="blk-c1i2">Interior brillo 2</label>
+                        <input type="color" id="blk-c1i2" value="#94a3b8">
+                    </div>
+                    <div class="gf-field">
+                        <label for="blk-c1i2a">Opac. interior 2</label>
+                        <input type="number" id="blk-c1i2a" min="0" max="1" step="0.05" value="0.06">
+                    </div>
+                    <p class="gf-hint" style="grid-column:1/-1;margin:0;">Tarjeta 2.º</p>
+                    <div class="gf-field">
+                        <label for="blk-c2b">Fondo</label>
+                        <input type="color" id="blk-c2b" value="#1a1c22">
+                    </div>
+                    <div class="gf-field">
+                        <label for="blk-c2ba">Opacidad fondo</label>
+                        <input type="number" id="blk-c2ba" min="0" max="1" step="0.05" value="0.72">
+                    </div>
+                    <div class="gf-field">
+                        <label for="blk-c2d">Borde</label>
+                        <input type="color" id="blk-c2d" value="#646e7d">
+                    </div>
+                    <div class="gf-field">
+                        <label for="blk-c2da">Opacidad borde</label>
+                        <input type="number" id="blk-c2da" min="0" max="1" step="0.05" value="0.75">
+                    </div>
+                    <p class="gf-hint" style="grid-column:1/-1;margin:0;">Tarjetas 3.º en adelante</p>
+                    <div class="gf-field">
+                        <label for="blk-crb">Fondo</label>
+                        <input type="color" id="blk-crb" value="#12161e">
+                    </div>
+                    <div class="gf-field">
+                        <label for="blk-crba">Opacidad fondo</label>
+                        <input type="number" id="blk-crba" min="0" max="1" step="0.05" value="0.75">
+                    </div>
+                    <div class="gf-field">
+                        <label for="blk-crd">Borde</label>
+                        <input type="color" id="blk-crd" value="#5a6476">
+                    </div>
+                    <div class="gf-field">
+                        <label for="blk-crda">Opacidad borde</label>
+                        <input type="number" id="blk-crda" min="0" max="1" step="0.05" value="0.55">
+                    </div>
+                    <p class="gf-hint" style="grid-column:1/-1;margin:0;">Hexágonos de rango</p>
+                    <div class="gf-field">
+                        <label for="blk-h1a">1.º — tono claro</label>
+                        <input type="color" id="blk-h1a" value="#fff8e1">
+                    </div>
+                    <div class="gf-field">
+                        <label for="blk-h1b">1.º — tono oscuro</label>
+                        <input type="color" id="blk-h1b" value="#b8860b">
+                    </div>
+                    <div class="gf-field">
+                        <label for="blk-h2a">2.º — tono claro</label>
+                        <input type="color" id="blk-h2a" value="#f8fafc">
+                    </div>
+                    <div class="gf-field">
+                        <label for="blk-h2b">2.º — tono oscuro</label>
+                        <input type="color" id="blk-h2b" value="#78909c">
+                    </div>
+                    <div class="gf-field">
+                        <label for="blk-h3a">Resto — tono claro</label>
+                        <input type="color" id="blk-h3a" value="#efebe9">
+                    </div>
+                    <div class="gf-field">
+                        <label for="blk-h3b">Resto — tono oscuro</label>
+                        <input type="color" id="blk-h3b" value="#6d4c41">
+                    </div>
+                    <div class="gf-field">
+                        <label for="blk-ht">Número en hexágono</label>
+                        <input type="color" id="blk-ht" value="#1a1206">
+                    </div>
+                    <p class="gf-hint" style="grid-column:1/-1;margin:0;">Avatares</p>
+                    <div class="gf-field">
+                        <label for="blk-a1b">1.º borde</label>
+                        <input type="color" id="blk-a1b" value="#bae6fd">
+                    </div>
+                    <div class="gf-field">
+                        <label for="blk-a1ba">Opac. borde 1.º</label>
+                        <input type="number" id="blk-a1ba" min="0" max="1" step="0.05" value="0.5">
+                    </div>
+                    <div class="gf-field">
+                        <label for="blk-a1g">1.º halo</label>
+                        <input type="color" id="blk-a1g" value="#38bdf8">
+                    </div>
+                    <div class="gf-field">
+                        <label for="blk-a1ga">Opac. halo 1.º</label>
+                        <input type="number" id="blk-a1ga" min="0" max="1" step="0.05" value="0.22">
+                    </div>
+                    <div class="gf-field">
+                        <label for="blk-a2b">2.º borde</label>
+                        <input type="color" id="blk-a2b" value="#b4c5d4">
+                    </div>
+                    <div class="gf-field">
+                        <label for="blk-a2ba">Opac. borde 2.º</label>
+                        <input type="number" id="blk-a2ba" min="0" max="1" step="0.05" value="0.65">
+                    </div>
+                    <div class="gf-field">
+                        <label for="blk-a2g">2.º halo</label>
+                        <input type="color" id="blk-a2g" value="#b4c4d8">
+                    </div>
+                    <div class="gf-field">
+                        <label for="blk-a2ga">Opac. halo 2.º</label>
+                        <input type="number" id="blk-a2ga" min="0" max="1" step="0.05" value="0.2">
+                    </div>
+                    <div class="gf-field">
+                        <label for="blk-arb">Resto borde</label>
+                        <input type="color" id="blk-arb" value="#a0aab9">
+                    </div>
+                    <div class="gf-field">
+                        <label for="blk-arba">Opac. borde resto</label>
+                        <input type="number" id="blk-arba" min="0" max="1" step="0.05" value="0.45">
+                    </div>
+                    <div class="gf-field">
+                        <label for="blk-arg">Resto halo</label>
+                        <input type="color" id="blk-arg" value="#a0aab9">
+                    </div>
+                    <div class="gf-field">
+                        <label for="blk-arga">Opac. halo resto</label>
+                        <input type="number" id="blk-arga" min="0" max="1" step="0.05" value="0.12">
+                    </div>
+                    <p class="gf-hint" style="grid-column:1/-1;margin:0;">Texto de espera</p>
+                    <div class="gf-field">
+                        <label for="blk-phc">Color</label>
+                        <input type="color" id="blk-phc" value="#e2e8f0">
+                    </div>
+                    <div class="gf-field">
+                        <label for="blk-phca">Opacidad</label>
+                        <input type="number" id="blk-phca" min="0" max="1" step="0.05" value="0.88">
+                    </div>
+                    <div class="gf-field">
+                        <label for="blk-phg">Brillo</label>
+                        <input type="color" id="blk-phg" value="#38bdf8">
+                    </div>
+                    <div class="gf-field">
+                        <label for="blk-phga">Opac. brillo</label>
+                        <input type="number" id="blk-phga" min="0" max="1" step="0.05" value="0.3">
+                    </div>
+                    <p class="gf-hint">Los valores se guardan en este navegador y se añaden a la URL del overlay.</p>
+                </div>
+            </div>
+            <div class="modal-foot">
+                <button type="button" class="tb-btn primary" onclick="closeConfig('batalla_likes')">Guardar</button>
+            </div>
+        </div>
+    </div>   <label for="bat-a2ga">Opac. halo 2.º</label>
+                        <input type="number" id="bat-a2ga" min="0" max="1" step="0.05" value="0.2">
+                    </div>
+                    <div class="gf-field">
+                        <label for="bat-arb">Resto borde</label>
+                        <input type="color" id="bat-arb" value="#a0aab9">
+                    </div>
+                    <div class="gf-field">
+                        <label for="bat-arba">Opac. borde resto</label>
+                        <input type="number" id="bat-arba" min="0" max="1" step="0.05" value="0.45">
+                    </div>
+                    <div class="gf-field">
+                        <label for="bat-arg">Resto halo</label>
+                        <input type="color" id="bat-arg" value="#a0aab9">
+                    </div>
+                    <div class="gf-field">
+                        <label for="bat-arga">Opac. halo resto</label>
+                        <input type="number" id="bat-arga" min="0" max="1" step="0.05" value="0.12">
+                    </div>
+                    <p class="gf-hint" style="grid-column:1/-1;margin:0;">Texto de espera</p>
+                    <div class="gf-field">
+                        <label for="bat-phc">Color</label>
+                        <input type="color" id="bat-phc" value="#e2e8f0">
+                    </div>
+                    <div class="gf-field">
+                        <label for="bat-phca">Opacidad</label>
+                        <input type="number" id="bat-phca" min="0" max="1" step="0.05" value="0.88">
+                    </div>
+                    <div class="gf-field">
+                        <label for="bat-phg">Brillo</label>
+                        <input type="color" id="bat-phg" value="#38bdf8">
+                    </div>
+                    <div class="gf-field">
+                        <label for="bat-phga">Opac. brillo</label>
+                        <input type="number" id="bat-phga" min="0" max="1" step="0.05" value="0.3">
+                    </div>
+                    <p class="gf-hint">Los valores se guardan en este navegador y se añaden a la URL del overlay.</p>
+                </div>
+            </div>
+            <div class="modal-foot">
+                <button type="button" class="tb-btn primary" onclick="closeConfig('batalla')">Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const OVERLAY_VER = '26';
+        const LS_GIFT_STYLE = 'mitik_top_gift_style_v1';
+        const LS_STREAK_STYLE = 'mitik_top_streak_style_v1';
+        const LS_TOP1_STYLE = 'mitik_top1_style_v1';
+        const LS_BATALLA_STYLE = 'mitik_batalla_style_v1';
+        const LS_BATALLA_LIKES_STYLE = 'mitik_batalla_likes_style_v1';
+        const LS_GVS = 'mitik_gift_vs_v1';
+        const socket = io();
+
+        function esPremiumPanel() {
+            try {
+                if (typeof window.parent.esUsuarioPremium === 'function') {
+                    return window.parent.esUsuarioPremium();
+                }
+            } catch (e) {}
+            try {
+                return localStorage.getItem('elarbol_plan') === 'premium';
+            } catch (e2) {
+                return false;
+            }
+        }
+
+        function premiumAlert() {
+            alert('🔒 Solo disponible con plan Premium Plus.\n\nActívalo desde la app o consulta con la agencia.');
+        }
+
+        let _premiumGiftLocked = null;
+        function updatePremiumGateMejorRegalo() {
+            const locked = !esPremiumPanel();
+            if (_premiumGiftLocked === locked) return;
+            _premiumGiftLocked = locked;
+            const card = document.getElementById('card-premium-mejor-regalo');
+            const gate = document.getElementById('premium-gate-mejor-regalo');
+            if (!card || !gate) return;
+            card.classList.toggle('is-locked', locked);
+            gate.hidden = !locked;
+            refreshUrls();
+            try {
+                ifGift.src = buildSrc('gift', true);
+            } catch (e) {}
+        }
+
+        let _premiumGvmLocked = null;
+        function updatePremiumGateGvm() {
+            const locked = !esPremiumPanel();
+            if (_premiumGvmLocked === locked) return;
+            _premiumGvmLocked = locked;
+            const card = document.getElementById('card-premium-gvm');
+            const gate = document.getElementById('premium-gate-gvm');
+            if (!card || !gate) return;
+            card.classList.toggle('is-locked', locked);
+            gate.hidden = !locked;
+            refreshUrls();
+            if (ifGvm) {
+                try {
+                    ifGvm.src = buildSrc('gvm', true);
+                } catch (e) {}
+            }
+        }
+
+        let _premiumVsOverlaysLocked = null;
+        function updatePremiumGateBatallaOverlays() {
+            const locked = !esPremiumPanel();
+            if (_premiumVsOverlaysLocked === locked) return;
+            _premiumVsOverlaysLocked = locked;
+            const cardB = document.getElementById('card-premium-batalla');
+            const gateB = document.getElementById('premium-gate-batalla');
+            const cardL = document.getElementById('card-premium-batalla-likes');
+            const gateL = document.getElementById('premium-gate-batalla-likes');
+            if (cardB && gateB) {
+                cardB.classList.toggle('is-locked', locked);
+                gateB.hidden = !locked;
+            }
+            if (cardL && gateL) {
+                cardL.classList.toggle('is-locked', locked);
+                gateL.hidden = !locked;
+            }
+            refreshUrls();
+            try {
+                if (ifBatalla) ifBatalla.src = buildSrc('batalla', true);
+            } catch (e) {}
+            try {
+                if (ifBatallaLikes) ifBatallaLikes.src = buildSrc('batalla_likes', true);
+            } catch (e) {}
+        }
+
+        const ifGift = document.getElementById('if-gift');
+        const ifStreak = document.getElementById('if-streak');
+        const ifTop1 = document.getElementById('if-top1');
+        const ifBatalla = document.getElementById('if-batalla');
+        const ifGvg = document.getElementById('if-gvg');
+        const ifGvm = document.getElementById('if-gvm');
+        const urlGift = document.getElementById('url-gift');
+        const urlStreak = document.getElementById('url-streak');
+        const urlTop1 = document.getElementById('url-top1');
+        const urlBatalla = document.getElementById('url-batalla');
+        const urlGvg = document.getElementById('url-gvg');
+        const urlGvm = document.getElementById('url-gvm');
+        const gvsDispL = document.getElementById('gvs-disp-l');
+        const gvsDispR = document.getElementById('gvs-disp-r');
+        const modalGift = document.getElementById('config-modal-gift');
+        const modalStreak = document.getElementById('config-modal-streak');
+        const modalTop1 = document.getElementById('config-modal-top1');
+        const modalBatalla = document.getElementById('config-modal-batalla');
+        const ifBatallaLikes = document.getElementById('if-batalla-likes');
+        const urlBatallaLikes = document.getElementById('url-batalla-likes');
+        const modalBatallaLikes = document.getElementById('config-modal-batalla-likes');
+
+        let catalogoRegalosGvs = [];
+
+        function defaultBatallaStyle() {
+            return {
+                limit: 3,
+                nameRainbow: true,
+                ng1: '#ff006e',
+                ng2: '#3a86ff',
+                ng3: '#ffbe0b',
+                valueColor: '#fde68a',
+                valueGlow: '#facc15',
+                valueGlowAlpha: 0.45,
+                coinColor: '#ffd700',
+                coinGlow: '#ffd700',
+                coinGlowAlpha: 0.65,
+                vs1: '#fff5e6',
+                vs2: '#ff6b35',
+                vs3: '#c41e3a',
+                vsGlow1: '#38bdf8',
+                vsGlow1Alpha: 0.55,
+                vsGlow2: '#facc15',
+                vsGlow2Alpha: 0.35,
+                card1Bg: '#243040',
+                card1BgAlpha: 0.72,
+                card1Border: '#94a3b8',
+                card1BorderAlpha: 0.5,
+                card1Inset1: '#38bdf8',
+                card1Inset1Alpha: 0.08,
+                card1Inset2: '#94a3b8',
+                card1Inset2Alpha: 0.06,
+                card2Bg: '#1a1c22',
+                card2BgAlpha: 0.72,
+                card2Border: '#646e7d',
+                card2BorderAlpha: 0.75,
+                restBg: '#12161e',
+                restBgAlpha: 0.75,
+                restBorder: '#5a6476',
+                restBorderAlpha: 0.55,
+                h1a: '#fff8e1',
+                h1b: '#b8860b',
+                h2a: '#f8fafc',
+                h2b: '#78909c',
+                h3a: '#efebe9',
+                h3b: '#6d4c41',
+                hexText: '#1a1206',
+                rowGap: 4,
+                placeholder: 'Esperando regalos...',
+                showCrown: true,
+                avatar1Border: '#bae6fd',
+                avatar1BorderAlpha: 0.5,
+                avatar1Glow: '#38bdf8',
+                avatar1GlowAlpha: 0.22,
+                avatar2Border: '#b4c5d4',
+                avatar2BorderAlpha: 0.65,
+                avatar2Glow: '#b4c4d8',
+                avatar2GlowAlpha: 0.2,
+                restAvatarBorder: '#a0aab9',
+                restAvatarBorderAlpha: 0.45,
+                restAvatarGlow: '#a0aab9',
+                restAvatarGlowAlpha: 0.12,
+                phColor: '#e2e8f0',
+                phColorAlpha: 0.88,
+                phGlow: '#38bdf8',
+                phGlowAlpha: 0.3
+            };
+        }
+
+        function loadBatallaStyle() {
+            try {
+                const raw = localStorage.getItem(LS_BATALLA_STYLE);
+                if (raw) return Object.assign(defaultBatallaStyle(), JSON.parse(raw));
+            } catch (e) {}
+            return defaultBatallaStyle();
+        }
+
+        function saveBatallaStyle(s) {
+            try {
+                localStorage.setItem(LS_BATALLA_STYLE, JSON.stringify(s));
+            } catch (e) {}
+        }
+
+        function num01(v, def) {
+            const n = parseFloat(v);
+            if (Number.isNaN(n)) return def;
+            return Math.max(0, Math.min(1, n));
+        }
+
+        /** Ranking VS: solo 2 o 3 filas visibles (Guerra de Héroes y Batalla de Likes). */
+        function clampVsRankingLimit(v) {
+            const n = parseInt(v, 10);
+            if (n === 2 || n === 3) return n;
+            if (Number.isNaN(n)) return 3;
+            return n < 2 ? 2 : 3;
+        }
+
+        function readBatallaForm() {
+            const lim = clampVsRankingLimit(document.getElementById('bat-limit').value);
+            return {
+                limit: lim,
+                nameRainbow: document.getElementById('bat-nr').checked,
+                ng1: document.getElementById('bat-ng1').value,
+                ng2: document.getElementById('bat-ng2').value,
+                ng3: document.getElementById('bat-ng3').value,
+                valueColor: document.getElementById('bat-vc').value,
+                valueGlow: document.getElementById('bat-vg').value,
+                valueGlowAlpha: num01(document.getElementById('bat-vga').value, 0.45),
+                coinColor: document.getElementById('bat-cc').value,
+                coinGlow: document.getElementById('bat-cg').value,
+                coinGlowAlpha: num01(document.getElementById('bat-cga').value, 0.65),
+                vs1: document.getElementById('bat-vs1').value,
+                vs2: document.getElementById('bat-vs2').value,
+                vs3: document.getElementById('bat-vs3').value,
+                vsGlow1: document.getElementById('bat-vxg1').value,
+                vsGlow1Alpha: num01(document.getElementById('bat-vxga1').value, 0.55),
+                vsGlow2: document.getElementById('bat-vxg2').value,
+                vsGlow2Alpha: num01(document.getElementById('bat-vxga2').value, 0.35),
+                card1Bg: document.getElementById('bat-c1b').value,
+                card1BgAlpha: num01(document.getElementById('bat-c1ba').value, 0.72),
+                card1Border: document.getElementById('bat-c1d').value,
+                card1BorderAlpha: num01(document.getElementById('bat-c1da').value, 0.5),
+                card1Inset1: document.getElementById('bat-c1i1').value,
+                card1Inset1Alpha: num01(document.getElementById('bat-c1i1a').value, 0.08),
+                card1Inset2: document.getElementById('bat-c1i2').value,
+                card1Inset2Alpha: num01(document.getElementById('bat-c1i2a').value, 0.06),
+                card2Bg: document.getElementById('bat-c2b').value,
+                card2BgAlpha: num01(document.getElementById('bat-c2ba').value, 0.72),
+                card2Border: document.getElementById('bat-c2d').value,
+                card2BorderAlpha: num01(document.getElementById('bat-c2da').value, 0.75),
+                restBg: document.getElementById('bat-crb').value,
+                restBgAlpha: num01(document.getElementById('bat-crba').value, 0.75),
+                restBorder: document.getElementById('bat-crd').value,
+                restBorderAlpha: num01(document.getElementById('bat-crda').value, 0.55),
+                h1a: document.getElementById('bat-h1a').value,
+                h1b: document.getElementById('bat-h1b').value,
+                h2a: document.getElementById('bat-h2a').value,
+                h2b: document.getElementById('bat-h2b').value,
+                h3a: document.getElementById('bat-h3a').value,
+                h3b: document.getElementById('bat-h3b').value,
+                hexText: document.getElementById('bat-ht').value,
+                rowGap: Math.min(24, Math.max(0, parseInt(document.getElementById('bat-rg').value, 10) || 4)),
+                placeholder: (document.getElementById('bat-ph').value || 'Esperando regalos...').slice(0, 120),
+                showCrown: document.getElementById('bat-sc').checked,
+                avatar1Border: document.getElementById('bat-a1b').value,
+                avatar1BorderAlpha: num01(document.getElementById('bat-a1ba').value, 0.5),
+                avatar1Glow: document.getElementById('bat-a1g').value,
+                avatar1GlowAlpha: num01(document.getElementById('bat-a1ga').value, 0.22),
+                avatar2Border: document.getElementById('bat-a2b').value,
+                avatar2BorderAlpha: num01(document.getElementById('bat-a2ba').value, 0.65),
+                avatar2Glow: document.getElementById('bat-a2g').value,
+                avatar2GlowAlpha: num01(document.getElementById('bat-a2ga').value, 0.2),
+                restAvatarBorder: document.getElementById('bat-arb').value,
+                restAvatarBorderAlpha: num01(document.getElementById('bat-arba').value, 0.45),
+                restAvatarGlow: document.getElementById('bat-arg').value,
+                restAvatarGlowAlpha: num01(document.getElementById('bat-arga').value, 0.12),
+                phColor: document.getElementById('bat-phc').value,
+                phColorAlpha: num01(document.getElementById('bat-phca').value, 0.88),
+                phGlow: document.getElementById('bat-phg').value,
+                phGlowAlpha: num01(document.getElementById('bat-phga').value, 0.3)
+            };
+        }
+
+        function applyBatallaForm(s) {
+            const d = defaultBatallaStyle();
+            function v(k, def) { return s[k] != null ? s[k] : def; }
+            document.getElementById('bat-limit').value = String(clampVsRankingLimit(v('limit', d.limit)));
+            document.getElementById('bat-rg').value = String(v('rowGap', d.rowGap));
+            document.getElementById('bat-ph').value = v('placeholder', d.placeholder);
+            document.getElementById('bat-nr').checked = v('nameRainbow', d.nameRainbow) !== false;
+            document.getElementById('bat-ng1').value = v('ng1', d.ng1);
+            document.getElementById('bat-ng2').value = v('ng2', d.ng2);
+            document.getElementById('bat-ng3').value = v('ng3', d.ng3);
+            document.getElementById('bat-sc').checked = v('showCrown', d.showCrown) !== false;
+            document.getElementById('bat-vc').value = v('valueColor', d.valueColor);
+            document.getElementById('bat-vg').value = v('valueGlow', d.valueGlow);
+            document.getElementById('bat-vga').value = String(v('valueGlowAlpha', d.valueGlowAlpha));
+            document.getElementById('bat-cc').value = v('coinColor', d.coinColor);
+            document.getElementById('bat-cg').value = v('coinGlow', d.coinGlow);
+            document.getElementById('bat-cga').value = String(v('coinGlowAlpha', d.coinGlowAlpha));
+            document.getElementById('bat-vs1').value = v('vs1', d.vs1);
+            document.getElementById('bat-vs2').value = v('vs2', d.vs2);
+            document.getElementById('bat-vs3').value = v('vs3', d.vs3);
+            document.getElementById('bat-vxg1').value = v('vsGlow1', d.vsGlow1);
+            document.getElementById('bat-vxga1').value = String(v('vsGlow1Alpha', d.vsGlow1Alpha));
+            document.getElementById('bat-vxg2').value = v('vsGlow2', d.vsGlow2);
+            document.getElementById('bat-vxga2').value = String(v('vsGlow2Alpha', d.vsGlow2Alpha));
+            document.getElementById('bat-c1b').value = v('card1Bg', d.card1Bg);
+            document.getElementById('bat-c1ba').value = String(v('card1BgAlpha', d.card1BgAlpha));
+            document.getElementById('bat-c1d').value = v('card1Border', d.card1Border);
+            document.getElementById('bat-c1da').value = String(v('card1BorderAlpha', d.card1BorderAlpha));
+            document.getElementById('bat-c1i1').value = v('card1Inset1', d.card1Inset1);
+            document.getElementById('bat-c1i1a').value = String(v('card1Inset1Alpha', d.card1Inset1Alpha));
+            document.getElementById('bat-c1i2').value = v('card1Inset2', d.card1Inset2);
+            document.getElementById('bat-c1i2a').value = String(v('card1Inset2Alpha', d.card1Inset2Alpha));
+            document.getElementById('bat-c2b').value = v('card2Bg', d.card2Bg);
+            document.getElementById('bat-c2ba').value = String(v('card2BgAlpha', d.card2BgAlpha));
+            document.getElementById('bat-c2d').value = v('card2Border', d.card2Border);
+            document.getElementById('bat-c2da').value = String(v('card2BorderAlpha', d.card2BorderAlpha));
+            document.getElementById('bat-crb').value = v('restBg', d.restBg);
+            document.getElementById('bat-crba').value = String(v('restBgAlpha', d.restBgAlpha));
+            document.getElementById('bat-crd').value = v('restBorder', d.restBorder);
+            document.getElementById('bat-crda').value = String(v('restBorderAlpha', d.restBorderAlpha));
+            document.getElementById('bat-h1a').value = v('h1a', d.h1a);
+            document.getElementById('bat-h1b').value = v('h1b', d.h1b);
+            document.getElementById('bat-h2a').value = v('h2a', d.h2a);
+            document.getElementById('bat-h2b').value = v('h2b', d.h2b);
+            document.getElementById('bat-h3a').value = v('h3a', d.h3a);
+            document.getElementById('bat-h3b').value = v('h3b', d.h3b);
+            document.getElementById('bat-ht').value = v('hexText', d.hexText);
+            document.getElementById('bat-a1b').value = v('avatar1Border', d.avatar1Border);
+            document.getElementById('bat-a1ba').value = String(v('avatar1BorderAlpha', d.avatar1BorderAlpha));
+            document.getElementById('bat-a1g').value = v('avatar1Glow', d.avatar1Glow);
+            document.getElementById('bat-a1ga').value = String(v('avatar1GlowAlpha', d.avatar1GlowAlpha));
+            document.getElementById('bat-a2b').value = v('avatar2Border', d.avatar2Border);
+            document.getElementById('bat-a2ba').value = String(v('avatar2BorderAlpha', d.avatar2BorderAlpha));
+            document.getElementById('bat-a2g').value = v('avatar2Glow', d.avatar2Glow);
+            document.getElementById('bat-a2ga').value = String(v('avatar2GlowAlpha', d.avatar2GlowAlpha));
+            document.getElementById('bat-arb').value = v('restAvatarBorder', d.restAvatarBorder);
+            document.getElementById('bat-arba').value = String(v('restAvatarBorderAlpha', d.restAvatarBorderAlpha));
+            document.getElementById('bat-arg').value = v('restAvatarGlow', d.restAvatarGlow);
+            document.getElementById('bat-arga').value = String(v('restAvatarGlowAlpha', d.restAvatarGlowAlpha));
+            document.getElementById('bat-phc').value = v('phColor', d.phColor);
+            document.getElementById('bat-phca').value = String(v('phColorAlpha', d.phColorAlpha));
+            document.getElementById('bat-phg').value = v('phGlow', d.phGlow);
+            document.getElementById('bat-phga').value = String(v('phGlowAlpha', d.phGlowAlpha));
+            const inline = document.getElementById('bat-limit-inline');
+            if (inline) inline.value = document.getElementById('bat-limit').value;
+        }
+
+        function stripHashHex(c) {
+            return String(c || '').replace(/^#/, '');
+        }
+
+        function appendBatallaParams(q) {
+            const s = readBatallaForm();
+            q.set('limit', String(s.limit));
+            q.set('nr', s.nameRainbow ? '1' : '0');
+            q.set('ng1', stripHashHex(s.ng1));
+            q.set('ng2', stripHashHex(s.ng2));
+            q.set('ng3', stripHashHex(s.ng3));
+            q.set('vc', stripHashHex(s.valueColor));
+            q.set('vg', stripHashHex(s.valueGlow));
+            q.set('vga', String(s.valueGlowAlpha));
+            q.set('cc', stripHashHex(s.coinColor));
+            q.set('cg', stripHashHex(s.coinGlow));
+            q.set('cga', String(s.coinGlowAlpha));
+            q.set('vs1', stripHashHex(s.vs1));
+            q.set('vs2', stripHashHex(s.vs2));
+            q.set('vs3', stripHashHex(s.vs3));
+            q.set('vxg1', stripHashHex(s.vsGlow1));
+            q.set('vxg2', stripHashHex(s.vsGlow2));
+            q.set('vxga1', String(s.vsGlow1Alpha));
+            q.set('vxga2', String(s.vsGlow2Alpha));
+            q.set('c1b', stripHashHex(s.card1Bg));
+            q.set('c1ba', String(s.card1BgAlpha));
+            q.set('c1d', stripHashHex(s.card1Border));
+            q.set('c1da', String(s.card1BorderAlpha));
+            q.set('c2b', stripHashHex(s.card2Bg));
+            q.set('c2ba', String(s.card2BgAlpha));
+            q.set('c2d', stripHashHex(s.card2Border));
+            q.set('c2da', String(s.card2BorderAlpha));
+            q.set('crb', stripHashHex(s.restBg));
+            q.set('crba', String(s.restBgAlpha));
+            q.set('crd', stripHashHex(s.restBorder));
+            q.set('crda', String(s.restBorderAlpha));
+            q.set('c1i1', stripHashHex(s.card1Inset1));
+            q.set('c1i1a', String(s.card1Inset1Alpha));
+            q.set('c1i2', stripHashHex(s.card1Inset2));
+            q.set('c1i2a', String(s.card1Inset2Alpha));
+            q.set('h1a', stripHashHex(s.h1a));
+            q.set('h1b', stripHashHex(s.h1b));
+            q.set('h2a', stripHashHex(s.h2a));
+            q.set('h2b', stripHashHex(s.h2b));
+            q.set('h3a', stripHashHex(s.h3a));
+            q.set('h3b', stripHashHex(s.h3b));
+            q.set('ht', stripHashHex(s.hexText));
+            q.set('rg', String(s.rowGap));
+            q.set('ph', encodeURIComponent(s.placeholder || ''));
+            q.set('sc', s.showCrown ? '1' : '0');
+            q.set('a1b', stripHashHex(s.avatar1Border));
+            q.set('a1ba', String(s.avatar1BorderAlpha));
+            q.set('a1g', stripHashHex(s.avatar1Glow));
+            q.set('a1ga', String(s.avatar1GlowAlpha));
+            q.set('a2b', stripHashHex(s.avatar2Border));
+            q.set('a2ba', String(s.avatar2BorderAlpha));
+            q.set('a2g', stripHashHex(s.avatar2Glow));
+            q.set('a2ga', String(s.avatar2GlowAlpha));
+            q.set('arb', stripHashHex(s.restAvatarBorder));
+            q.set('arba', String(s.restAvatarBorderAlpha));
+            q.set('arg', stripHashHex(s.restAvatarGlow));
+            q.set('arga', String(s.restAvatarGlowAlpha));
+            q.set('phc', stripHashHex(s.phColor));
+            q.set('phca', String(s.phColorAlpha));
+            q.set('phg', stripHashHex(s.phGlow));
+            q.set('phga', String(s.phGlowAlpha));
+        }
+
+        function batallaStyleForPostMessage() {
+            return readBatallaForm();
+        }
+
+        function pushBatallaStyleToIframe() {
+            if (!ifBatalla || !ifBatalla.contentWindow) return;
+            ifBatalla.contentWindow.postMessage({ type: 'batalla_style', style: batallaStyleForPostMessage() }, '*');
+        }
+
+        let batallaSyncT;
+        function scheduleBatallaSync() {
+            clearTimeout(batallaSyncT);
+            batallaSyncT = setTimeout(function () {
+                const modalOpen = modalBatalla && modalBatalla.classList.contains('open');
+                const inline = document.getElementById('bat-limit-inline');
+                const bm = document.getElementById('bat-limit');
+                if (inline && bm) {
+                    if (modalOpen) inline.value = bm.value;
+                    else bm.value = inline.value;
+                    const n = clampVsRankingLimit(bm.value);
+                    bm.value = String(n);
+                    inline.value = String(n);
+                }
+                saveBatallaStyle(readBatallaForm());
+                refreshUrls();
+                if (ifBatalla) ifBatalla.src = buildSrc('batalla', true);
+                pushBatallaStyleToIframe();
+            }, 120);
+        }
+
+        function defaultBatallaLikesStyle() {
+            return {
+                limit: 3,
+                nameRainbow: true,
+                ng1: '#ff006e',
+                ng2: '#3a86ff',
+                ng3: '#ffbe0b',
+                valueColor: '#fecaca',
+                valueGlow: '#f87171',
+                valueGlowAlpha: 0.45,
+                coinColor: '#fecaca',
+                coinGlow: '#ef4444',
+                coinGlowAlpha: 0.55,
+                likesIcon: '\u2764\uFE0F',
+                vs1: '#fff5e6',
+                vs2: '#ff6b35',
+                vs3: '#c41e3a',
+                vsGlow1: '#38bdf8',
+                vsGlow1Alpha: 0.55,
+                vsGlow2: '#facc15',
+                vsGlow2Alpha: 0.35,
+                card1Bg: '#243040',
+                card1BgAlpha: 0.72,
+                card1Border: '#94a3b8',
+                card1BorderAlpha: 0.5,
+                card1Inset1: '#38bdf8',
+                card1Inset1Alpha: 0.08,
+                card1Inset2: '#94a3b8',
+                card1Inset2Alpha: 0.06,
+                card2Bg: '#1a1c22',
+                card2BgAlpha: 0.72,
+                card2Border: '#646e7d',
+                card2BorderAlpha: 0.75,
+                restBg: '#12161e',
+                restBgAlpha: 0.75,
+                restBorder: '#5a6476',
+                restBorderAlpha: 0.55,
+                h1a: '#fff8e1',
+                h1b: '#b8860b',
+                h2a: '#f8fafc',
+                h2b: '#78909c',
+                h3a: '#efebe9',
+                h3b: '#6d4c41',
+                hexText: '#1a1206',
+                rowGap: 4,
+                placeholder: 'Esperando combatientes...',
+                showCrown: true,
+                avatar1Border: '#bae6fd',
+                avatar1BorderAlpha: 0.5,
+                avatar1Glow: '#38bdf8',
+                avatar1GlowAlpha: 0.22,
+                avatar2Border: '#b4c5d4',
+                avatar2BorderAlpha: 0.65,
+                avatar2Glow: '#b4c4d8',
+                avatar2GlowAlpha: 0.2,
+                restAvatarBorder: '#a0aab9',
+                restAvatarBorderAlpha: 0.45,
+                restAvatarGlow: '#a0aab9',
+                restAvatarGlowAlpha: 0.12,
+                phColor: '#e2e8f0',
+                phColorAlpha: 0.88,
+                phGlow: '#38bdf8',
+                phGlowAlpha: 0.3
+            };
+        }
+
+        function loadBatallaLikesStyle() {
+            try {
+                const raw = localStorage.getItem(LS_BATALLA_LIKES_STYLE);
+                if (raw) return Object.assign(defaultBatallaLikesStyle(), JSON.parse(raw));
+            } catch (e) {}
+            return defaultBatallaLikesStyle();
+        }
+
+        function saveBatallaLikesStyle(s) {
+            try {
+                localStorage.setItem(LS_BATALLA_LIKES_STYLE, JSON.stringify(s));
+            } catch (e) {}
+        }
+
+        function readBatallaLikesForm() {
+            const lim = clampVsRankingLimit(document.getElementById('blk-limit').value);
+            return {
+                limit: lim,
+                nameRainbow: document.getElementById('blk-nr').checked,
+                ng1: document.getElementById('blk-ng1').value,
+                ng2: document.getElementById('blk-ng2').value,
+                ng3: document.getElementById('blk-ng3').value,
+                valueColor: document.getElementById('blk-vc').value,
+                valueGlow: document.getElementById('blk-vg').value,
+                valueGlowAlpha: num01(document.getElementById('blk-vga').value, 0.45),
+                coinColor: document.getElementById('blk-cc').value,
+                coinGlow: document.getElementById('blk-cg').value,
+                coinGlowAlpha: num01(document.getElementById('blk-cga').value, 0.55),
+                likesIcon: (document.getElementById('blk-ic').value || '\u2764\uFE0F').slice(0, 8),
+                vs1: document.getElementById('blk-vs1').value,
+                vs2: document.getElementById('blk-vs2').value,
+                vs3: document.getElementById('blk-vs3').value,
+                vsGlow1: document.getElementById('blk-vxg1').value,
+                vsGlow1Alpha: num01(document.getElementById('blk-vxga1').value, 0.55),
+                vsGlow2: document.getElementById('blk-vxg2').value,
+                vsGlow2Alpha: num01(document.getElementById('blk-vxga2').value, 0.35),
+                card1Bg: document.getElementById('blk-c1b').value,
+                card1BgAlpha: num01(document.getElementById('blk-c1ba').value, 0.72),
+                card1Border: document.getElementById('blk-c1d').value,
+                card1BorderAlpha: num01(document.getElementById('blk-c1da').value, 0.5),
+                card1Inset1: document.getElementById('blk-c1i1').value,
+                card1Inset1Alpha: num01(document.getElementById('blk-c1i1a').value, 0.08),
+                card1Inset2: document.getElementById('blk-c1i2').value,
+                card1Inset2Alpha: num01(document.getElementById('blk-c1i2a').value, 0.06),
+                card2Bg: document.getElementById('blk-c2b').value,
+                card2BgAlpha: num01(document.getElementById('blk-c2ba').value, 0.72),
+                card2Border: document.getElementById('blk-c2d').value,
+                card2BorderAlpha: num01(document.getElementById('blk-c2da').value, 0.75),
+                restBg: document.getElementById('blk-crb').value,
+                restBgAlpha: num01(document.getElementById('blk-crba').value, 0.75),
+                restBorder: document.getElementById('blk-crd').value,
+                restBorderAlpha: num01(document.getElementById('blk-crda').value, 0.55),
+                h1a: document.getElementById('blk-h1a').value,
+                h1b: document.getElementById('blk-h1b').value,
+                h2a: document.getElementById('blk-h2a').value,
+                h2b: document.getElementById('blk-h2b').value,
+                h3a: document.getElementById('blk-h3a').value,
+                h3b: document.getElementById('blk-h3b').value,
+                hexText: document.getElementById('blk-ht').value,
+                rowGap: Math.min(24, Math.max(0, parseInt(document.getElementById('blk-rg').value, 10) || 4)),
+                placeholder: (document.getElementById('blk-ph').value || 'Esperando combatientes...').slice(0, 120),
+                showCrown: document.getElementById('blk-sc').checked,
+                avatar1Border: document.getElementById('blk-a1b').value,
+                avatar1BorderAlpha: num01(document.getElementById('blk-a1ba').value, 0.5),
+                avatar1Glow: document.getElementById('blk-a1g').value,
+                avatar1GlowAlpha: num01(document.getElementById('blk-a1ga').value, 0.22),
+                avatar2Border: document.getElementById('blk-a2b').value,
+                avatar2BorderAlpha: num01(document.getElementById('blk-a2ba').value, 0.65),
+                avatar2Glow: document.getElementById('blk-a2g').value,
+                avatar2GlowAlpha: num01(document.getElementById('blk-a2ga').value, 0.2),
+                restAvatarBorder: document.getElementById('blk-arb').value,
+                restAvatarBorderAlpha: num01(document.getElementById('blk-arba').value, 0.45),
+                restAvatarGlow: document.getElementById('blk-arg').value,
+                restAvatarGlowAlpha: num01(document.getElementById('blk-arga').value, 0.12),
+                phColor: document.getElementById('blk-phc').value,
+                phColorAlpha: num01(document.getElementById('blk-phca').value, 0.88),
+                phGlow: document.getElementById('blk-phg').value,
+                phGlowAlpha: num01(document.getElementById('blk-phga').value, 0.3)
+            };
+        }
+
+        function applyBatallaLikesForm(s) {
+            const d = defaultBatallaLikesStyle();
+            function v(k, def) { return s[k] != null ? s[k] : def; }
+            document.getElementById('blk-limit').value = String(clampVsRankingLimit(v('limit', d.limit)));
+            document.getElementById('blk-rg').value = String(v('rowGap', d.rowGap));
+            document.getElementById('blk-ph').value = v('placeholder', d.placeholder);
+            document.getElementById('blk-ic').value = v('likesIcon', d.likesIcon);
+            document.getElementById('blk-nr').checked = v('nameRainbow', d.nameRainbow) !== false;
+            document.getElementById('blk-ng1').value = v('ng1', d.ng1);
+            document.getElementById('blk-ng2').value = v('ng2', d.ng2);
+            document.getElementById('blk-ng3').value = v('ng3', d.ng3);
+            document.getElementById('blk-sc').checked = v('showCrown', d.showCrown) !== false;
+            document.getElementById('blk-vc').value = v('valueColor', d.valueColor);
+            document.getElementById('blk-vg').value = v('valueGlow', d.valueGlow);
+            document.getElementById('blk-vga').value = String(v('valueGlowAlpha', d.valueGlowAlpha));
+            document.getElementById('blk-cc').value = v('coinColor', d.coinColor);
+            document.getElementById('blk-cg').value = v('coinGlow', d.coinGlow);
+            document.getElementById('blk-cga').value = String(v('coinGlowAlpha', d.coinGlowAlpha));
+            document.getElementById('blk-vs1').value = v('vs1', d.vs1);
+            document.getElementById('blk-vs2').value = v('vs2', d.vs2);
+            document.getElementById('blk-vs3').value = v('vs3', d.vs3);
+            document.getElementById('blk-vxg1').value = v('vsGlow1', d.vsGlow1);
+            document.getElementById('blk-vxga1').value = String(v('vsGlow1Alpha', d.vsGlow1Alpha));
+            document.getElementById('blk-vxg2').value = v('vsGlow2', d.vsGlow2);
+            document.getElementById('blk-vxga2').value = String(v('vsGlow2Alpha', d.vsGlow2Alpha));
+            document.getElementById('blk-c1b').value = v('card1Bg', d.card1Bg);
+            document.getElementById('blk-c1ba').value = String(v('card1BgAlpha', d.card1BgAlpha));
+            document.getElementById('blk-c1d').value = v('card1Border', d.card1Border);
+            document.getElementById('blk-c1da').value = String(v('card1BorderAlpha', d.card1BorderAlpha));
+            document.getElementById('blk-c1i1').value = v('card1Inset1', d.card1Inset1);
+            document.getElementById('blk-c1i1a').value = String(v('card1Inset1Alpha', d.card1Inset1Alpha));
+            document.getElementById('blk-c1i2').value = v('card1Inset2', d.card1Inset2);
+            document.getElementById('blk-c1i2a').value = String(v('card1Inset2Alpha', d.card1Inset2Alpha));
+            document.getElementById('blk-c2b').value = v('card2Bg', d.card2Bg);
+            document.getElementById('blk-c2ba').value = String(v('card2BgAlpha', d.card2BgAlpha));
+            document.getElementById('blk-c2d').value = v('card2Border', d.card2Border);
+            document.getElementById('blk-c2da').value = String(v('card2BorderAlpha', d.card2BorderAlpha));
+            document.getElementById('blk-crb').value = v('restBg', d.restBg);
+            document.getElementById('blk-crba').value = String(v('restBgAlpha', d.restBgAlpha));
+            document.getElementById('blk-crd').value = v('restBorder', d.restBorder);
+            document.getElementById('blk-crda').value = String(v('restBorderAlpha', d.restBorderAlpha));
+            document.getElementById('blk-h1a').value = v('h1a', d.h1a);
+            document.getElementById('blk-h1b').value = v('h1b', d.h1b);
+            document.getElementById('blk-h2a').value = v('h2a', d.h2a);
+            document.getElementById('blk-h2b').value = v('h2b', d.h2b);
+            document.getElementById('blk-h3a').value = v('h3a', d.h3a);
+            document.getElementById('blk-h3b').value = v('h3b', d.h3b);
+            document.getElementById('blk-ht').value = v('hexText', d.hexText);
+            document.getElementById('blk-a1b').value = v('avatar1Border', d.avatar1Border);
+            document.getElementById('blk-a1ba').value = String(v('avatar1BorderAlpha', d.avatar1BorderAlpha));
+            document.getElementById('blk-a1g').value = v('avatar1Glow', d.avatar1Glow);
+            document.getElementById('blk-a1ga').value = String(v('avatar1GlowAlpha', d.avatar1GlowAlpha));
+            document.getElementById('blk-a2b').value = v('avatar2Border', d.avatar2Border);
+            document.getElementById('blk-a2ba').value = String(v('avatar2BorderAlpha', d.avatar2BorderAlpha));
+            document.getElementById('blk-a2g').value = v('avatar2Glow', d.avatar2Glow);
+            document.getElementById('blk-a2ga').value = String(v('avatar2GlowAlpha', d.avatar2GlowAlpha));
+            document.getElementById('blk-arb').value = v('restAvatarBorder', d.restAvatarBorder);
+            document.getElementById('blk-arba').value = String(v('restAvatarBorderAlpha', d.restAvatarBorderAlpha));
+            document.getElementById('blk-arg').value = v('restAvatarGlow', d.restAvatarGlow);
+            document.getElementById('blk-arga').value = String(v('restAvatarGlowAlpha', d.restAvatarGlowAlpha));
+            document.getElementById('blk-phc').value = v('phColor', d.phColor);
+            document.getElementById('blk-phca').value = String(v('phColorAlpha', d.phColorAlpha));
+            document.getElementById('blk-phg').value = v('phGlow', d.phGlow);
+            document.getElementById('blk-phga').value = String(v('phGlowAlpha', d.phGlowAlpha));
+            const inline = document.getElementById('blk-limit-inline');
+            if (inline) inline.value = document.getElementById('blk-limit').value;
+        }
+
+        function appendBatallaLikesParams(q) {
+            const s = readBatallaLikesForm();
+            q.set('limit', String(s.limit));
+            q.set('nr', s.nameRainbow ? '1' : '0');
+            q.set('ng1', stripHashHex(s.ng1));
+            q.set('ng2', stripHashHex(s.ng2));
+            q.set('ng3', stripHashHex(s.ng3));
+            q.set('vc', stripHashHex(s.valueColor));
+            q.set('vg', stripHashHex(s.valueGlow));
+            q.set('vga', String(s.valueGlowAlpha));
+            q.set('cc', stripHashHex(s.coinColor));
+            q.set('cg', stripHashHex(s.coinGlow));
+            q.set('cga', String(s.coinGlowAlpha));
+            q.set('ic', encodeURIComponent(s.likesIcon || '\u2764\uFE0F'));
+            q.set('vs1', stripHashHex(s.vs1));
+            q.set('vs2', stripHashHex(s.vs2));
+            q.set('vs3', stripHashHex(s.vs3));
+            q.set('vxg1', stripHashHex(s.vsGlow1));
+            q.set('vxg2', stripHashHex(s.vsGlow2));
+            q.set('vxga1', String(s.vsGlow1Alpha));
+            q.set('vxga2', String(s.vsGlow2Alpha));
+            q.set('c1b', stripHashHex(s.card1Bg));
+            q.set('c1ba', String(s.card1BgAlpha));
+            q.set('c1d', stripHashHex(s.card1Border));
+            q.set('c1da', String(s.card1BorderAlpha));
+            q.set('c2b', stripHashHex(s.card2Bg));
+            q.set('c2ba', String(s.card2BgAlpha));
+            q.set('c2d', stripHashHex(s.card2Border));
+            q.set('c2da', String(s.card2BorderAlpha));
+            q.set('crb', stripHashHex(s.restBg));
+            q.set('crba', String(s.restBgAlpha));
+            q.set('crd', stripHashHex(s.restBorder));
+            q.set('crda', String(s.restBorderAlpha));
+            q.set('c1i1', stripHashHex(s.card1Inset1));
+            q.set('c1i1a', String(s.card1Inset1Alpha));
+            q.set('c1i2', stripHashHex(s.card1Inset2));
+            q.set('c1i2a', String(s.card1Inset2Alpha));
+            q.set('h1a', stripHashHex(s.h1a));
+            q.set('h1b', stripHashHex(s.h1b));
+            q.set('h2a', stripHashHex(s.h2a));
+            q.set('h2b', stripHashHex(s.h2b));
+            q.set('h3a', stripHashHex(s.h3a));
+            q.set('h3b', stripHashHex(s.h3b));
+            q.set('ht', stripHashHex(s.hexText));
+            q.set('rg', String(s.rowGap));
+            q.set('ph', encodeURIComponent(s.placeholder || ''));
+            q.set('sc', s.showCrown ? '1' : '0');
+            q.set('a1b', stripHashHex(s.avatar1Border));
+            q.set('a1ba', String(s.avatar1BorderAlpha));
+            q.set('a1g', stripHashHex(s.avatar1Glow));
+            q.set('a1ga', String(s.avatar1GlowAlpha));
+            q.set('a2b', stripHashHex(s.avatar2Border));
+            q.set('a2ba', String(s.avatar2BorderAlpha));
+            q.set('a2g', stripHashHex(s.avatar2Glow));
+            q.set('a2ga', String(s.avatar2GlowAlpha));
+            q.set('arb', stripHashHex(s.restAvatarBorder));
+            q.set('arba', String(s.restAvatarBorderAlpha));
+            q.set('arg', stripHashHex(s.restAvatarGlow));
+            q.set('arga', String(s.restAvatarGlowAlpha));
+            q.set('phc', stripHashHex(s.phColor));
+            q.set('phca', String(s.phColorAlpha));
+            q.set('phg', stripHashHex(s.phGlow));
+            q.set('phga', String(s.phGlowAlpha));
+        }
+
+        function batallaLikesStyleForPostMessage() {
+            return readBatallaLikesForm();
+        }
+
+        function pushBatallaLikesStyleToIframe() {
+            if (!ifBatallaLikes || !ifBatallaLikes.contentWindow) return;
+            ifBatallaLikes.contentWindow.postMessage({ type: 'batalla_likes_style', style: batallaLikesStyleForPostMessage() }, '*');
+        }
+
+        let batallaLikesSyncT;
+        function scheduleBatallaLikesSync() {
+            clearTimeout(batallaLikesSyncT);
+            batallaLikesSyncT = setTimeout(function () {
+                const modalOpen = modalBatallaLikes && modalBatallaLikes.classList.contains('open');
+                const inline = document.getElementById('blk-limit-inline');
+                const bm = document.getElementById('blk-limit');
+                if (inline && bm) {
+                    if (modalOpen) inline.value = bm.value;
+                    else bm.value = inline.value;
+                    const n = clampVsRankingLimit(bm.value);
+                    bm.value = String(n);
+                    inline.value = String(n);
+                }
+                saveBatallaLikesStyle(readBatallaLikesForm());
+                refreshUrls();
+                if (ifBatallaLikes) ifBatallaLikes.src = buildSrc('batalla_likes', true);
+                pushBatallaLikesStyleToIframe();
+            }, 120);
+        }
+
+
+        function defaultGiftStyle() {
+            return {
+                titleRainbow: true,
+                tc1: '#ff00aa',
+                tc2: '#00ddff',
+                tc3: '#ffcc00',
+                nameColor: '#e4e4ee',
+                nameStroke: '#3d3d4a',
+                valueColor: '#e8c4a0',
+                valueStroke: '#4a3d2e',
+                coinLabel: 'monedas'
+            };
+        }
+
+        function loadGiftStyle() {
+            try {
+                const raw = localStorage.getItem(LS_GIFT_STYLE);
+                if (raw) return Object.assign(defaultGiftStyle(), JSON.parse(raw));
+            } catch (e) {}
+            return defaultGiftStyle();
+        }
+
+        function saveGiftStyle(s) {
+            try {
+                localStorage.setItem(LS_GIFT_STYLE, JSON.stringify(s));
+            } catch (e) {}
+        }
+
+        function defaultStreakStyle() {
+            return {
+                titleRainbow: true,
+                tc1: '#ff00aa',
+                tc2: '#00ddff',
+                tc3: '#ffcc00',
+                nameColor: '#e4e4ee',
+                nameStroke: '#3d3d4a',
+                valueColor: '#e8c4a0',
+                valueStroke: '#4a3d2e'
+            };
+        }
+
+        function loadStreakStyle() {
+            try {
+                const raw = localStorage.getItem(LS_STREAK_STYLE);
+                if (raw) return Object.assign(defaultStreakStyle(), JSON.parse(raw));
+            } catch (e) {}
+            return defaultStreakStyle();
+        }
+
+        function saveStreakStyle(s) {
+            try {
+                localStorage.setItem(LS_STREAK_STYLE, JSON.stringify(s));
+            } catch (e) {}
+        }
+
+        function defaultTop1Style() {
+            return {
+                headerTitle: 'MVP: Top 1 Donador',
+                headerRainbow: false,
+                hc1: '#22d3ee',
+                hc2: '#06b6d4',
+                hc3: '#2dd4bf',
+                ng1: '#fffef5',
+                ng2: '#ffe066',
+                ng3: '#daa520',
+                valueColor: '#e8e8ff',
+                valueStroke: '#000000',
+                coinColor: '#ffd700',
+                coinLabel: '',
+                showHeader: true,
+                showCrown: true,
+                showFx: true
+            };
+        }
+
+        function loadTop1Style() {
+            try {
+                const raw = localStorage.getItem(LS_TOP1_STYLE);
+                if (raw) return Object.assign(defaultTop1Style(), JSON.parse(raw));
+            } catch (e) {}
+            return defaultTop1Style();
+        }
+
+        function saveTop1Style(s) {
+            try {
+                localStorage.setItem(LS_TOP1_STYLE, JSON.stringify(s));
+            } catch (e) {}
+        }
+
+        function readTop1Form() {
+            return {
+                headerTitle: (function () {
+                    const t = (document.getElementById('top1-header-title').value || '').trim();
+                    return t || 'MVP: Top 1 Donador';
+                })(),
+                headerRainbow: document.getElementById('top1-header-rainbow').checked,
+                hc1: document.getElementById('top1-hc1').value,
+                hc2: document.getElementById('top1-hc2').value,
+                hc3: document.getElementById('top1-hc3').value,
+                ng1: document.getElementById('top1-ng1').value,
+                ng2: document.getElementById('top1-ng2').value,
+                ng3: document.getElementById('top1-ng3').value,
+                valueColor: document.getElementById('top1-vc').value,
+                valueStroke: document.getElementById('top1-vs').value,
+                coinColor: document.getElementById('top1-cc').value,
+                coinLabel: (document.getElementById('top1-cl').value || '').trim(),
+                showHeader: document.getElementById('top1-sh').checked,
+                showCrown: document.getElementById('top1-sc').checked,
+                showFx: document.getElementById('top1-fx').checked
+            };
+        }
+
+        function applyTop1Form(s) {
+            const d = defaultTop1Style();
+            document.getElementById('top1-header-title').value = s.headerTitle != null ? s.headerTitle : d.headerTitle;
+            document.getElementById('top1-header-rainbow').checked = !!s.headerRainbow;
+            document.getElementById('top1-hc1').value = s.hc1 || d.hc1;
+            document.getElementById('top1-hc2').value = s.hc2 || d.hc2;
+            document.getElementById('top1-hc3').value = s.hc3 || d.hc3;
+            document.getElementById('top1-ng1').value = s.ng1 || d.ng1;
+            document.getElementById('top1-ng2').value = s.ng2 || d.ng2;
+            document.getElementById('top1-ng3').value = s.ng3 || d.ng3;
+            document.getElementById('top1-vc').value = s.valueColor || d.valueColor;
+            document.getElementById('top1-vs').value = s.valueStroke || d.valueStroke;
+            document.getElementById('top1-cc').value = s.coinColor || d.coinColor;
+            document.getElementById('top1-cl').value = s.coinLabel != null ? s.coinLabel : '';
+            document.getElementById('top1-sh').checked = s.showHeader !== false;
+            document.getElementById('top1-sc').checked = s.showCrown !== false;
+            document.getElementById('top1-fx').checked = s.showFx !== false;
+        }
+
+        function appendTop1Params(q) {
+            const s = readTop1Form();
+            q.set('htt', encodeURIComponent(s.headerTitle));
+            q.set('htr', s.headerRainbow ? '1' : '0');
+            q.set('hc1', s.hc1.replace(/^#/, ''));
+            q.set('hc2', s.hc2.replace(/^#/, ''));
+            q.set('hc3', s.hc3.replace(/^#/, ''));
+            q.set('ng1', s.ng1.replace(/^#/, ''));
+            q.set('ng2', s.ng2.replace(/^#/, ''));
+            q.set('ng3', s.ng3.replace(/^#/, ''));
+            q.set('vc', s.valueColor.replace(/^#/, ''));
+            q.set('vs', s.valueStroke.replace(/^#/, ''));
+            q.set('cc', s.coinColor.replace(/^#/, ''));
+            q.set('cl', s.coinLabel);
+            q.set('sh', s.showHeader ? '1' : '0');
+            q.set('sc', s.showCrown ? '1' : '0');
+            q.set('fx', s.showFx ? '1' : '0');
+        }
+
+        function top1StyleForPostMessage() {
+            return readTop1Form();
+        }
+
+        function pushTop1StyleToIframe() {
+            if (!ifTop1 || !ifTop1.contentWindow) return;
+            ifTop1.contentWindow.postMessage({ type: 'top1_style', style: top1StyleForPostMessage() }, '*');
+        }
+
+        let top1SyncT;
+        function scheduleTop1Sync() {
+            clearTimeout(top1SyncT);
+            top1SyncT = setTimeout(function () {
+                saveTop1Style(readTop1Form());
+                refreshUrls();
+                if (ifTop1) ifTop1.src = buildSrc('top1', true);
+                pushTop1StyleToIframe();
+            }, 120);
+        }
+
+        function defaultGvs() {
+            return {
+                meta: 500,
+                goalStep: 500,
+                gl: '',
+                gr: '',
+                og: 'increase'
+            };
+        }
+
+        function loadGvs() {
+            try {
+                const raw = localStorage.getItem(LS_GVS);
+                if (raw) return Object.assign(defaultGvs(), JSON.parse(raw));
+            } catch (e) {}
+            return defaultGvs();
+        }
+
+        function saveGvs(o) {
+            try {
+                localStorage.setItem(LS_GVS, JSON.stringify(o));
+            } catch (e) {}
+        }
+
+        async function cargarCatalogoRegalosGvs() {
+            try {
+                const res = await fetch('/lista-regalos-locales');
+                const locales = await res.json();
+                catalogoRegalosGvs = locales && locales.length
+                    ? locales.map(function (l) {
+                        return { nombre: l.archivo, imagen: l.url };
+                    })
+                    : [];
+            } catch (e) {
+                catalogoRegalosGvs = [];
+            }
+        }
+
+        function rellenarSelectsGvs(s) {
+            const d = defaultGvs();
+            const gl = (s && s.gl != null ? s.gl : d.gl);
+            const gr = (s && s.gr != null ? s.gr : d.gr);
+            const glT = String(gl || '').trim();
+            const grT = String(gr || '').trim();
+            const glEl = document.getElementById('gvs-gl');
+            const grEl = document.getElementById('gvs-gr');
+            if (glEl) {
+                glEl.value = glT;
+            }
+            if (grEl) {
+                grEl.value = grT;
+            }
+            updateGvsThumbs();
+        }
+
+        function updateGvsThumbs() {
+            ['l', 'r'].forEach(function (side) {
+                const idSel = side === 'l' ? 'gvs-gl' : 'gvs-gr';
+                const idImg = 'gvs-thumb-' + side;
+                const inp = document.getElementById(idSel);
+                const img = document.getElementById(idImg);
+                if (!inp || !img) return;
+                const r = catalogoRegalosGvs.find(function (x) { return x.nombre === inp.value; });
+                if (r && r.imagen) {
+                    img.src = r.imagen;
+                    img.classList.add('is-on');
+                } else {
+                    img.removeAttribute('src');
+                    img.classList.remove('is-on');
+                }
+            });
+        }
+
+        /** { mode: 'gvs', side: 'L'|'R' } | { mode: 'gvm', row: number, side: 'L'|'R' } */
+        let regaloModalPickContext = null;
+
+        function getModalCurVal() {
+            const ctx = regaloModalPickContext;
+            if (!ctx || !ctx.mode) {
+                return '';
+            }
+            if (ctx.mode === 'gvs') {
+                const id = ctx.side === 'R' ? 'gvs-gr' : 'gvs-gl';
+                const el = document.getElementById(id);
+                return (el && el.value || '').trim();
+            }
+            if (ctx.mode === 'gvm') {
+                const id = ctx.side === 'R' ? 'gvm-gr-' + ctx.row : 'gvm-gl-' + ctx.row;
+                const el = document.getElementById(id);
+                return (el && el.value || '').trim();
+            }
+            return '';
+        }
+
+        function cerrarModalRegaloGvs() {
+            const m = document.getElementById('gvs-modal-seleccion-regalo');
+            if (m) {
+                m.classList.remove('show');
+                m.setAttribute('aria-hidden', 'true');
+            }
+            regaloModalPickContext = null;
+        }
+
+        function ajustarColumnasGridRegalosGvs() {
+            const grid = document.getElementById('gvs-grid-regalos-modal');
+            const scrollEl = document.getElementById('gvs-regalo-modal-scroll');
+            if (!grid || !scrollEl || grid.children.length === 0) return;
+            const n = grid.children.length;
+            const availH = Math.max(100, scrollEl.clientHeight - 8);
+            let cols = Math.max(4, Math.min(n, Math.floor(Math.max(200, scrollEl.clientWidth - 8) / 68)));
+            grid.style.gridTemplateColumns = 'repeat(' + cols + ', minmax(0, 1fr))';
+            let guard = 0;
+            while (grid.scrollHeight > availH + 3 && cols < n && guard < 600) {
+                cols += 1;
+                grid.style.gridTemplateColumns = 'repeat(' + cols + ', minmax(0, 1fr))';
+                guard += 1;
+            }
+            scrollEl.style.overflowY = grid.scrollHeight > availH + 4 ? 'auto' : 'hidden';
+        }
+
+        function aplicarRegaloGvsAlSelect(side, regalo) {
+            const id = side === 'R' ? 'gvs-gr' : 'gvs-gl';
+            const el = document.getElementById(id);
+            if (!el || !regalo) return;
+            el.value = regalo.nombre;
+        }
+
+        function aplicarRegaloGvm(row, side, regalo) {
+            const id = side === 'R' ? 'gvm-gr-' + row : 'gvm-gl-' + row;
+            const el = document.getElementById(id);
+            if (!el || !regalo) return;
+            el.value = regalo.nombre;
+        }
+
+        function refrescarGridRegalosGvsModal() {
+            const grid = document.getElementById('gvs-grid-regalos-modal');
+            const filtro = (document.getElementById('gvs-regalo-modal-filtro') && document.getElementById('gvs-regalo-modal-filtro').value || '').trim().toLowerCase();
+            if (!grid) return;
+            grid.innerHTML = '';
+            const curVal = getModalCurVal();
+            const list = catalogoRegalosGvs.filter(function (r) {
+                return !filtro || String(r.nombre).toLowerCase().includes(filtro);
+            });
+            if (list.length === 0) {
+                const p = document.createElement('p');
+                p.style.cssText = 'color:var(--tf-muted);padding:12px;font-size:13px;margin:0;';
+                p.textContent = 'No hay regalos en la carpeta. Añade imágenes en la carpeta de regalos del servidor.';
+                grid.appendChild(p);
+                return;
+            }
+            list.forEach(function (regalo) {
+                const b = document.createElement('button');
+                b.type = 'button';
+                b.className = 'regalo-modal-tile';
+                if (curVal && regalo.nombre === curVal) {
+                    b.classList.add('is-selected');
+                }
+                b.innerHTML = '<img src="' + regalo.imagen + '" alt=""><span class="regalo-modal-tile-name">' + String(regalo.nombre).replace(/_/g, ' ') + '</span>';
+                b.addEventListener('click', function () {
+                    const ctx = regaloModalPickContext;
+                    if (!ctx || !ctx.mode) return;
+                    if (ctx.mode === 'gvm') {
+                        aplicarRegaloGvm(ctx.row, ctx.side, regalo);
+                        updateGvmRowThumbs(ctx.row);
+                        scheduleGvmSync();
+                    } else {
+                        aplicarRegaloGvsAlSelect(ctx.side, regalo);
+                        updateGvsThumbs();
+                        scheduleGvsSync();
+                    }
+                    cerrarModalRegaloGvs();
+                });
+                grid.appendChild(b);
+            });
+            requestAnimationFrame(function () {
+                ajustarColumnasGridRegalosGvs();
+            });
+        }
+
+        function abrirModalRegaloGvs(side) {
+            regaloModalPickContext = { mode: 'gvs', side: side === 'R' ? 'R' : 'L' };
+            const modal = document.getElementById('gvs-modal-seleccion-regalo');
+            const filtro = document.getElementById('gvs-regalo-modal-filtro');
+            if (filtro) {
+                filtro.value = '';
+            }
+            if (modal) {
+                modal.classList.add('show');
+                modal.setAttribute('aria-hidden', 'false');
+            }
+            refrescarGridRegalosGvsModal();
+            setTimeout(function () {
+                try {
+                    if (filtro) {
+                        filtro.focus();
+                    }
+                } catch (e) {}
+                ajustarColumnasGridRegalosGvs();
+            }, 50);
+        }
+
+        function abrirModalRegaloGvm(row, side) {
+            if (!esPremiumPanel()) {
+                premiumAlert();
+                return;
+            }
+            regaloModalPickContext = { mode: 'gvm', row: row, side: side === 'R' ? 'R' : 'L' };
+            const modal = document.getElementById('gvs-modal-seleccion-regalo');
+            const filtro = document.getElementById('gvs-regalo-modal-filtro');
+            if (filtro) {
+                filtro.value = '';
+            }
+            if (modal) {
+                modal.classList.add('show');
+                modal.setAttribute('aria-hidden', 'false');
+            }
+            refrescarGridRegalosGvsModal();
+            setTimeout(function () {
+                try {
+                    if (filtro) {
+                        filtro.focus();
+                    }
+                } catch (e) {}
+                ajustarColumnasGridRegalosGvs();
+            }, 50);
+        }
+
+        (function initModalRegaloGvs() {
+            const modal = document.getElementById('gvs-modal-seleccion-regalo');
+            const btnX = document.getElementById('gvs-btn-cerrar-modal-regalo');
+            const filtro = document.getElementById('gvs-regalo-modal-filtro');
+            if (btnX) {
+                btnX.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    cerrarModalRegaloGvs();
+                });
+            }
+            if (modal) {
+                modal.addEventListener('click', function (e) {
+                    if (e.target === modal) {
+                        cerrarModalRegaloGvs();
+                    }
+                });
+            }
+            if (filtro) {
+                filtro.addEventListener('input', function () {
+                    refrescarGridRegalosGvsModal();
+                });
+            }
+            window.addEventListener('resize', function () {
+                if (modal && modal.classList.contains('show')) {
+                    ajustarColumnasGridRegalosGvs();
+                }
+            });
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape' && modal && modal.classList.contains('show')) {
+                    cerrarModalRegaloGvs();
+                }
+            });
+        })();
+
+        function readGvsForm() {
+            const meta = Math.max(1, parseInt(document.getElementById('gvs-meta').value, 10) || 500);
+            const gs = Math.max(1, parseInt(document.getElementById('gvs-gs').value, 10) || meta);
+            return {
+                meta: meta,
+                goalStep: gs,
+                gl: (document.getElementById('gvs-gl').value || '').trim(),
+                gr: (document.getElementById('gvs-gr').value || '').trim(),
+                og: document.getElementById('gvs-og').value || 'increase'
+            };
+        }
+
+        function applyGvsForm(s) {
+            const d = defaultGvs();
+            s = s || d;
+            document.getElementById('gvs-meta').value = String(s.meta != null ? s.meta : d.meta);
+            document.getElementById('gvs-gs').value = String(s.goalStep != null ? s.goalStep : d.goalStep);
+            document.getElementById('gvs-og').value = s.og || d.og;
+            rellenarSelectsGvs(s);
+        }
+
+        function appendGvsParams(q) {
+            const s = readGvsForm();
+            q.set('meta', String(s.meta));
+            q.set('gs', String(s.goalStep));
+            if (s.gl) q.set('gl', s.gl);
+            if (s.gr) q.set('gr', s.gr);
+            q.set('og', s.og);
+            const foundL = catalogoRegalosGvs.find(function (x) { return x.nombre === s.gl; });
+            const foundR = catalogoRegalosGvs.find(function (x) { return x.nombre === s.gr; });
+            if (foundL && foundL.imagen) q.set('gli', foundL.imagen);
+            if (foundR && foundR.imagen) q.set('gri', foundR.imagen);
+        }
+
+        let gvsSyncT;
+        function scheduleGvsSync() {
+            clearTimeout(gvsSyncT);
+            gvsSyncT = setTimeout(function () {
+                saveGvs(readGvsForm());
+                refreshUrls();
+                ifGvg.src = buildSrc('gvg', true);
+            }, 120);
+        }
+
+        const LS_GVM = 'mitik_gvm_v1';
+
+        function defaultGvm() {
+            return {
+                rows: 2,
+                meta: 500,
+                goalStep: 500,
+                og: 'increase',
+                pairs: [{ gl: '', gr: '' }, { gl: '', gr: '' }]
+            };
+        }
+
+        function loadGvm() {
+            try {
+                const raw = localStorage.getItem(LS_GVM);
+                if (raw) {
+                    return Object.assign(defaultGvm(), JSON.parse(raw));
+                }
+            } catch (e) {}
+            return defaultGvm();
+        }
+
+        function saveGvm(o) {
+            try {
+                localStorage.setItem(LS_GVM, JSON.stringify(o));
+            } catch (e) {}
+        }
+
+        function readGvmForm() {
+            const rc = document.getElementById('gvm-rows-count');
+            const n = Math.min(12, Math.max(1, parseInt(rc && rc.value, 10) || 1));
+            const meta = Math.max(1, parseInt(document.getElementById('gvm-meta').value, 10) || 500);
+            const gs = Math.max(1, parseInt(document.getElementById('gvm-gs').value, 10) || meta);
+            const pairs = [];
+            for (let i = 0; i < n; i++) {
+                const glEl = document.getElementById('gvm-gl-' + i);
+                const grEl = document.getElementById('gvm-gr-' + i);
+                pairs.push({
+                    gl: glEl ? (glEl.value || '').trim() : '',
+                    gr: grEl ? (grEl.value || '').trim() : ''
+                });
+            }
+            return {
+                rows: n,
+                meta: meta,
+                goalStep: gs,
+                og: document.getElementById('gvm-og').value || 'increase',
+                pairs: pairs
+            };
+        }
+
+        function renderGvmRowsUI(n, pairs) {
+            n = Math.min(12, Math.max(1, n || 1));
+            const wrap = document.getElementById('gvm-rows-wrap');
+            if (!wrap) return;
+            const pad = pairs && pairs.length ? pairs.slice() : [];
+            while (pad.length < n) {
+                pad.push({ gl: '', gr: '' });
+            }
+            pairs = pad.slice(0, n);
+            wrap.innerHTML =
+                '<div class="gvm-sides">' +
+                '<div class="gvm-side" aria-label="Lado A">' +
+                '<div class="gvm-side-title">Lado A</div>' +
+                '<div id="gvm-slots-a"></div>' +
+                '</div>' +
+                '<div class="gvm-side" aria-label="Lado B">' +
+                '<div class="gvm-side-title">Lado B</div>' +
+                '<div id="gvm-slots-b"></div>' +
+                '</div>' +
+                '</div>';
+            const hostA = document.getElementById('gvm-slots-a');
+            const hostB = document.getElementById('gvm-slots-b');
+            for (let i = 0; i < n; i++) {
+                const p = pairs[i] || { gl: '', gr: '' };
+                const slotA = document.createElement('div');
+                slotA.className = 'gvm-slot';
+                slotA.innerHTML =
+                    '<div class="gvs-pick-row">' +
+                    '<img class="gvs-thumb" id="gvm-thumb-l-' + i + '" alt="">' +
+                    '<input type="hidden" id="gvm-gl-' + i + '" value="" autocomplete="off">' +
+                    '<button type="button" class="tb-btn primary gvs-pick-btn" onclick="abrirModalRegaloGvm(' + i + ', \'L\')">Elegir</button>' +
+                    '</div>';
+                const slotB = document.createElement('div');
+                slotB.className = 'gvm-slot';
+                slotB.innerHTML =
+                    '<div class="gvs-pick-row">' +
+                    '<img class="gvs-thumb" id="gvm-thumb-r-' + i + '" alt="">' +
+                    '<input type="hidden" id="gvm-gr-' + i + '" value="" autocomplete="off">' +
+                    '<button type="button" class="tb-btn primary gvs-pick-btn" onclick="abrirModalRegaloGvm(' + i + ', \'R\')">Elegir</button>' +
+                    '</div>';
+                hostA.appendChild(slotA);
+                hostB.appendChild(slotB);
+                document.getElementById('gvm-gl-' + i).value = p.gl || '';
+                document.getElementById('gvm-gr-' + i).value = p.gr || '';
+                updateGvmRowThumbs(i);
+            }
+        }
+
+        function applyGvmForm(s) {
+            const d = defaultGvm();
+            s = s || d;
+            const n = Math.min(12, Math.max(1, s.rows != null ? parseInt(s.rows, 10) || d.rows : d.rows));
+            document.getElementById('gvm-rows-count').value = String(n);
+            document.getElementById('gvm-meta').value = String(s.meta != null ? s.meta : d.meta);
+            document.getElementById('gvm-gs').value = String(s.goalStep != null ? s.goalStep : d.goalStep);
+            document.getElementById('gvm-og').value = s.og || d.og;
+            let pairs = s.pairs && s.pairs.length ? s.pairs.slice() : d.pairs.slice();
+            while (pairs.length < n) {
+                pairs.push({ gl: '', gr: '' });
+            }
+            pairs = pairs.slice(0, n);
+            renderGvmRowsUI(n, pairs);
+        }
+
+        function updateGvmRowThumbs(r) {
+            ['l', 'r'].forEach(function (side) {
+                const hidId = side === 'l' ? 'gvm-gl-' + r : 'gvm-gr-' + r;
+                const thumbId = 'gvm-thumb-' + side + '-' + r;
+                const hid = document.getElementById(hidId);
+                const img = document.getElementById(thumbId);
+                if (!hid || !img) return;
+                const cat = catalogoRegalosGvs.find(function (x) { return x.nombre === hid.value; });
+                if (cat && cat.imagen) {
+                    img.src = cat.imagen;
+                    img.classList.add('is-on');
+                } else {
+                    img.removeAttribute('src');
+                    img.classList.remove('is-on');
+                }
+            });
+        }
+
+        function gvmAddRow() {
+            if (!esPremiumPanel()) {
+                premiumAlert();
+                return;
+            }
+            const cur = readGvmForm();
+            const n = Math.min(12, cur.rows + 1);
+            document.getElementById('gvm-rows-count').value = String(n);
+            while (cur.pairs.length < n) {
+                cur.pairs.push({ gl: '', gr: '' });
+            }
+            renderGvmRowsUI(n, cur.pairs);
+            scheduleGvmSync();
+        }
+
+        function gvmRemoveRow() {
+            if (!esPremiumPanel()) {
+                premiumAlert();
+                return;
+            }
+            const cur = readGvmForm();
+            const n = Math.max(1, cur.rows - 1);
+            document.getElementById('gvm-rows-count').value = String(n);
+            cur.pairs = cur.pairs.slice(0, n);
+            renderGvmRowsUI(n, cur.pairs);
+            scheduleGvmSync();
+        }
+
+        function appendGvmParams(q) {
+            const s = readGvmForm();
+            q.set('rows', String(s.rows));
+            q.set('meta', String(s.meta));
+            q.set('gs', String(s.goalStep));
+            q.set('og', s.og);
+            s.pairs.forEach(function (p, i) {
+                if (p.gl) q.set('gl' + i, p.gl);
+                if (p.gr) q.set('gr' + i, p.gr);
+                const foundL = catalogoRegalosGvs.find(function (x) { return x.nombre === p.gl; });
+                const foundR = catalogoRegalosGvs.find(function (x) { return x.nombre === p.gr; });
+                if (foundL && foundL.imagen) q.set('gli' + i, foundL.imagen);
+                if (foundR && foundR.imagen) q.set('gri' + i, foundR.imagen);
+            });
+        }
+
+        let gvmSyncT;
+        function scheduleGvmSync() {
+            if (!esPremiumPanel()) return;
+            clearTimeout(gvmSyncT);
+            gvmSyncT = setTimeout(function () {
+                saveGvm(readGvmForm());
+                refreshUrls();
+                if (ifGvm) {
+                    ifGvm.src = buildSrc('gvm', true);
+                }
+            }, 120);
+        }
+
+        function readStreakForm() {
+            return {
+                titleRainbow: document.getElementById('streak-title-rainbow').checked,
+                tc1: document.getElementById('streak-tc1').value,
+                tc2: document.getElementById('streak-tc2').value,
+                tc3: document.getElementById('streak-tc3').value,
+                nameColor: document.getElementById('streak-nc').value,
+                nameStroke: document.getElementById('streak-ns').value,
+                valueColor: document.getElementById('streak-vc').value,
+                valueStroke: document.getElementById('streak-vs').value
+            };
+        }
+
+        function applyStreakForm(s) {
+            document.getElementById('streak-title-rainbow').checked = !!s.titleRainbow;
+            document.getElementById('streak-tc1').value = s.tc1 || defaultStreakStyle().tc1;
+            document.getElementById('streak-tc2').value = s.tc2 || defaultStreakStyle().tc2;
+            document.getElementById('streak-tc3').value = s.tc3 || defaultStreakStyle().tc3;
+            document.getElementById('streak-nc').value = s.nameColor || defaultStreakStyle().nameColor;
+            document.getElementById('streak-ns').value = s.nameStroke || defaultStreakStyle().nameStroke;
+            document.getElementById('streak-vc').value = s.valueColor || defaultStreakStyle().valueColor;
+            document.getElementById('streak-vs').value = s.valueStroke || defaultStreakStyle().valueStroke;
+        }
+
+        function appendStreakStyleParams(q) {
+            const s = readStreakForm();
+            q.set('tr', s.titleRainbow ? '1' : '0');
+            q.set('tc1', s.tc1.replace(/^#/, ''));
+            q.set('tc2', s.tc2.replace(/^#/, ''));
+            q.set('tc3', s.tc3.replace(/^#/, ''));
+            q.set('nc', s.nameColor.replace(/^#/, ''));
+            q.set('ns', s.nameStroke.replace(/^#/, ''));
+            q.set('vc', s.valueColor.replace(/^#/, ''));
+            q.set('vs', s.valueStroke.replace(/^#/, ''));
+        }
+
+        function streakStyleForPostMessage() {
+            const s = readStreakForm();
+            return {
+                titleRainbow: s.titleRainbow,
+                tc1: s.tc1.replace(/^#/, ''),
+                tc2: s.tc2.replace(/^#/, ''),
+                tc3: s.tc3.replace(/^#/, ''),
+                nameColor: s.nameColor.replace(/^#/, ''),
+                nameStroke: s.nameStroke.replace(/^#/, ''),
+                valueColor: s.valueColor.replace(/^#/, ''),
+                valueStroke: s.valueStroke.replace(/^#/, '')
+            };
+        }
+
+        function pushStreakStyleToIframe() {
+            if (!ifStreak.contentWindow) return;
+            ifStreak.contentWindow.postMessage({ type: 'top_streak_style', style: streakStyleForPostMessage() }, '*');
+        }
+
+        function emitStreakStyleToLiveStudio() {
+            const u = getUser();
+            if (!u || !socket || !socket.connected) return;
+            socket.emit('panel_broadcast_top_streak_style', { user: u, style: streakStyleForPostMessage() });
+        }
+
+        let streakSyncT;
+        function scheduleStreakSync() {
+            clearTimeout(streakSyncT);
+            streakSyncT = setTimeout(function () {
+                saveStreakStyle(readStreakForm());
+                refreshUrls();
+                ifStreak.src = buildSrc('streak', true);
+                pushStreakStyleToIframe();
+                emitStreakStyleToLiveStudio();
+            }, 120);
+        }
+
+        function readGiftForm() {
+            return {
+                titleRainbow: document.getElementById('gift-title-rainbow').checked,
+                tc1: document.getElementById('gift-tc1').value,
+                tc2: document.getElementById('gift-tc2').value,
+                tc3: document.getElementById('gift-tc3').value,
+                nameColor: document.getElementById('gift-nc').value,
+                nameStroke: document.getElementById('gift-ns').value,
+                valueColor: document.getElementById('gift-vc').value,
+                valueStroke: document.getElementById('gift-vs').value,
+                coinLabel: (document.getElementById('gift-cl').value || 'monedas').trim() || 'monedas'
+            };
+        }
+
+        function applyGiftForm(s) {
+            document.getElementById('gift-title-rainbow').checked = !!s.titleRainbow;
+            document.getElementById('gift-tc1').value = s.tc1 || defaultGiftStyle().tc1;
+            document.getElementById('gift-tc2').value = s.tc2 || defaultGiftStyle().tc2;
+            document.getElementById('gift-tc3').value = s.tc3 || defaultGiftStyle().tc3;
+            document.getElementById('gift-nc').value = s.nameColor || defaultGiftStyle().nameColor;
+            document.getElementById('gift-ns').value = s.nameStroke || defaultGiftStyle().nameStroke;
+            document.getElementById('gift-vc').value = s.valueColor || defaultGiftStyle().valueColor;
+            document.getElementById('gift-vs').value = s.valueStroke || defaultGiftStyle().valueStroke;
+            document.getElementById('gift-cl').value = s.coinLabel || 'monedas';
+        }
+
+        function appendGiftStyleParams(q) {
+            const s = readGiftForm();
+            q.set('tr', s.titleRainbow ? '1' : '0');
+            q.set('tc1', s.tc1.replace(/^#/, ''));
+            q.set('tc2', s.tc2.replace(/^#/, ''));
+            q.set('tc3', s.tc3.replace(/^#/, ''));
+            q.set('nc', s.nameColor.replace(/^#/, ''));
+            q.set('ns', s.nameStroke.replace(/^#/, ''));
+            q.set('vc', s.valueColor.replace(/^#/, ''));
+            q.set('vs', s.valueStroke.replace(/^#/, ''));
+            q.set('cl', s.coinLabel);
+        }
+
+        function giftStyleForPostMessage() {
+            const s = readGiftForm();
+            return {
+                titleRainbow: s.titleRainbow,
+                tc1: s.tc1.replace(/^#/, ''),
+                tc2: s.tc2.replace(/^#/, ''),
+                tc3: s.tc3.replace(/^#/, ''),
+                nameColor: s.nameColor.replace(/^#/, ''),
+                nameStroke: s.nameStroke.replace(/^#/, ''),
+                valueColor: s.valueColor.replace(/^#/, ''),
+                valueStroke: s.valueStroke.replace(/^#/, ''),
+                coinLabel: s.coinLabel
+            };
+        }
+
+        function pushGiftStyleToIframe() {
+            if (!ifGift.contentWindow) return;
+            ifGift.contentWindow.postMessage({ type: 'top_gift_style', style: giftStyleForPostMessage() }, '*');
+        }
+
+        function emitGiftStyleToLiveStudio() {
+            const u = getUser();
+            if (!u || !socket || !socket.connected) return;
+            socket.emit('panel_broadcast_top_gift_style', { user: u, style: giftStyleForPostMessage() });
+        }
+
+        let giftSyncT;
+        function scheduleGiftSync() {
+            clearTimeout(giftSyncT);
+            giftSyncT = setTimeout(function () {
+                saveGiftStyle(readGiftForm());
+                refreshUrls();
+                ifGift.src = buildSrc('gift', true);
+                pushGiftStyleToIframe();
+                emitGiftStyleToLiveStudio();
+            }, 120);
+        }
+
+        function getUser() {
+            try {
+                const el = window.parent.document.getElementById('input-usuario');
+                return el ? el.value.trim() : '';
+            } catch (e) { return ''; }
+        }
+
+        function overlayFile(kind) {
+            if (kind === 'gift') return 'overlay_top_gift.html';
+            if (kind === 'streak') return 'overlay_top_streak.html';
+            if (kind === 'top1') return 'overlay_top1.html';
+            if (kind === 'batalla') return 'overlay_batalla.html';
+            if (kind === 'batalla_likes') return 'overlay_batalla_likes.html';
+            if (kind === 'gvg') return 'overlay_gift_vs_gift.html';
+            if (kind === 'gvm') return 'overlay_gift_vs_multi.html';
+            return 'overlay_top_gift.html';
+        }
+
+        function buildSrc(kind, preview) {
+            const user = preview ? 'preview' : getUser();
+            const file = overlayFile(kind);
+            const q = new URLSearchParams();
+            q.set('user', user || 'preview');
+            q.set('overlayv', OVERLAY_VER);
+            if (preview) q.set('preview_embed', '1');
+            if (kind === 'gift') appendGiftStyleParams(q);
+            if (kind === 'streak') appendStreakStyleParams(q);
+            if (kind === 'top1') appendTop1Params(q);
+            if (kind === 'batalla') appendBatallaParams(q);
+            if (kind === 'batalla_likes') appendBatallaLikesParams(q);
+            if (kind === 'gvg') appendGvsParams(q);
+            if (kind === 'gvm') appendGvmParams(q);
+            return file + '?' + q.toString();
+        }
+
+        function buildObsUrl(kind) {
+            const u = getUser();
+            if (!u) return '';
+            const file = overlayFile(kind);
+            const q = new URLSearchParams();
+            q.set('user', u);
+            q.set('overlayv', OVERLAY_VER);
+            if (kind === 'gift') appendGiftStyleParams(q);
+            if (kind === 'streak') appendStreakStyleParams(q);
+            if (kind === 'top1') appendTop1Params(q);
+            if (kind === 'batalla') appendBatallaParams(q);
+            if (kind === 'batalla_likes') appendBatallaLikesParams(q);
+            if (kind === 'gvg') appendGvsParams(q);
+            if (kind === 'gvm') appendGvmParams(q);
+            return window.location.origin + '/' + file + '?' + q.toString();
+        }
+
+        function refreshUrls() {
+            const hint = '(Conecta un usuario en la barra principal)';
+            urlGift.value = !esPremiumPanel() ? '(Plan Premium Plus requerido)' : (buildObsUrl('gift') || hint);
+            urlStreak.value = buildObsUrl('streak') || hint;
+            if (urlTop1) urlTop1.value = buildObsUrl('top1') || hint;
+            if (urlBatalla) urlBatalla.value = !esPremiumPanel() ? '(Plan Premium Plus requerido)' : (buildObsUrl('batalla') || hint);
+            if (urlBatallaLikes) urlBatallaLikes.value = !esPremiumPanel() ? '(Plan Premium Plus requerido)' : (buildObsUrl('batalla_likes') || hint);
+            urlGvg.value = buildObsUrl('gvg') || hint;
+            urlGvm.value = !esPremiumPanel() ? '(Plan Premium Plus requerido)' : (buildObsUrl('gvm') || hint);
+        }
+
+        function loadIframes() {
+            ifGift.src = buildSrc('gift', true);
+            ifStreak.src = buildSrc('streak', true);
+            if (ifTop1) ifTop1.src = buildSrc('top1', true);
+            if (ifBatalla) ifBatalla.src = buildSrc('batalla', true);
+            if (ifBatallaLikes) ifBatallaLikes.src = buildSrc('batalla_likes', true);
+            ifGvg.src = buildSrc('gvg', true);
+            if (ifGvm) ifGvm.src = buildSrc('gvm', true);
+        }
+
+        ifGift.addEventListener('load', function () {
+            pushGiftStyleToIframe();
+            emitGiftStyleToLiveStudio();
+        });
+
+        ifStreak.addEventListener('load', function () {
+            pushStreakStyleToIframe();
+            emitStreakStyleToLiveStudio();
+        });
+
+        if (ifTop1) {
+            ifTop1.addEventListener('load', function () {
+                pushTop1StyleToIframe();
+            });
+        }
+
+        if (ifBatalla) {
+            ifBatalla.addEventListener('load', function () {
+                pushBatallaStyleToIframe();
+            });
+        }
+
+        if (ifBatallaLikes) {
+            ifBatallaLikes.addEventListener('load', function () {
+                pushBatallaLikesStyleToIframe();
+            });
+        }
+
+        function copiar(kind) {
+            if (kind === 'gift' && !esPremiumPanel()) {
+                premiumAlert();
+                return;
+            }
+            if (kind === 'gvm' && !esPremiumPanel()) {
+                premiumAlert();
+                return;
+            }
+            if (kind === 'batalla' && !esPremiumPanel()) {
+                premiumAlert();
+                return;
+            }
+            if (kind === 'batalla_likes' && !esPremiumPanel()) {
+                premiumAlert();
+                return;
+            }
+            const link = buildObsUrl(kind);
+            if (!link) {
+                alert('⚠️ Escribe un usuario de TikTok en la barra principal y pulsa CONECTAR.');
+                return;
+            }
+            navigator.clipboard.writeText(link).then(function () {
+                alert('✅ Enlace copiado al portapapeles.');
+            }).catch(function () {
+                prompt('Copia manualmente:', link);
+            });
+        }
+
+        function testear(kind) {
+            if (kind === 'gift' && !esPremiumPanel()) {
+                premiumAlert();
+                return;
+            }
+            if (kind === 'gvm' && !esPremiumPanel()) {
+                premiumAlert();
+                return;
+            }
+            if (kind === 'batalla' && !esPremiumPanel()) {
+                premiumAlert();
+                return;
+            }
+            if (kind === 'batalla_likes' && !esPremiumPanel()) {
+                premiumAlert();
+                return;
+            }
+            if (kind === 'gift') {
+                socket.emit('test_top_gift');
+                try {
+                    if (ifGift.contentWindow) {
+                        ifGift.contentWindow.postMessage({ type: 'overlay_test', kind: 'top_gift' }, '*');
+                    }
+                } catch (e) {}
+            } else if (kind === 'streak') {
+                socket.emit('test_top_streak');
+                try {
+                    if (ifStreak.contentWindow) {
+                        ifStreak.contentWindow.postMessage({ type: 'overlay_test', kind: 'top_streak' }, '*');
+                    }
+                } catch (e) {}
+            } else if (kind === 'gvg') {
+                socket.emit('test_gift_vs_gift');
+                try {
+                    if (ifGvg.contentWindow) {
+                        ifGvg.contentWindow.postMessage({ type: 'overlay_test', kind: 'gift_vs_gift' }, '*');
+                    }
+                } catch (e) {}
+            } else if (kind === 'gvm') {
+                socket.emit('test_gift_vs_multi');
+                try {
+                    if (ifGvm && ifGvm.contentWindow) {
+                        ifGvm.contentWindow.postMessage({ type: 'overlay_test', kind: 'gift_vs_multi' }, '*');
+                    }
+                } catch (e) {}
+            } else if (kind === 'top1') {
+                try {
+                    if (ifTop1 && ifTop1.contentWindow) {
+                        ifTop1.contentWindow.postMessage({ type: 'overlay_test', kind: 'top1' }, '*');
+                    }
+                } catch (e) {}
+            } else if (kind === 'batalla') {
+                try {
+                    if (ifBatalla && ifBatalla.contentWindow) {
+                        ifBatalla.contentWindow.postMessage({ type: 'overlay_test', kind: 'batalla' }, '*');
+                    }
+                } catch (e) {}
+            } else if (kind === 'batalla_likes') {
+                try {
+                    if (ifBatallaLikes && ifBatallaLikes.contentWindow) {
+                        ifBatallaLikes.contentWindow.postMessage({ type: 'overlay_test', kind: 'batalla_likes' }, '*');
+                    }
+                } catch (e) {}
+            }
+        }
+
+        function refreshGvgIframe() {
+            ifGvg.src = buildSrc('gvg', true);
+        }
+
+        function gvsManual(side, delta) {
+            try {
+                if (ifGvg.contentWindow) {
+                    ifGvg.contentWindow.postMessage({ type: 'gift_vs_delta', side: side, delta: delta }, '*');
+                }
+            } catch (e) {}
+            const u = getUser();
+            if (u) {
+                socket.emit('gift_vs_manual', { user: u, side: side, delta: delta });
+            }
+        }
+
+        function gvsStop() {
+            try {
+                if (ifGvg.contentWindow) {
+                    ifGvg.contentWindow.postMessage({ type: 'gift_vs_local_reset' }, '*');
+                }
+            } catch (e) {}
+            const u = getUser();
+            if (u) {
+                socket.emit('gift_vs_reset', { user: u });
+            }
+        }
+
+        function resetIframe(kind) {
+            if (kind === 'gift' && !esPremiumPanel()) {
+                premiumAlert();
+                return;
+            }
+            if (kind === 'gvm' && !esPremiumPanel()) {
+                premiumAlert();
+                return;
+            }
+            if (kind === 'batalla' && !esPremiumPanel()) {
+                premiumAlert();
+                return;
+            }
+            if (kind === 'batalla_likes' && !esPremiumPanel()) {
+                premiumAlert();
+                return;
+            }
+            const iframe = kind === 'gift' ? ifGift : kind === 'streak' ? ifStreak : kind === 'top1' ? ifTop1 : kind === 'batalla' ? ifBatalla : kind === 'batalla_likes' ? ifBatallaLikes : kind === 'gvm' ? ifGvm : ifGvg;
+            iframe.src = buildSrc(kind, true);
+        }
+
+        function refreshGvmIframe() {
+            if (!esPremiumPanel()) {
+                premiumAlert();
+                return;
+            }
+            if (ifGvm) ifGvm.src = buildSrc('gvm', true);
+        }
+
+        function gvmStop() {
+            if (!esPremiumPanel()) {
+                premiumAlert();
+                return;
+            }
+            try {
+                if (ifGvm && ifGvm.contentWindow) {
+                    ifGvm.contentWindow.postMessage({ type: 'gift_vs_multi_local_reset' }, '*');
+                }
+            } catch (e) {}
+            const u = getUser();
+            if (u) {
+                socket.emit('gift_vs_multi_reset', { user: u });
+            }
+        }
+
+        function openConfig(kind) {
+            if (kind === 'gift' && !esPremiumPanel()) {
+                premiumAlert();
+                return;
+            }
+            if ((kind === 'batalla' || kind === 'batalla_likes') && !esPremiumPanel()) {
+                premiumAlert();
+                return;
+            }
+            if (kind === 'gift') {
+                modalGift.classList.add('open');
+            } else if (kind === 'top1') {
+                modalTop1.classList.add('open');
+            } else if (kind === 'batalla') {
+                const st = loadBatallaStyle();
+                const inl = document.getElementById('bat-limit-inline');
+                if (inl) {
+                    const n = parseInt(inl.value, 10);
+                    if (!Number.isNaN(n)) st.limit = n;
+                }
+                st.limit = clampVsRankingLimit(st.limit != null ? st.limit : 3);
+                applyBatallaForm(st);
+                modalBatalla.classList.add('open');
+            } else if (kind === 'batalla_likes') {
+                const st = loadBatallaLikesStyle();
+                const inl = document.getElementById('blk-limit-inline');
+                if (inl) {
+                    const n = parseInt(inl.value, 10);
+                    if (!Number.isNaN(n)) st.limit = n;
+                }
+                st.limit = clampVsRankingLimit(st.limit != null ? st.limit : 3);
+                applyBatallaLikesForm(st);
+                modalBatallaLikes.classList.add('open');
+            } else {
+                modalStreak.classList.add('open');
+            }
+        }
+
+        function closeConfig(kind) {
+            if (kind === 'gift') {
+                saveGiftStyle(readGiftForm());
+                modalGift.classList.remove('open');
+                refreshUrls();
+                ifGift.src = buildSrc('gift', true);
+                pushGiftStyleToIframe();
+            } else if (kind === 'top1') {
+                saveTop1Style(readTop1Form());
+                modalTop1.classList.remove('open');
+                refreshUrls();
+                if (ifTop1) ifTop1.src = buildSrc('top1', true);
+                pushTop1StyleToIframe();
+            } else if (kind === 'batalla') {
+                saveBatallaStyle(readBatallaForm());
+                modalBatalla.classList.remove('open');
+                const inl = document.getElementById('bat-limit-inline');
+                const bm = document.getElementById('bat-limit');
+                if (inl && bm) {
+                    const n = clampVsRankingLimit(bm.value);
+                    bm.value = String(n);
+                    inl.value = String(n);
+                }
+                refreshUrls();
+                if (ifBatalla) ifBatalla.src = buildSrc('batalla', true);
+                pushBatallaStyleToIframe();
+            } else if (kind === 'batalla_likes') {
+                saveBatallaLikesStyle(readBatallaLikesForm());
+                modalBatallaLikes.classList.remove('open');
+                const inl = document.getElementById('blk-limit-inline');
+                const bm = document.getElementById('blk-limit');
+                if (inl && bm) {
+                    const n = clampVsRankingLimit(bm.value);
+                    bm.value = String(n);
+                    inl.value = String(n);
+                }
+                refreshUrls();
+                if (ifBatallaLikes) ifBatallaLikes.src = buildSrc('batalla_likes', true);
+                pushBatallaLikesStyleToIframe();
+            } else {
+                saveStreakStyle(readStreakForm());
+                modalStreak.classList.remove('open');
+                refreshUrls();
+                ifStreak.src = buildSrc('streak', true);
+                pushStreakStyleToIframe();
+            }
+        }
+
+        modalGift.addEventListener('click', function (e) {
+            if (e.target === modalGift) closeConfig('gift');
+        });
+        modalStreak.addEventListener('click', function (e) {
+            if (e.target === modalStreak) closeConfig('streak');
+        });
+        if (modalTop1) {
+            modalTop1.addEventListener('click', function (e) {
+                if (e.target === modalTop1) closeConfig('top1');
+            });
+        }
+        if (modalBatalla) {
+            modalBatalla.addEventListener('click', function (e) {
+                if (e.target === modalBatalla) closeConfig('batalla');
+            });
+        }
+        if (modalBatallaLikes) {
+            modalBatallaLikes.addEventListener('click', function (e) {
+                if (e.target === modalBatallaLikes) closeConfig('batalla_likes');
+            });
+        }
+
+        document.addEventListener('keydown', function (e) {
+            if (e.key !== 'Escape') return;
+            if (modalGift.classList.contains('open')) closeConfig('gift');
+            else if (modalTop1 && modalTop1.classList.contains('open')) closeConfig('top1');
+            else if (modalBatalla && modalBatalla.classList.contains('open')) closeConfig('batalla');
+            else if (modalBatallaLikes && modalBatallaLikes.classList.contains('open')) closeConfig('batalla_likes');
+            else if (modalStreak.classList.contains('open')) closeConfig('streak');
+        });
+
+        function updateSock() {
+            const el = document.getElementById('sock-status');
+            const ok = socket && socket.connected;
+            el.classList.toggle('ok', ok);
+            document.getElementById('sock-txt').textContent = ok ? 'Socket OK' : 'Sin conexión';
+        }
+
+        socket.on('connect', updateSock);
+        socket.on('disconnect', updateSock);
+
+        window.addEventListener('message', function (e) {
+            const d = e.data;
+            if (!d || d.type !== 'gift_vs_scores') return;
+            if (gvsDispL) gvsDispL.textContent = String(d.left != null ? d.left : 0);
+            if (gvsDispR) gvsDispR.textContent = String(d.right != null ? d.right : 0);
+        });
+
+        ['gvs-meta', 'gvs-gs'].forEach(function (id) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.addEventListener('change', scheduleGvsSync);
+            el.addEventListener('input', scheduleGvsSync);
+        });
+        (function () {
+            const og = document.getElementById('gvs-og');
+            if (og) og.addEventListener('change', scheduleGvsSync);
+        })();
+        ['gift-title-rainbow', 'gift-tc1', 'gift-tc2', 'gift-tc3', 'gift-nc', 'gift-ns', 'gift-vc', 'gift-vs', 'gift-cl'].forEach(function (id) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.addEventListener('change', scheduleGiftSync);
+            el.addEventListener('input', scheduleGiftSync);
+        });
+        ['streak-title-rainbow', 'streak-tc1', 'streak-tc2', 'streak-tc3', 'streak-nc', 'streak-ns', 'streak-vc', 'streak-vs'].forEach(function (id) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.addEventListener('change', scheduleStreakSync);
+            el.addEventListener('input', scheduleStreakSync);
+        });
+        ['top1-header-title', 'top1-header-rainbow', 'top1-hc1', 'top1-hc2', 'top1-hc3', 'top1-ng1', 'top1-ng2', 'top1-ng3', 'top1-vc', 'top1-vs', 'top1-cc', 'top1-cl', 'top1-sh', 'top1-sc', 'top1-fx'].forEach(function (id) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.addEventListener('change', scheduleTop1Sync);
+            el.addEventListener('input', scheduleTop1Sync);
+        });
+        (function () {
+            const inl = document.getElementById('bat-limit-inline');
+            if (!inl) return;
+            inl.addEventListener('change', scheduleBatallaSync);
+            inl.addEventListener('input', scheduleBatallaSync);
+        })();
+        (function () {
+            const inl = document.getElementById('blk-limit-inline');
+            if (!inl) return;
+            inl.addEventListener('change', scheduleBatallaLikesSync);
+            inl.addEventListener('input', scheduleBatallaLikesSync);
+        })();
+        ['bat-limit', 'bat-rg', 'bat-ph', 'bat-nr', 'bat-ng1', 'bat-ng2', 'bat-ng3', 'bat-sc', 'bat-vc', 'bat-vg', 'bat-vga', 'bat-cc', 'bat-cg', 'bat-cga', 'bat-vs1', 'bat-vs2', 'bat-vs3', 'bat-vxg1', 'bat-vxga1', 'bat-vxg2', 'bat-vxga2', 'bat-c1b', 'bat-c1ba', 'bat-c1d', 'bat-c1da', 'bat-c1i1', 'bat-c1i1a', 'bat-c1i2', 'bat-c1i2a', 'bat-c2b', 'bat-c2ba', 'bat-c2d', 'bat-c2da', 'bat-crb', 'bat-crba', 'bat-crd', 'bat-crda', 'bat-h1a', 'bat-h1b', 'bat-h2a', 'bat-h2b', 'bat-h3a', 'bat-h3b', 'bat-ht', 'bat-a1b', 'bat-a1ba', 'bat-a1g', 'bat-a1ga', 'bat-a2b', 'bat-a2ba', 'bat-a2g', 'bat-a2ga', 'bat-arb', 'bat-arba', 'bat-arg', 'bat-arga', 'bat-phc', 'bat-phca', 'bat-phg', 'bat-phga'].forEach(function (id) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.addEventListener('change', scheduleBatallaSync);
+            el.addEventListener('input', scheduleBatallaSync);
+        });
+        ['blk-limit', 'blk-rg', 'blk-ph', 'blk-ic', 'blk-nr', 'blk-ng1', 'blk-ng2', 'blk-ng3', 'blk-sc', 'blk-vc', 'blk-vg', 'blk-vga', 'blk-cc', 'blk-cg', 'blk-cga', 'blk-vs1', 'blk-vs2', 'blk-vs3', 'blk-vxg1', 'blk-vxga1', 'blk-vxg2', 'blk-vxga2', 'blk-c1b', 'blk-c1ba', 'blk-c1d', 'blk-c1da', 'blk-c1i1', 'blk-c1i1a', 'blk-c1i2', 'blk-c1i2a', 'blk-c2b', 'blk-c2ba', 'blk-c2d', 'blk-c2da', 'blk-crb', 'blk-crba', 'blk-crd', 'blk-crda', 'blk-h1a', 'blk-h1b', 'blk-h2a', 'blk-h2b', 'blk-h3a', 'blk-h3b', 'blk-ht', 'blk-a1b', 'blk-a1ba', 'blk-a1g', 'blk-a1ga', 'blk-a2b', 'blk-a2ba', 'blk-a2g', 'blk-a2ga', 'blk-arb', 'blk-arba', 'blk-arg', 'blk-arga', 'blk-phc', 'blk-phca', 'blk-phg', 'blk-phga'].forEach(function (id) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.addEventListener('change', scheduleBatallaLikesSync);
+            el.addEventListener('input', scheduleBatallaLikesSync);
+        });
+        ['gvm-meta', 'gvm-gs', 'gvm-og'].forEach(function (id) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.addEventListener('change', scheduleGvmSync);
+            el.addEventListener('input', scheduleGvmSync);
+        });
+        (function () {
+            const gvmRc = document.getElementById('gvm-rows-count');
+            if (!gvmRc) return;
+            gvmRc.addEventListener('change', function () {
+                const n = Math.min(12, Math.max(1, parseInt(this.value, 10) || 1));
+                this.value = String(n);
+                const prev = readGvmForm();
+                let pairs = prev.pairs.slice();
+                while (pairs.length < n) {
+                    pairs.push({ gl: '', gr: '' });
+                }
+                pairs = pairs.slice(0, n);
+                renderGvmRowsUI(n, pairs);
+                scheduleGvmSync();
+            });
+        })();
+
+        (async function initGiftsPanel() {
+            await cargarCatalogoRegalosGvs();
+            applyGiftForm(loadGiftStyle());
+            applyStreakForm(loadStreakStyle());
+            applyTop1Form(loadTop1Style());
+            applyBatallaForm(loadBatallaStyle());
+            applyBatallaLikesForm(loadBatallaLikesStyle());
+            applyGvsForm(loadGvs());
+            applyGvmForm(loadGvm());
+            loadIframes();
+            refreshUrls();
+            updatePremiumGateMejorRegalo();
+            updatePremiumGateGvm();
+            updatePremiumGateBatallaOverlays();
+            updateSock();
+            setInterval(refreshUrls, 2500);
+            setInterval(updatePremiumGateMejorRegalo, 3000);
+            setInterval(updatePremiumGateGvm, 3000);
+            setInterval(updatePremiumGateBatallaOverlays, 3000);
+        })();
+    </script>
+</body>
+</html>

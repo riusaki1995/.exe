@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="no-referrer">
+    <title>Overlay - Top diamantes (regalos)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800;900&display=swap');
+
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Inter', system-ui, sans-serif;
+            color: #fff;
+            background: transparent;
+        }
+
+        .widget-container {
+            width: 920px;
+            max-width: 96vw;
+            padding: 0;
+            cursor: pointer;
+        }
+
+        .user-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+        }
+
+        .user-item {
+            display: grid;
+            grid-template-columns: 88px 100px minmax(0, 1fr) minmax(140px, auto);
+            align-items: center;
+            gap: 0 16px;
+            padding: 14px 18px 14px 12px;
+            background: rgba(12, 28, 38, 0.82);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+            transition: background 0.2s ease;
+        }
+
+        .user-item:last-child {
+            border-bottom: none;
+        }
+
+        .user-item:hover {
+            background: rgba(18, 42, 56, 0.9);
+        }
+
+        .rank-cell {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 72px;
+            border-right: 1px solid rgba(255, 255, 255, 0.12);
+            padding-right: 8px;
+        }
+
+        .rank-num {
+            font-size: 40px;
+            font-weight: 800;
+            color: rgba(255, 255, 255, 0.92);
+            letter-spacing: -0.02em;
+        }
+
+        .medal-wrap {
+            width: 64px;
+            height: 64px;
+            filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.45));
+        }
+
+        .medal-wrap svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .avatar {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid rgba(255, 255, 255, 0.25);
+            box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.2), 0 4px 14px rgba(0, 0, 0, 0.35);
+        }
+
+        .user-item[data-rank="1"] .avatar {
+            border-color: #ffd54f;
+            box-shadow: 0 0 0 2px rgba(255, 193, 7, 0.35), 0 0 20px rgba(255, 215, 0, 0.35);
+        }
+
+        .user-item[data-rank="2"] .avatar {
+            border-color: #cfd8dc;
+            box-shadow: 0 0 0 2px rgba(189, 189, 189, 0.4), 0 0 16px rgba(200, 200, 220, 0.25);
+        }
+
+        .user-item[data-rank="3"] .avatar {
+            border-color: #ffab73;
+            box-shadow: 0 0 0 2px rgba(205, 127, 50, 0.35), 0 0 16px rgba(205, 127, 50, 0.25);
+        }
+
+        /* Nombre: gradiente magenta → cian (como referencia visual top likes / captura) */
+        .username {
+            font-weight: 800;
+            font-size: 32px;
+            line-height: 1.2;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            padding: 4px 0;
+            background: linear-gradient(90deg, #ff2d95 0%, #c026d3 35%, #22d3ee 70%, #38bdf8 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 10px rgba(192, 38, 211, 0.4)) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.75));
+        }
+
+        .coins-cell {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 10px;
+            min-width: 0;
+            padding-left: 8px;
+        }
+
+        .coin-icon {
+            flex-shrink: 0;
+            line-height: 0;
+            filter: drop-shadow(0 0 8px rgba(255, 193, 7, 0.55)) drop-shadow(0 1px 2px rgba(0, 0, 0, 0.4));
+        }
+
+        .coin-icon svg {
+            width: 28px;
+            height: 28px;
+            display: block;
+        }
+
+        .coins-count {
+            font-size: 34px;
+            font-weight: 900;
+            color: #fff;
+            letter-spacing: -0.02em;
+            white-space: nowrap;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+            font-variant-numeric: tabular-nums;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="widget-container" id="btn-prueba" title="Clic para simular un regalo de prueba">
+        <div class="user-list" id="lista-diamantes"></div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/js/overlay_room.js?v=1"></script>
+    <script>
+        const socket = io();
+        const params = new URLSearchParams(window.location.search);
+        const streamerId = params.get('user');
+        const isPreviewEmbed = params.get('preview_embed') === '1';
+
+        let maxRows = Math.min(15, Math.max(3, parseInt(params.get('rows') || '5', 10) || 5));
+
+        if (streamerId) {
+            setupOverlaySocketRoom(socket, streamerId);
+            console.log('Top diamantes: canal ' + streamerId);
+        } else if (!isPreviewEmbed) {
+            console.warn('Top diamantes: falta ?user= en la URL');
+        }
+
+        let topDonadores = {};
+        let userCache = {};
+        let combosRegalosActivos = {};
+        let diamantesTickTimer = null;
+        const DIAM_TICK_MS = 26;
+        const DIAM_BURST_GAP = 140;
+
+        function ensureDiamantesDisplay(u) {
+            if (u.diamantesDisplay == null) u.diamantesDisplay = u.diamantes || 0;
+        }
+
+        function scheduleDiamantesTick() {
+            if (diamantesTickTimer) return;
+            diamantesTickTimer = setInterval(function () {
+                let moved = false;
+                Object.keys(topDonadores).forEach(function (id) {
+                    const u = topDonadores[id];
+                    ensureDiamantesDisplay(u);
+                    const gap = (u.diamantes || 0) - u.diamantesDisplay;
+                    if (gap <= 0) return;
+                    const step = gap > DIAM_BURST_GAP ? Math.min(12, Math.ceil(gap / 35)) : 1;
+                    u.diamantesDisplay = Math.min(u.diamantes, u.diamantesDisplay + step);
+                    moved = true;
+                });
+                if (moved) actualizarUI();
+                let pending = false;
+                Object.keys(topDonadores).forEach(function (id) {
+                    const u = topDonadores[id];
+                    ensureDiamantesDisplay(u);
+                    if ((u.diamantes || 0) > u.diamantesDisplay) pending = true;
+                });
+                if (!pending) {
+                    clearInterval(diamantesTickTimer);
+                    diamantesTickTimer = null;
+                }
+            }, DIAM_TICK_MS);
+        }
+
+        /** Diamantes de este evento socket (combos: delta por repeatCount, al momento). */
+        function diamondCoinsThisSocketEvent(data) {
+            let d = data.diamondCount;
+            if (d === undefined && data.giftDetails) d = data.giftDetails.diamondCount;
+            const per = Math.max(0, Number(d) || 0);
+            if (per <= 0) return 0;
+            if (data.giftType !== 1) {
+                const r = Math.max(1, Number(data.repeatCount) || 1);
+                return per * r;
+            }
+            const idUnicoGrupo = data.groupId != null ? data.groupId : data.giftId;
+            const prev = combosRegalosActivos[idUnicoGrupo] || 0;
+            const rc = Math.max(0, Number(data.repeatCount) || 0);
+            const nuevos = rc - prev;
+            if (data.giftType === 1) combosRegalosActivos[idUnicoGrupo] = data.repeatCount;
+            if (nuevos <= 0) return 0;
+            return per * nuevos;
+        }
+
+        function applyRowsFromConfig(n) {
+            const v = parseInt(n, 10);
+            if (isNaN(v)) return;
+            maxRows = Math.min(15, Math.max(3, v));
+        }
+
+        function limpiarNombreMostrar(raw) {
+            if (raw == null || raw === '') return 'Usuario';
+            let s = String(raw).trim();
+            s = s.replace(/^@+/, '');
+            return s || 'Usuario';
+        }
+
+        function medalSvg(place, uid) {
+            const safe = String(uid || 'x').replace(/\W/g, '').slice(0, 12) || 'x';
+            const id = 'g' + place + '-' + safe;
+            if (place === 1) {
+                return `<div class="medal-wrap" aria-hidden="true"><svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+                    <defs><linearGradient id="${id}a" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#fffde7"/><stop offset="40%" stop-color="#ffc107"/><stop offset="100%" stop-color="#ff8f00"/>
+                    </linearGradient></defs>
+                    <circle cx="40" cy="40" r="34" fill="url(#${id}a)" stroke="#b8860b" stroke-width="2.5"/>
+                    <text x="40" y="52" text-anchor="middle" font-size="30" font-weight="900" font-family="Inter,sans-serif" fill="#4e342e">1</text>
+                </svg></div>`;
+            }
+            if (place === 2) {
+                return `<div class="medal-wrap" aria-hidden="true"><svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+                    <defs><linearGradient id="${id}b" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#fafafa"/><stop offset="50%" stop-color="#b0bec5"/><stop offset="100%" stop-color="#78909c"/>
+                    </linearGradient></defs>
+                    <circle cx="40" cy="40" r="34" fill="url(#${id}b)" stroke="#607d8b" stroke-width="2.5"/>
+                    <text x="40" y="52" text-anchor="middle" font-size="30" font-weight="900" font-family="Inter,sans-serif" fill="#37474f">2</text>
+                </svg></div>`;
+            }
+            return `<div class="medal-wrap" aria-hidden="true"><svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+                <defs><linearGradient id="${id}c" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#ffe0b2"/><stop offset="45%" stop-color="#cd7f32"/><stop offset="100%" stop-color="#5d4037"/>
+                </linearGradient></defs>
+                <circle cx="40" cy="40" r="34" fill="url(#${id}c)" stroke="#6d4c41" stroke-width="2.5"/>
+                <text x="40" y="52" text-anchor="middle" font-size="30" font-weight="900" font-family="Inter,sans-serif" fill="#3e2723">3</text>
+            </svg></div>`;
+        }
+
+        function actualizarUI() {
+            const arr = Object.values(topDonadores).sort((a, b) => b.diamantes - a.diamantes);
+            const contenedor = document.getElementById('lista-diamantes');
+            contenedor.innerHTML = '';
+
+            arr.slice(0, maxRows).forEach((user, index) => {
+                const rank = index + 1;
+                const rankHtml = rank <= 3
+                    ? medalSvg(rank, user.id || user.name || 'u' + index)
+                    : `<span class="rank-num">${rank}.</span>`;
+
+                const div = document.createElement('div');
+                div.className = 'user-item';
+                div.dataset.rank = String(rank);
+                const nombreSeguro = limpiarNombreMostrar(user.name);
+                div.innerHTML = `
+                    <div class="rank-cell">${rankHtml}</div>
+                    <img class="avatar" alt="" src="">
+                    <span class="username"></span>
+                    <div class="coins-cell">
+                        <span class="coin-icon" aria-hidden="true"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="11" fill="#ffc107"/><circle cx="12" cy="12" r="5.2" fill="none" stroke="#fff8e1" stroke-width="2.2"/></svg></span>
+                        <span class="coins-count">${(user.diamantesDisplay != null ? user.diamantesDisplay : user.diamantes).toLocaleString('es-ES')}</span>
+                    </div>
+                `;
+                const img = div.querySelector('.avatar');
+                img.src = user.pic;
+                img.referrerPolicy = 'no-referrer';
+                img.onerror = function () {
+                    this.onerror = null;
+                    this.src = 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png';
+                };
+                const nameEl = div.querySelector('.username');
+                nameEl.textContent = nombreSeguro;
+                nameEl.title = nombreSeguro;
+                contenedor.appendChild(div);
+            });
+        }
+
+        function procesargift(data) {
+            const ptsNuevos = diamondCoinsThisSocketEvent(data);
+            if (ptsNuevos <= 0) return;
+
+            const userId = data.uniqueId || data.user?.uniqueId || 'usuario_oculto';
+            const nombre = data.nickname || userId;
+
+            let foto = userCache[userId] || 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png';
+            if (data.profilePictureUrl) {
+                foto = data.profilePictureUrl;
+                userCache[userId] = foto;
+            } else if (data.user?.profilePictureUrl) {
+                foto = data.user.profilePictureUrl;
+                userCache[userId] = foto;
+            } else if (data.user?.avatarThumb?.urlList?.length > 0) {
+                foto = data.user.avatarThumb.urlList[0];
+                userCache[userId] = foto;
+            }
+
+            if (!topDonadores[userId]) {
+                topDonadores[userId] = {
+                    id: userId,
+                    name: nombre,
+                    diamantes: 0,
+                    diamantesDisplay: 0,
+                    pic: foto
+                };
+            } else {
+                topDonadores[userId].pic = foto;
+            }
+            ensureDiamantesDisplay(topDonadores[userId]);
+            topDonadores[userId].diamantes += ptsNuevos;
+            scheduleDiamantesTick();
+            actualizarUI();
+        }
+
+        socket.on('gift', (data) => {
+            if (isPreviewEmbed) return;
+            procesargift(data);
+        });
+
+        socket.on('nuevo_live', () => {
+            if (isPreviewEmbed) return;
+            if (diamantesTickTimer) {
+                clearInterval(diamantesTickTimer);
+                diamantesTickTimer = null;
+            }
+            topDonadores = {};
+            userCache = {};
+            combosRegalosActivos = {};
+            actualizarUI();
+        });
+
+        function seedPreviewDiamantes() {
+            const names = ['PreviewFan', 'MariaFan', 'LuisPro', 'SofiaStar', 'Cazador', 'Neo', 'Kai', 'Luna', 'Alex', 'Sam', 'River', 'Jordan', 'Casey', 'Taylor', 'Morgan'];
+            const pics = [
+                'https://randomuser.me/api/portraits/men/32.jpg',
+                'https://randomuser.me/api/portraits/women/44.jpg',
+                'https://randomuser.me/api/portraits/men/78.jpg',
+                'https://randomuser.me/api/portraits/women/65.jpg',
+                'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png'
+            ];
+            topDonadores = {};
+            userCache = {};
+            for (let i = 0; i < maxRows; i++) {
+                const id = 'preview_seed_' + i;
+                const pic = pics[i % pics.length];
+                const dm = 99999 - i * 800;
+                topDonadores[id] = {
+                    id: id,
+                    name: names[i] || ('Usuario ' + (i + 1)),
+                    diamantes: dm,
+                    diamantesDisplay: dm,
+                    pic: pic
+                };
+                userCache[id] = pic;
+            }
+            actualizarUI();
+        }
+
+        const nombresPrueba = [
+            { name: 'Juan', pic: 'https://randomuser.me/api/portraits/men/32.jpg' },
+            { name: 'Maria', pic: 'https://randomuser.me/api/portraits/women/44.jpg' },
+            { name: 'Luis', pic: 'https://randomuser.me/api/portraits/men/78.jpg' },
+            { name: 'Sofia', pic: 'https://randomuser.me/api/portraits/women/65.jpg' }
+        ];
+
+        document.getElementById('btn-prueba').addEventListener('click', () => {
+            if (isPreviewEmbed) return;
+            const random = nombresPrueba[Math.floor(Math.random() * nombresPrueba.length)];
+            procesargift({
+                uniqueId: random.name,
+                nickname: random.name,
+                diamondCount: Math.floor(Math.random() * 500) + 10,
+                repeatCount: 1,
+                repeatEnd: true,
+                giftType: 1,
+                profilePictureUrl: random.pic
+            });
+        });
+
+        function applyRankingConfigPayload(kind, config) {
+            if (kind !== 'topdiamantes' || !config) return;
+            if (config.rows != null) applyRowsFromConfig(config.rows);
+            if (isPreviewEmbed) seedPreviewDiamantes();
+            else actualizarUI();
+        }
+
+        socket.on('ranking_overlay_config', (data) => {
+            if (!data || data.kind !== 'topdiamantes' || !data.config) return;
+            applyRankingConfigPayload(data.kind, data.config);
+        });
+
+        window.addEventListener('message', (event) => {
+            const d = event && event.data;
+            if (!d || typeof d !== 'object') return;
+            if (d.type === 'ranking_config' && d.kind === 'topdiamantes' && d.config) {
+                applyRankingConfigPayload('topdiamantes', d.config);
+                return;
+            }
+            if (d.type !== 'overlay_test' || d.kind !== 'topdiamantes') return;
+            if (isPreviewEmbed) {
+                procesargift({
+                    uniqueId: 'preview_test_' + Date.now(),
+                    nickname: '¡Prueba!',
+                    diamondCount: 50000,
+                    repeatCount: 1,
+                    repeatEnd: true,
+                    giftType: 1,
+                    profilePictureUrl: 'https://randomuser.me/api/portraits/men/32.jpg'
+                });
+                return;
+            }
+            procesargift({
+                uniqueId: 'preview_donador',
+                nickname: 'Preview Donador',
+                diamondCount: 120,
+                repeatCount: 1,
+                repeatEnd: true,
+                giftType: 1,
+                profilePictureUrl: 'https://randomuser.me/api/portraits/men/32.jpg'
+            });
+        });
+
+        if (isPreviewEmbed) {
+            requestAnimationFrame(function () {
+                seedPreviewDiamantes();
+            });
+        }
+    </script>
+</body>
+</html>

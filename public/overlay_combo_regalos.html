@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta name="referrer" content="no-referrer">
+  <title>Overlay Combo Regalos</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Inter:wght@700;800;900&display=swap');
+
+    * { box-sizing: border-box; }
+    /* Diseño amplio para OBS. Foto: object-fit contain (cara completa). Vista previa del panel: escala en overlays.html */
+    html {
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: transparent;
+      font-family: 'Inter', system-ui, sans-serif;
+    }
+
+    /* Ancho generoso para x99 / x999; en OBS amplía la fuente del navegador si aún corta */
+    .combo-root {
+      position: fixed;
+      right: 12px;
+      bottom: 12px;
+      left: auto;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      width: max-content;
+      max-width: min(calc(100vw - 16px), 960px);
+      opacity: 0;
+      transform: translateY(24px) scale(0.96);
+      transition: opacity 0.35s ease, transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+      pointer-events: none;
+      box-sizing: border-box;
+      overflow: visible;
+    }
+
+    .combo-root.show {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+
+    .combo-row {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: nowrap;
+      align-items: center;
+      gap: 8px 12px;
+      min-width: 0;
+    }
+
+    /* Columna izquierda: avatar + nombre (una línea) */
+    .left-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 220px;
+      flex-shrink: 0;
+    }
+
+    .orbit-stage {
+      position: relative;
+      width: 220px;
+      height: 220px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .crown-wrap {
+      position: absolute;
+      top: 4px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 15;
+      width: 68px;
+      height: 54px;
+      filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5)) drop-shadow(0 0 12px rgba(255, 215, 0, 0.85));
+      animation: crown-float 3s ease-in-out infinite;
+    }
+
+    .crown-wrap svg { width: 100%; height: 100%; display: block; }
+
+    @keyframes crown-float {
+      0%, 100% { transform: translateX(-50%) translateY(0); }
+      50% { transform: translateX(-50%) translateY(-8px); }
+    }
+
+    .portrait-stack {
+      position: relative;
+      z-index: 5;
+      width: 150px;
+      height: 150px;
+      margin-top: 22px;
+    }
+
+    .gold-ring {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      padding: 8px;
+      z-index: 3;
+      background: linear-gradient(145deg, #fff8dc 0%, #ffd700 18%, #daa520 42%, #ffd700 58%, #b8860b 78%, #ffe55c 100%);
+      box-shadow:
+        0 0 0 2px rgba(139, 90, 0, 0.6),
+        0 10px 40px rgba(0, 0, 0, 0.45),
+        inset 0 4px 14px rgba(255, 255, 255, 0.45),
+        inset 0 -8px 20px rgba(100, 60, 0, 0.35),
+        0 0 60px rgba(255, 215, 0, 0.55);
+      animation: ring-shimmer 2.8s ease-in-out infinite;
+    }
+
+    @keyframes ring-shimmer {
+      0%, 100% {
+        filter: brightness(1);
+        box-shadow:
+          0 0 0 1px rgba(139, 90, 0, 0.6),
+          0 4px 16px rgba(0, 0, 0, 0.45),
+          inset 0 2px 6px rgba(255, 255, 255, 0.45),
+          0 0 28px rgba(255, 215, 0, 0.5);
+      }
+      50% {
+        filter: brightness(1.12);
+        box-shadow:
+          0 0 0 1px rgba(139, 90, 0, 0.6),
+          0 4px 20px rgba(0, 0, 0, 0.5),
+          inset 0 2px 8px rgba(255, 255, 255, 0.55),
+          0 0 42px rgba(255, 230, 120, 0.8),
+          0 0 56px rgba(0, 200, 255, 0.22);
+      }
+    }
+
+    .avatar-inner {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      overflow: hidden;
+      background: #0a1628;
+      border: 3px solid rgba(30, 58, 95, 0.9);
+      box-shadow: inset 0 0 28px rgba(0, 0, 0, 0.6);
+    }
+
+    /* Foto completa visible, centrada (sin recorte de cara) */
+    .avatar-inner img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      object-position: center center;
+      display: block;
+    }
+
+    /* Resplandor de colores entre el círculo y el texto COMBO */
+    .side-glow {
+      align-self: center;
+      width: 22px;
+      height: 140px;
+      margin: 0 4px 0 6px;
+      border-radius: 12px;
+      flex-shrink: 0;
+      background: linear-gradient(
+        180deg,
+        rgba(34, 211, 238, 0.95) 0%,
+        rgba(168, 85, 247, 0.9) 28%,
+        rgba(236, 72, 153, 0.88) 55%,
+        rgba(251, 191, 36, 0.92) 100%
+      );
+      filter: blur(10px);
+      opacity: 0.88;
+      animation: side-glow-pulse 3.2s ease-in-out infinite alternate;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    @keyframes side-glow-pulse {
+      0% {
+        opacity: 0.72;
+        transform: scaleY(0.96);
+        filter: blur(14px) hue-rotate(-8deg);
+      }
+      100% {
+        opacity: 0.95;
+        transform: scaleY(1.04);
+        filter: blur(20px) hue-rotate(18deg);
+      }
+    }
+
+    /* Panel lateral: COMBO + xN + regalo (no encoger para no recortar dígitos) */
+    .combo-panel {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: flex-start;
+      gap: 10px;
+      flex-shrink: 0;
+      min-width: min(280px, calc(100vw - 260px));
+    }
+
+    .combo-label {
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 0.22em;
+      color: #fcd34d;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.9), 0 0 14px rgba(250, 204, 21, 0.45);
+    }
+
+    .combo-line {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 6px;
+      min-width: 0;
+      max-width: 100%;
+    }
+
+    .mult {
+      font-size: 72px;
+      font-weight: 900;
+      line-height: 1;
+      font-style: italic;
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums;
+      background: linear-gradient(180deg, #fffef5 0%, #fde047 40%, #d97706 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 4px 8px rgba(0,0,0,0.95)) drop-shadow(0 0 28px rgba(251, 191, 36, 0.5));
+    }
+
+    .gift-wrap {
+      width: 76px;
+      height: 76px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-left: 4px;
+      margin-top: 2px;
+      filter: drop-shadow(0 0 28px rgba(255, 215, 0, 0.65));
+      animation: gift-bob 2s ease-in-out infinite;
+    }
+
+    .gift-wrap img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+
+    .gift-emoji {
+      font-size: 58px;
+      line-height: 1;
+    }
+
+    @keyframes gift-bob {
+      0%, 100% { transform: translateY(0) scale(1); }
+      50% { transform: translateY(-10px) scale(1.05); }
+    }
+
+    .user-name {
+      margin-top: 12px;
+      width: 100%;
+      max-width: 210px;
+      padding: 0 4px;
+      box-sizing: border-box;
+      text-align: center;
+      font-family: 'Cinzel', 'Inter', serif;
+      font-weight: 900;
+      font-size: 18px;
+      letter-spacing: 0.02em;
+      line-height: 1.2;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      background: linear-gradient(180deg, #fffef5 0%, #ffe066 45%, #ca8a04 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 4px 8px rgba(0,0,0,0.95));
+    }
+  </style>
+</head>
+<body>
+  <div id="combo-root" class="combo-root" aria-live="polite">
+    <div class="combo-row">
+      <div class="left-col">
+        <div class="orbit-stage">
+          <div class="portrait-stack">
+            <div class="gold-ring">
+              <div class="avatar-inner">
+                <img id="avatar" src="" alt="">
+              </div>
+            </div>
+            <div class="crown-wrap">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 100" aria-hidden="true">
+                <defs>
+                  <linearGradient id="combo-cg" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#fff8dc"/>
+                    <stop offset="35%" stop-color="#ffd700"/>
+                    <stop offset="70%" stop-color="#daa520"/>
+                    <stop offset="100%" stop-color="#b8860b"/>
+                  </linearGradient>
+                  <filter id="combo-gs" x="-20%" y="-20%" width="140%" height="140%">
+                    <feGaussianBlur in="SourceAlpha" stdDeviation="1.2" result="b"/>
+                    <feOffset dx="0" dy="2" in="b" result="o"/>
+                    <feMerge><feMergeNode in="o"/><feMergeNode in="SourceGraphic"/></feMerge>
+                  </filter>
+                </defs>
+                <path fill="url(#combo-cg)" stroke="#8b6914" stroke-width="1.2" filter="url(#combo-gs)"
+                  d="M60 8 L72 32 L98 18 L88 48 L112 52 L92 70 L96 94 L60 82 L24 94 L28 70 L8 52 L32 48 L22 18 L48 32 Z"/>
+                <ellipse cx="32" cy="52" rx="7" ry="9" fill="#c41e3a" stroke="#5c0010" stroke-width="0.5"/>
+                <ellipse cx="60" cy="58" rx="8" ry="10" fill="#dc143c" stroke="#5c0010" stroke-width="0.5"/>
+                <ellipse cx="88" cy="52" rx="7" ry="9" fill="#c41e3a" stroke="#5c0010" stroke-width="0.5"/>
+                <polygon points="24,38 28,44 20,44" fill="#e8e8ff" opacity="0.95"/>
+                <polygon points="60,42 64,50 56,50" fill="#f0f8ff" opacity="0.95"/>
+                <polygon points="96,38 100,44 92,44" fill="#e8e8ff" opacity="0.95"/>
+                <circle cx="60" cy="28" r="5" fill="#fffef0" stroke="#daa520" stroke-width="0.8"/>
+                <circle cx="38" cy="22" r="3.5" fill="#fffef0" stroke="#c9a227" stroke-width="0.6"/>
+                <circle cx="82" cy="22" r="3.5" fill="#fffef0" stroke="#c9a227" stroke-width="0.6"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+        <div id="user-name" class="user-name">Esperando…</div>
+      </div>
+
+      <div class="side-glow" aria-hidden="true"></div>
+
+      <div class="combo-panel">
+        <span class="combo-label">COMBO</span>
+        <div class="combo-line">
+          <span id="mult" class="mult">x1</span>
+          <div class="gift-wrap" id="gift-wrap">
+            <img id="gift-img" alt="" style="display:none;" />
+            <span id="gift-fallback" class="gift-emoji" aria-hidden="true">🎁</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/js/overlay_room.js?v=1"></script>
+  <script>
+    const socket = io();
+    const params = new URLSearchParams(window.location.search);
+    const user = (params.get('user') || '').trim().toLowerCase().replace(/^@+/, '');
+    if (user) setupOverlaySocketRoom(socket, user);
+
+    const DEFAULT_AVATAR = 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png';
+
+    const root = document.getElementById('combo-root');
+    const multEl = document.getElementById('mult');
+    const whoEl = document.getElementById('user-name');
+    const avatarEl = document.getElementById('avatar');
+    const giftImg = document.getElementById('gift-img');
+    const giftFallback = document.getElementById('gift-fallback');
+
+    let count = 0;
+    let lastAt = 0;
+    let hideTimer = null;
+
+    function pickProfilePic(d) {
+      let u = (d.profilePictureUrl || d.userProfilePictureUrl || '').trim();
+      if (u) return u;
+      const urls = d.userDetails && d.userDetails.profilePictureUrls;
+      if (Array.isArray(urls) && urls[0]) return String(urls[0]).trim();
+      return '';
+    }
+
+    function displayName(d) {
+      const nick = (d.nickname || d.nickName || '').trim();
+      const id = (d.uniqueId || '').trim();
+      if (nick) return nick;
+      if (id) return '@' + id;
+      return 'Usuario';
+    }
+
+    function giftEmojiFromName(name) {
+      const n = (name || '').toLowerCase();
+      if (n.includes('rose')) return '🌹';
+      if (n.includes('heart') || n.includes('coraz')) return '❤️';
+      if (n.includes('gg') || n.includes('fuego')) return '🔥';
+      return '🎁';
+    }
+
+    function setGiftVisual(d) {
+      const url = (d.giftPictureUrl || '').trim();
+      if (url) {
+        giftImg.style.display = 'block';
+        giftFallback.style.display = 'none';
+        giftImg.onerror = function () {
+          giftImg.style.display = 'none';
+          giftFallback.style.display = 'block';
+          giftFallback.textContent = giftEmojiFromName(d.giftName);
+        };
+        giftImg.src = url;
+        giftImg.alt = d.giftName || 'regalo';
+      } else {
+        giftImg.style.display = 'none';
+        giftImg.removeAttribute('src');
+        giftFallback.style.display = 'block';
+        giftFallback.textContent = giftEmojiFromName(d.giftName);
+      }
+    }
+
+    function computeMultiplier(d) {
+      const now = Date.now();
+      const win = 9000;
+      if (now - lastAt > win) count = 0;
+      lastAt = now;
+      count += 1;
+      const rc = parseInt(d.repeatCount, 10) || 0;
+      return Math.max(1, count, rc);
+    }
+
+    function ajustarTamanoMult() {
+      const len = (multEl.textContent || '').length;
+      multEl.style.fontSize = '';
+      multEl.style.letterSpacing = '';
+      if (len <= 4) multEl.style.fontSize = '72px';
+      else if (len <= 6) multEl.style.fontSize = '54px';
+      else if (len <= 9) multEl.style.fontSize = '40px';
+      else {
+        multEl.style.fontSize = '32px';
+        multEl.style.letterSpacing = '-0.03em';
+      }
+    }
+
+    function activarCombo(d) {
+      if (!d) return;
+      const mult = computeMultiplier(d);
+      multEl.textContent = 'x' + mult;
+      ajustarTamanoMult();
+      whoEl.textContent = displayName(d);
+
+      avatarEl.onerror = function () {
+        this.onerror = null;
+        this.src = DEFAULT_AVATAR;
+      };
+      avatarEl.src = pickProfilePic(d) || DEFAULT_AVATAR;
+      avatarEl.alt = displayName(d);
+
+      setGiftVisual(d);
+
+      root.classList.add('show');
+      clearTimeout(hideTimer);
+      hideTimer = setTimeout(function () {
+        root.classList.remove('show');
+      }, 3800);
+    }
+
+    function resetOverlay() {
+      count = 0;
+      lastAt = 0;
+      multEl.textContent = 'x1';
+      ajustarTamanoMult();
+      whoEl.textContent = 'Esperando…';
+      avatarEl.src = DEFAULT_AVATAR;
+      root.classList.remove('show');
+      clearTimeout(hideTimer);
+    }
+
+    socket.on('gift', activarCombo);
+    socket.on('nuevo_live', resetOverlay);
+
+    window.addEventListener('message', function (event) {
+      if (!event?.data || event.data.type !== 'overlay_test') return;
+      if (event.data.kind !== 'combo') return;
+      const p = event.data.payload || {};
+      activarCombo({
+        uniqueId: p.uniqueId || 'preview_fan',
+        nickname: p.nickname || 'Combo Preview',
+        repeatCount: p.repeatCount != null ? p.repeatCount : 3,
+        profilePictureUrl: p.profilePictureUrl || 'https://randomuser.me/api/portraits/men/32.jpg',
+        giftPictureUrl: p.giftPictureUrl || '',
+        giftName: p.giftName || 'rose'
+      });
+    });
+  </script>
+</body>
+</html>

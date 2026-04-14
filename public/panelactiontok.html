@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>ActionTok - Panel de Control VIP</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+        body { background-color: #0f172a; color: #e2e8f0; font-family: 'Inter', sans-serif; margin: 0; padding: 40px 20px; }
+        h1 { color: #00f2fe; text-align: center; font-weight: 800; font-size: 32px; margin-bottom: 5px; }
+        .glass { background: #1e293b; border: 1px solid #334155; border-radius: 16px; padding: 25px; max-width: 1180px; margin: 0 auto; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); }
+        .plan-cell { min-width: 200px; }
+        .plan-restante { font-size: 12px; color: #fbbf24; font-weight: 600; margin-bottom: 8px; }
+        .plan-restante--muted { color: #94a3b8; font-weight: 500; }
+        .plan-trial-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 6px; max-width: 200px; }
+        .input-dias-trial { width: 52px; padding: 6px 8px; border-radius: 6px; border: 1px solid #475569; background: #0f172a; color: #e2e8f0; font-size: 13px; }
+        .btn-trial { font-size: 11px !important; padding: 6px 10px !important; width: auto !important; max-width: none !important; display: inline-block !important; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; background: #0f172a; border-radius: 8px; overflow: hidden; }
+        th, td { padding: 15px 20px; text-align: left; border-bottom: 1px solid #1e293b; }
+        th { color: #64748b; font-weight: 600; text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px; background: #0b1120; }
+        tr:hover { background: #1e293b; }
+        
+        .btn-toggle { padding: 8px 16px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s; color: white; width: 140px; text-align: center; }
+        .btn-on { background: #10b981; box-shadow: 0 4px 6px rgba(16, 185, 129, 0.2); } 
+        .btn-on:hover { background: #059669; transform: translateY(-2px); }
+        .btn-off { background: #ef4444; box-shadow: 0 4px 6px rgba(239, 68, 68, 0.2); } 
+        .btn-off:hover { background: #dc2626; transform: translateY(-2px); }
+        
+        .btn-delete { background: transparent; border: 1px solid #ef4444; color: #ef4444; padding: 6px 12px; border-radius: 6px; cursor: pointer; transition: 0.2s; }
+        .btn-delete:hover { background: #ef4444; color: white; }
+        
+        .badge-pendiente { background: rgba(245, 158, 11, 0.1); color: #f59e0b; border: 1px solid #f59e0b; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: bold; }
+        .badge-activo { background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid #10b981; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: bold; }
+        .badge-premium { background: rgba(234, 179, 8, 0.12); color: #fbbf24; border: 1px solid #eab308; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: bold; display: inline-block; margin-bottom: 6px; }
+        .badge-gratis-plan { background: rgba(100, 116, 139, 0.15); color: #94a3b8; border: 1px solid #64748b; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: bold; display: inline-block; margin-bottom: 6px; }
+        .btn-plan { padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; border: none; display: block; width: 100%; max-width: 140px; }
+        .btn-plan-up { background: linear-gradient(135deg, #eab308, #ca8a04); color: #0f172a; }
+        .btn-plan-up:hover { filter: brightness(1.08); }
+        .btn-plan-down { background: #334155; color: #e2e8f0; border: 1px solid #475569; }
+        .btn-plan-down:hover { background: #475569; }
+    </style>
+</head>
+<body>
+
+    <h1>🛡️ Centro de Comando</h1>
+    <div class="glass">
+        <p style="text-align: center; color: #94a3b8; margin-top: 0; margin-bottom: 30px;">Administra accesos y planes. El Premium con fecha caduca solo en la app al pasar el tiempo; este panel también baja a Gratis al recargar la lista si ya venció.</p>
+        <table>
+            <thead>
+                <tr>
+                    <th>Usuario</th>
+                    <th>Clave</th>
+                    <th>Estado</th>
+                    <th>Plan (Premium)</th>
+                    <th>Conexión</th>
+                    <th>Permiso de Acceso</th>
+                    <th>Borrar</th>
+                </tr>
+            </thead>
+            <tbody id="tabla-usuarios">
+                <tr><td colspan="7" style="text-align:center; color:#64748b;">Cargando base de datos...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
+
+    <script>
+        // 🔒 CANDADO DE SEGURIDAD LOCAL
+        const pass = prompt("🔑 Ingresa la contraseña maestra para abrir el panel de administración:");
+        if (pass !== "jesusadmin") { 
+            document.body.innerHTML = "<h1 style='color:#ef4444; text-align:center; margin-top:100px;'>❌ ACCESO DENEGADO</h1>";
+            throw new Error("Contraseña incorrecta");
+        }
+
+        // CONEXIÓN A TU FIREBASE
+        const firebaseConfig = {
+            apiKey: "AIzaSyDu8xtkLKuy1yzx1hnPXFktOFQoUQT2f28",
+            authDomain: "neobound-d550c.firebaseapp.com",
+            databaseURL: "https://neobound-d550c-default-rtdb.firebaseio.com",
+            projectId: "neobound-d550c",
+            storageBucket: "neobound-d550c.firebasestorage.app",
+            messagingSenderId: "940619432993",
+            appId: "1:940619432993:web:357b7170577c572571cf60"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        const tabla = document.getElementById('tabla-usuarios');
+        const MS_DIA = 86400000;
+        const PREMIUM_DIAS_DEFAULT = 30;
+
+        function escapeAttr(s) {
+            return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+        }
+
+        function textoRestante(ms) {
+            if (ms <= 0) return 'Caducado';
+            const d = Math.floor(ms / MS_DIA);
+            const h = Math.floor((ms % MS_DIA) / 3600000);
+            const m = Math.floor((ms % 3600000) / 60000);
+            if (d > 0) return 'Quedan ' + d + 'd ' + h + 'h';
+            if (h > 0) return 'Quedan ' + h + 'h ' + m + 'm';
+            return 'Quedan ' + m + 'm';
+        }
+
+        function setPremiumDesdeAhora(usuario, dias) {
+            const hasta = Date.now() + dias * MS_DIA;
+            return db.ref('usuarios_vip/' + usuario).update({ plan: 'premium', premium_expires_at: hasta });
+        }
+
+        function extenderDesdeFinActual(usuario, datos, dias) {
+            let base = Date.now();
+            if (datos && datos.plan === 'premium' && datos.premium_expires_at != null) {
+                const fin = Number(datos.premium_expires_at);
+                if (Number.isFinite(fin) && fin > base) base = fin;
+            }
+            const hasta = base + dias * MS_DIA;
+            return db.ref('usuarios_vip/' + usuario).update({ plan: 'premium', premium_expires_at: hasta });
+        }
+
+        function pasarAGratis(usuario) {
+            return db.ref('usuarios_vip/' + usuario).update({ plan: 'gratis', premium_expires_at: null });
+        }
+
+        // 👁️ RADAR EN TIEMPO REAL
+        db.ref('usuarios_vip').on('value', (snapshot) => {
+            tabla.innerHTML = ''; 
+            
+            if (!snapshot.exists()) {
+                tabla.innerHTML = '<tr><td colspan="7" style="text-align:center; color:#94a3b8;">No hay usuarios registrados todavía.</td></tr>';
+                return;
+            }
+
+            const usuarios = snapshot.val();
+            
+            for (let user in usuarios) {
+                let datos = usuarios[user];
+                if (
+                    datos.plan === 'premium' &&
+                    datos.premium_expires_at != null &&
+                    Date.now() >= Number(datos.premium_expires_at)
+                ) {
+                    db.ref('usuarios_vip/' + user).update({ plan: 'gratis', premium_expires_at: null });
+                    datos = Object.assign({}, datos, { plan: 'gratis', premium_expires_at: null });
+                }
+
+                const estaActivo = datos.activo === true;
+                const esPremium =
+                    datos.plan === 'premium' &&
+                    (datos.premium_expires_at == null ||
+                        datos.premium_expires_at === '' ||
+                        Date.now() < Number(datos.premium_expires_at));
+                const uEsc = escapeAttr(user);
+                
+                // Lógica de conexión (Online/Offline)
+                const online = datos.en_linea === true;
+                const luzConexion = online 
+                    ? '<span style="color: #10b981; font-weight: bold; font-size: 13px;">🟢 Online</span>' 
+                    : '<span style="color: #64748b; font-weight: bold; font-size: 13px;">⚪ Offline</span>';
+                
+                const tr = document.createElement('tr');
+                
+                // Badges visuales
+                const badge = estaActivo 
+                    ? '<span class="badge-activo">🟢 ACTIVO</span>' 
+                    : '<span class="badge-pendiente">⏳ BLOQUEADO</span>';
+
+                const planBadge = esPremium
+                    ? '<span class="badge-premium">⭐ PREMIUM</span>'
+                    : '<span class="badge-gratis-plan">GRATIS</span>';
+
+                let restanteHtml = '';
+                if (esPremium && datos.premium_expires_at != null && datos.premium_expires_at !== '') {
+                    const ms = Number(datos.premium_expires_at) - Date.now();
+                    restanteHtml =
+                        '<div class="plan-restante">' + textoRestante(ms) + '</div>';
+                } else if (esPremium && (datos.premium_expires_at == null || datos.premium_expires_at === '')) {
+                    restanteHtml =
+                        '<div class="plan-restante plan-restante--muted">Sin límite de tiempo</div>';
+                }
+
+                let planBtns = '';
+                if (!esPremium) {
+                    planBtns =
+                        '<div class="plan-cell">' +
+                        planBadge +
+                        '<button type="button" class="btn-plan btn-plan-up" data-cmd="premium30" data-u="' +
+                        uEsc +
+                        '">Premium 30 días</button>' +
+                        '<button type="button" class="btn-plan btn-trial" data-cmd="trial1" data-u="' +
+                        uEsc +
+                        '">Prueba 1 día</button>' +
+                        '<div class="plan-trial-row">' +
+                        '<input type="number" class="input-dias-trial" min="1" max="365" value="3" aria-label="Días de prueba">' +
+                        '<button type="button" class="btn-plan btn-trial" data-cmd="trialN" data-u="' +
+                        uEsc +
+                        '">Prueba N días</button>' +
+                        '</div></div>';
+                } else {
+                    planBtns =
+                        '<div class="plan-cell">' +
+                        planBadge +
+                        restanteHtml +
+                        '<button type="button" class="btn-plan btn-plan-up" data-cmd="extend30" data-u="' +
+                        uEsc +
+                        '">+30 días (extender)</button>' +
+                        '<button type="button" class="btn-plan btn-trial" data-cmd="add1" data-u="' +
+                        uEsc +
+                        '">+1 día al final</button>' +
+                        '<div class="plan-trial-row">' +
+                        '<input type="number" class="input-dias-trial" min="1" max="365" value="7" aria-label="Sumar días">' +
+                        '<button type="button" class="btn-plan btn-trial" data-cmd="addN" data-u="' +
+                        uEsc +
+                        '">Añadir N días</button>' +
+                        '</div>' +
+                        '<button type="button" class="btn-plan btn-plan-down" data-cmd="gratis" data-u="' +
+                        uEsc +
+                        '">Pasar a Gratis</button>' +
+                        '</div>';
+                }
+                
+                // Botones interactivos (data-u para delegación)
+                const btnAction = estaActivo
+                    ? `<button type="button" class="btn-toggle btn-off" data-cmd="activo" data-u="${uEsc}" data-next="false">Bloquear 🚫</button>`
+                    : `<button type="button" class="btn-toggle btn-on" data-cmd="activo" data-u="${uEsc}" data-next="true">Activar ✅</button>`;
+
+                tr.innerHTML = `
+                    <td style="font-weight: 800; color: #38bdf8; font-size: 15px;">@${user}</td>
+                    <td style="color: #cbd5e1; font-family: monospace;">${datos.clave}</td>
+                    <td>${badge}</td>
+                    <td>${planBtns}</td>
+                    <td>${luzConexion}</td>
+                    <td>${btnAction}</td>
+                    <td><button type="button" class="btn-delete" data-cmd="delete" data-u="${uEsc}" title="Borrar cuenta">🗑️</button></td>
+                `;
+                
+                if (!estaActivo) {
+                    tabla.prepend(tr);
+                } else {
+                    tabla.appendChild(tr);
+                }
+            }
+        });
+
+        function cambiarEstado(usuario, nuevoEstado) {
+            db.ref('usuarios_vip/' + usuario + '/activo').set(nuevoEstado);
+        }
+
+        function eliminarUsuario(usuario) {
+            if (confirm(`⚠️ ¿Estás completamente seguro de borrar a @${usuario}? Perderá todas sus configuraciones guardadas.`)) {
+                db.ref('usuarios_vip/' + usuario).remove();
+            }
+        }
+
+        tabla.addEventListener('click', function (e) {
+            const btn = e.target.closest('button[data-cmd]');
+            if (!btn) return;
+            const usuario = btn.getAttribute('data-u');
+            if (!usuario) return;
+            const cmd = btn.getAttribute('data-cmd');
+            const row = btn.closest('tr');
+
+            if (cmd === 'activo') {
+                cambiarEstado(usuario, btn.getAttribute('data-next') === 'true');
+                return;
+            }
+            if (cmd === 'delete') {
+                eliminarUsuario(usuario);
+                return;
+            }
+            if (cmd === 'premium30') {
+                setPremiumDesdeAhora(usuario, PREMIUM_DIAS_DEFAULT);
+                return;
+            }
+            if (cmd === 'trial1') {
+                setPremiumDesdeAhora(usuario, 1);
+                return;
+            }
+            if (cmd === 'trialN') {
+                const inp = row && row.querySelector('.input-dias-trial');
+                let n = inp ? parseInt(inp.value, 10) : NaN;
+                if (!Number.isFinite(n) || n < 1) {
+                    alert('Introduce un número de días entre 1 y 365.');
+                    return;
+                }
+                if (n > 365) n = 365;
+                setPremiumDesdeAhora(usuario, n);
+                return;
+            }
+            if (cmd === 'extend30') {
+                db.ref('usuarios_vip/' + usuario).once('value').then(function (snap) {
+                    extenderDesdeFinActual(usuario, snap.val() || {}, 30);
+                });
+                return;
+            }
+            if (cmd === 'add1') {
+                db.ref('usuarios_vip/' + usuario).once('value').then(function (snap) {
+                    extenderDesdeFinActual(usuario, snap.val() || {}, 1);
+                });
+                return;
+            }
+            if (cmd === 'addN') {
+                const inp = row && row.querySelector('.input-dias-trial');
+                let n = inp ? parseInt(inp.value, 10) : NaN;
+                if (!Number.isFinite(n) || n < 1) {
+                    alert('Introduce días a sumar (1–365).');
+                    return;
+                }
+                if (n > 365) n = 365;
+                db.ref('usuarios_vip/' + usuario).once('value').then(function (snap) {
+                    extenderDesdeFinActual(usuario, snap.val() || {}, n);
+                });
+                return;
+            }
+            if (cmd === 'gratis') {
+                pasarAGratis(usuario);
+            }
+        });
+    </script>
+</body>
+</html>

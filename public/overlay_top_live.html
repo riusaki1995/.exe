@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Overlay Top Live</title>
+  <style>
+    body { margin: 0; background: transparent; font-family: Inter, Arial, sans-serif; }
+    .box { width: 340px; margin: 16px; background: rgba(9, 12, 22, .72); border: 1px solid rgba(255, 215, 0, .45); border-radius: 14px; padding: 10px 12px; color: #fff; }
+    .title { font-size: 12px; color: #facc15; font-weight: 800; margin-bottom: 8px; }
+    .row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,.08); }
+    .row:last-child { border-bottom: 0; }
+    .name { color: #7dd3fc; font-weight: 700; }
+    .val { color: #fde68a; font-weight: 900; }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <div class="title">TOP LIVE (REGALOS)</div>
+    <div id="rows"></div>
+  </div>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/js/overlay_room.js?v=1"></script>
+  <script>
+    const socket = io();
+    const params = new URLSearchParams(window.location.search);
+    const user = (params.get('user') || '').trim().toLowerCase().replace(/^@+/, '');
+    if (user) setupOverlaySocketRoom(socket, user);
+
+    const ranks = {};
+    const rows = document.getElementById('rows');
+    function render() {
+      const list = Object.entries(ranks).sort((a,b)=>b[1]-a[1]).slice(0,5);
+      rows.innerHTML = list.map(([u,v], i) =>
+        `<div class="row"><span class="name">${i+1}. @${u}</span><span class="val">💎 ${v}</span></div>`
+      ).join('') || `<div class="row"><span class="name">Sin datos</span><span class="val">--</span></div>`;
+    }
+    socket.on('gift', (d) => {
+      const u = d?.uniqueId || "usuario";
+      const n = Math.max(1, Number(d?.diamondCount || 1) * Number(d?.repeatCount || 1));
+      ranks[u] = (ranks[u] || 0) + n;
+      render();
+    });
+    socket.on('nuevo_live', () => {
+      Object.keys(ranks).forEach(k => delete ranks[k]);
+      render();
+    });
+    window.addEventListener('message', (event) => {
+      if (!event?.data || event.data.type !== 'overlay_test') return;
+      if (event.data.kind !== 'toplive') return;
+      const u = 'test_user';
+      ranks[u] = (ranks[u] || 0) + 25;
+      render();
+    });
+    render();
+  </script>
+</body>
+</html>

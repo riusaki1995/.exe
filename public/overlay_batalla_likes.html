@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="referrer" content="no-referrer">
+    <title>Overlay - Batalla de Likes</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@700;800;900&display=swap');
+
+        * { box-sizing: border-box; }
+
+        :root {
+            --bat-gap: 4px;
+            --bat-c1-bg: rgba(36, 48, 64, 0.72);
+            --bat-c1-bd: rgba(148, 163, 184, 0.5);
+            --bat-c1-inset1: rgba(56, 189, 248, 0.08);
+            --bat-c1-inset2: rgba(148, 163, 184, 0.06);
+            --bat-c2-bg: rgba(22, 26, 34, 0.72);
+            --bat-c2-bd: rgba(100, 110, 125, 0.75);
+            --bat-cr-bg: rgba(18, 22, 30, 0.75);
+            --bat-cr-bd: rgba(90, 100, 118, 0.55);
+            --bat-h1a: #fff8e1;
+            --bat-h1b: #b8860b;
+            --bat-h2a: #f8fafc;
+            --bat-h2b: #78909c;
+            --bat-h3a: #efebe9;
+            --bat-h3b: #6d4c41;
+            --bat-ng1: #ff006e;
+            --bat-ng2: #3a86ff;
+            --bat-ng3: #ffbe0b;
+            --bat-vc: #fde68a;
+            --bat-vg: rgba(250, 204, 21, 0.45);
+            --bat-coin: #ffd700;
+            --bat-coin-glow: rgba(255, 215, 0, 0.65);
+            --bat-vs1: #fff5e6;
+            --bat-vs2: #ff6b35;
+            --bat-vs3: #c41e3a;
+            --bat-vs-g1: rgba(56, 189, 248, 0.55);
+            --bat-vs-g2: rgba(250, 204, 21, 0.35);
+            --bat-a1-bd: rgba(186, 230, 253, 0.5);
+            --bat-a1-sh: rgba(56, 189, 248, 0.22);
+            --bat-a2-bd: rgba(180, 195, 210, 0.65);
+            --bat-a2-sh: rgba(180, 200, 220, 0.2);
+            --bat-ar-bd: rgba(160, 170, 185, 0.45);
+            --bat-ar-sh: rgba(160, 170, 185, 0.12);
+            --bat-ph: rgba(226, 232, 240, 0.88);
+            --bat-ph-glow: rgba(56, 189, 248, 0.3);
+            --bat-hex-text: #1a1206;
+        }
+
+        body {
+            background-color: transparent !important;
+            font-family: 'Inter', system-ui, sans-serif;
+            margin: 0;
+            padding: 6px;
+            overflow: hidden;
+        }
+
+        body.no-crown .corona { display: none !important; }
+
+        .battle-root {
+            display: inline-block;
+            position: relative;
+        }
+
+        .battle-container {
+            position: relative;
+            width: 380px;
+            padding: 0;
+            overflow: visible;
+        }
+
+        .battle-duel {
+            display: flex;
+            flex-direction: column;
+            gap: var(--bat-gap);
+        }
+
+        .battle-duel__row {
+            display: grid;
+            grid-template-columns: 96px 1fr;
+            gap: 12px;
+            align-items: center;
+            min-height: 64px;
+            padding: 8px 12px;
+            border-radius: 12px;
+            position: relative;
+            z-index: 1;
+            transition: transform 0.1s ease;
+            background-color: rgba(22, 28, 38, 0.72);
+            border: 1px solid rgba(120, 130, 150, 0.45);
+            box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.25);
+        }
+
+        .battle-duel__icons {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 14px;
+            justify-content: flex-start;
+        }
+
+        .battle-duel__vs-row {
+            display: grid;
+            grid-template-columns: 96px 1fr;
+            gap: 12px;
+            align-items: center;
+            min-height: 28px;
+            margin: 0;
+            padding: 0;
+            overflow: visible;
+        }
+
+        .battle-duel__vs-cell {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: visible;
+            min-height: 26px;
+            padding: 0 4px;
+        }
+
+        .battle-duel__vs-spacer {
+            min-height: 1px;
+        }
+
+        .battle-card--first {
+            background-color: var(--bat-c1-bg);
+            border-color: var(--bat-c1-bd);
+            box-shadow:
+                inset 0 0 0 1px rgba(0, 0, 0, 0.25),
+                inset 6px 0 18px -6px var(--bat-c1-inset1),
+                inset -6px 0 18px -6px var(--bat-c1-inset2);
+        }
+
+        .battle-card--second {
+            background-color: var(--bat-c2-bg);
+            border-color: var(--bat-c2-bd);
+        }
+
+        .battle-card--rest {
+            background-color: var(--bat-cr-bg);
+            border-color: var(--bat-cr-bd);
+            box-shadow:
+                inset 0 0 0 1px rgba(0, 0, 0, 0.3),
+                inset 4px 0 12px -6px rgba(180, 140, 80, 0.08);
+        }
+
+        .hexagon {
+            width: 30px;
+            height: 34px;
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--bat-hex-text);
+            font-weight: 900;
+            font-size: 16px;
+            flex-shrink: 0;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+        }
+
+        .battle-card--first .hexagon {
+            background: linear-gradient(160deg, var(--bat-h1a) 0%, #ffc107 45%, var(--bat-h1b) 100%);
+        }
+
+        .battle-card--second .hexagon {
+            background: linear-gradient(160deg, var(--bat-h2a) 0%, #b0bec5 50%, var(--bat-h2b) 100%);
+        }
+
+        .battle-card--rest .hexagon {
+            background: linear-gradient(160deg, var(--bat-h3a) 0%, #a1887f 45%, var(--bat-h3b) 100%);
+        }
+
+        .avatar-wrap {
+            position: relative;
+            width: 52px;
+            height: 52px;
+            flex-shrink: 0;
+        }
+
+        .avatar {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            background-color: #111;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .battle-card--first .avatar {
+            border-color: var(--bat-a1-bd);
+            box-shadow: 0 0 10px var(--bat-a1-sh);
+        }
+
+        .battle-card--second .avatar {
+            border-color: var(--bat-a2-bd);
+            box-shadow: 0 0 10px var(--bat-a2-sh);
+        }
+
+        .battle-card--rest .avatar {
+            border-color: var(--bat-ar-bd);
+            box-shadow: 0 0 8px var(--bat-ar-sh);
+        }
+
+        .corona {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 30px;
+            z-index: 2;
+            filter: drop-shadow(0 0 6px rgba(255, 200, 60, 0.9));
+        }
+
+        .info {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 4px;
+            flex-grow: 1;
+            min-width: 0;
+            overflow: hidden;
+        }
+
+        .battle-nombre--rainbow {
+            font-weight: 900;
+            font-size: 16px;
+            line-height: 1.2;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            background: linear-gradient(
+                90deg,
+                #ff006e,
+                #8338ec,
+                #3a86ff,
+                #06ffa5,
+                #ffbe0b,
+                #fb5607,
+                #ff006e
+            );
+            background-size: 220% auto;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: rainbow-flow 4s linear infinite;
+            filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.8));
+        }
+
+        .battle-nombre--grad {
+            font-weight: 900;
+            font-size: 16px;
+            line-height: 1.2;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            background: linear-gradient(92deg, var(--bat-ng1), var(--bat-ng2), var(--bat-ng3));
+            background-size: 140% auto;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.85));
+        }
+
+        @keyframes rainbow-flow {
+            0% { background-position: 0% center; }
+            100% { background-position: 200% center; }
+        }
+
+        .stat-line {
+            color: var(--bat-vc);
+            font-weight: 900;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            text-shadow: 0 0 12px var(--bat-vg);
+        }
+
+        .stat-ico {
+            font-size: 17px;
+            line-height: 1;
+            flex-shrink: 0;
+            filter: drop-shadow(0 0 4px var(--bat-coin-glow));
+        }
+
+        .vs-logo {
+            display: inline-block;
+            position: relative;
+            transform: rotate(-5deg);
+            font-size: 32px;
+            font-weight: 900;
+            font-style: italic;
+            line-height: 1.15;
+            z-index: 12;
+            letter-spacing: 0.02em;
+            padding: 2px 4px;
+            background: linear-gradient(180deg, var(--bat-vs1) 0%, var(--bat-vs2) 42%, var(--bat-vs3) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter:
+                drop-shadow(0 0 8px var(--bat-vs-g1))
+                drop-shadow(0 0 14px var(--bat-vs-g2))
+                drop-shadow(1px 2px 0 rgba(0, 0, 0, 0.4));
+            pointer-events: none;
+        }
+
+        .animar { animation: fadeIn 0.4s ease forwards; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .battle-placeholder {
+            color: var(--bat-ph);
+            font-weight: 800;
+            font-size: 14px;
+            text-align: center;
+            padding: 24px 12px;
+            text-shadow: 0 0 12px var(--bat-ph-glow);
+        }
+
+        .pum { transform: scale(1.02); }
+    </style>
+</head>
+<body id="btn-prueba">
+
+    <div class="battle-root">
+        <div class="battle-container" id="lista-ranking">
+            <div class="battle-placeholder">Esperando combatientes...</div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/js/overlay_room.js?v=1"></script>
+    <script>
+        const socket = io();
+        const params = new URLSearchParams(window.location.search);
+        const streamerId = (params.get('user') || '').trim();
+        const isPreviewEmbed = params.get('preview_embed') === '1';
+
+        function hexToRgb(hex, fallback) {
+            const h = (hexNorm(hex) || hexNorm(fallback) || '000000').replace(/^#/, '');
+            const n = parseInt(h, 16);
+            if (Number.isNaN(n)) return { r: 0, g: 0, b: 0 };
+            return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };
+        }
+
+        function rgbaFromHex(hex, alpha, fallbackHex) {
+            const { r, g, b } = hexToRgb(hex, fallbackHex);
+            const a = Math.max(0, Math.min(1, alpha));
+            return 'rgba(' + r + ',' + g + ',' + b + ',' + a + ')';
+        }
+
+        function hexNorm(h) {
+            if (h == null || h === '') return '';
+            let s = String(h).trim().replace(/^#/, '');
+            if (/^[0-9a-fA-F]{6}$/.test(s)) return '#' + s.toLowerCase();
+            if (/^[0-9a-fA-F]{3}$/.test(s)) {
+                return '#' + s.split('').map(function (c) { return c + c; }).join('').toLowerCase();
+            }
+            return '';
+        }
+
+        function defaultBatallaStyle() {
+            return {
+                limit: 2,
+                nameRainbow: true,
+                ng1: '#ff006e',
+                ng2: '#3a86ff',
+                ng3: '#ffbe0b',
+                valueColor: '#fecaca',
+                valueGlow: '#f87171',
+                valueGlowAlpha: 0.45,
+                coinColor: '#fecaca',
+                coinGlow: '#ef4444',
+                coinGlowAlpha: 0.55,
+                likesIcon: '\u2764\uFE0F',
+                vs1: '#fff5e6',
+                vs2: '#ff6b35',
+                vs3: '#c41e3a',
+                vsGlow1: '#38bdf8',
+                vsGlow1Alpha: 0.55,
+                vsGlow2: '#facc15',
+                vsGlow2Alpha: 0.35,
+                card1Bg: '#243040',
+                card1BgAlpha: 0.72,
+                card1Border: '#94a3b8',
+                card1BorderAlpha: 0.5,
+                card1Inset1: '#38bdf8',
+                card1Inset1Alpha: 0.08,
+                card1Inset2: '#94a3b8',
+                card1Inset2Alpha: 0.06,
+                card2Bg: '#1a1c22',
+                card2BgAlpha: 0.72,
+                card2Border: '#646e7d',
+                card2BorderAlpha: 0.75,
+                restBg: '#12161e',
+                restBgAlpha: 0.75,
+                restBorder: '#5a6476',
+                restBorderAlpha: 0.55,
+                h1a: '#fff8e1',
+                h1b: '#b8860b',
+                h2a: '#f8fafc',
+                h2b: '#78909c',
+                h3a: '#efebe9',
+                h3b: '#6d4c41',
+                hexText: '#1a1206',
+                rowGap: 4,
+                placeholder: 'Esperando combatientes...',
+                showCrown: true,
+                avatar1Border: '#bae6fd',
+                avatar1BorderAlpha: 0.5,
+                avatar1Glow: '#38bdf8',
+                avatar1GlowAlpha: 0.22,
+                avatar2Border: '#b4c5d4',
+                avatar2BorderAlpha: 0.65,
+                avatar2Glow: '#b4c4d8',
+                avatar2GlowAlpha: 0.2,
+                restAvatarBorder: '#a0aab9',
+                restAvatarBorderAlpha: 0.45,
+                restAvatarGlow: '#a0aab9',
+                restAvatarGlowAlpha: 0.12,
+                phColor: '#e2e8f0',
+                phColorAlpha: 0.88,
+                phGlow: '#38bdf8',
+                phGlowAlpha: 0.3
+            };
+        }
+
+        function parseStyleFromUrl() {
+            const d = defaultBatallaStyle();
+            const lim = parseInt(params.get('limit'), 10);
+            if (!Number.isNaN(lim)) d.limit = Math.max(2, Math.min(3, lim));
+            if (params.has('nr')) d.nameRainbow = params.get('nr') !== '0';
+            ['ng1', 'ng2', 'ng3'].forEach(function (k, i) {
+                const keys = ['ng1', 'ng2', 'ng3'];
+                const def = [d.ng1, d.ng2, d.ng3][i];
+                const v = hexNorm(params.get(keys[i]));
+                if (v) d[keys[i]] = v;
+            });
+            const vc = hexNorm(params.get('vc'));
+            if (vc) d.valueColor = vc;
+            const vg = hexNorm(params.get('vg'));
+            if (vg) d.valueGlow = vg;
+            const vga = parseFloat(params.get('vga'));
+            if (!Number.isNaN(vga)) d.valueGlowAlpha = Math.max(0, Math.min(1, vga));
+            const cc = hexNorm(params.get('cc'));
+            if (cc) d.coinColor = cc;
+            const cg = hexNorm(params.get('cg'));
+            if (cg) d.coinGlow = cg;
+            const cga = parseFloat(params.get('cga'));
+            if (!Number.isNaN(cga)) d.coinGlowAlpha = Math.max(0, Math.min(1, cga));
+            ['vs1', 'vs2', 'vs3'].forEach(function (k, i) {
+                const keys = ['vs1', 'vs2', 'vs3'];
+                const def = [d.vs1, d.vs2, d.vs3][i];
+                const v = hexNorm(params.get(keys[i]));
+                if (v) d[keys[i]] = v;
+            });
+            const vxg1 = hexNorm(params.get('vxg1'));
+            if (vxg1) d.vsGlow1 = vxg1;
+            const vxg2 = hexNorm(params.get('vxg2'));
+            if (vxg2) d.vsGlow2 = vxg2;
+            const vxga1 = parseFloat(params.get('vxga1'));
+            if (!Number.isNaN(vxga1)) d.vsGlow1Alpha = Math.max(0, Math.min(1, vxga1));
+            const vxga2 = parseFloat(params.get('vxga2'));
+            if (!Number.isNaN(vxga2)) d.vsGlow2Alpha = Math.max(0, Math.min(1, vxga2));
+
+            function cardParams(prefix, target) {
+                const bg = hexNorm(params.get(prefix + 'b'));
+                const bga = parseFloat(params.get(prefix + 'ba'));
+                const bd = hexNorm(params.get(prefix + 'd'));
+                const bda = parseFloat(params.get(prefix + 'da'));
+                if (bg) target.bg = bg;
+                if (!Number.isNaN(bga)) target.bgA = Math.max(0, Math.min(1, bga));
+                if (bd) target.bd = bd;
+                if (!Number.isNaN(bda)) target.bdA = Math.max(0, Math.min(1, bda));
+            }
+            const c1 = { bg: d.card1Bg, bgA: d.card1BgAlpha, bd: d.card1Border, bdA: d.card1BorderAlpha };
+            cardParams('c1', c1);
+            d.card1Bg = c1.bg; d.card1BgAlpha = c1.bgA; d.card1Border = c1.bd; d.card1BorderAlpha = c1.bdA;
+            const c2 = { bg: d.card2Bg, bgA: d.card2BgAlpha, bd: d.card2Border, bdA: d.card2BorderAlpha };
+            cardParams('c2', c2);
+            d.card2Bg = c2.bg; d.card2BgAlpha = c2.bgA; d.card2Border = c2.bd; d.card2BorderAlpha = c2.bdA;
+            const cr = { bg: d.restBg, bgA: d.restBgAlpha, bd: d.restBorder, bdA: d.restBorderAlpha };
+            cardParams('cr', cr);
+            d.restBg = cr.bg; d.restBgAlpha = cr.bgA; d.restBorder = cr.bd; d.restBorderAlpha = cr.bdA;
+
+            const i1 = hexNorm(params.get('c1i1'));
+            if (i1) d.card1Inset1 = i1;
+            const i1a = parseFloat(params.get('c1i1a'));
+            if (!Number.isNaN(i1a)) d.card1Inset1Alpha = Math.max(0, Math.min(1, i1a));
+            const i2 = hexNorm(params.get('c1i2'));
+            if (i2) d.card1Inset2 = i2;
+            const i2a = parseFloat(params.get('c1i2a'));
+            if (!Number.isNaN(i2a)) d.card1Inset2Alpha = Math.max(0, Math.min(1, i2a));
+
+            [['h1a', 'h1b'], ['h2a', 'h2b'], ['h3a', 'h3b']].forEach(function (pair) {
+                const a = hexNorm(params.get(pair[0]));
+                const b = hexNorm(params.get(pair[1]));
+                if (a) d[pair[0]] = a;
+                if (b) d[pair[1]] = b;
+            });
+            const ht = hexNorm(params.get('ht'));
+            if (ht) d.hexText = ht;
+
+            const rg = parseInt(params.get('rg'), 10);
+            if (!Number.isNaN(rg)) d.rowGap = Math.min(24, Math.max(0, rg));
+            try {
+                const ph = params.get('ph');
+                if (ph != null && ph !== '') {
+                    d.placeholder = decodeURIComponent(ph).slice(0, 120);
+                }
+            } catch (e) {}
+            if (params.has('sc')) d.showCrown = params.get('sc') !== '0';
+
+            function avParams(prefix, borderKey, borderAKey, glowKey, glowAKey) {
+                const b = hexNorm(params.get(prefix + 'b'));
+                const ba = parseFloat(params.get(prefix + 'ba'));
+                const g = hexNorm(params.get(prefix + 'g'));
+                const ga = parseFloat(params.get(prefix + 'ga'));
+                if (b) d[borderKey] = b;
+                if (!Number.isNaN(ba)) d[borderAKey] = Math.max(0, Math.min(1, ba));
+                if (g) d[glowKey] = g;
+                if (!Number.isNaN(ga)) d[glowAKey] = Math.max(0, Math.min(1, ga));
+            }
+            avParams('a1', 'avatar1Border', 'avatar1BorderAlpha', 'avatar1Glow', 'avatar1GlowAlpha');
+            avParams('a2', 'avatar2Border', 'avatar2BorderAlpha', 'avatar2Glow', 'avatar2GlowAlpha');
+            avParams('ar', 'restAvatarBorder', 'restAvatarBorderAlpha', 'restAvatarGlow', 'restAvatarGlowAlpha');
+
+            const phc = hexNorm(params.get('phc'));
+            if (phc) d.phColor = phc;
+            const phca = parseFloat(params.get('phca'));
+            if (!Number.isNaN(phca)) d.phColorAlpha = Math.max(0, Math.min(1, phca));
+            const phg = hexNorm(params.get('phg'));
+            if (phg) d.phGlow = phg;
+            const phga = parseFloat(params.get('phga'));
+            if (!Number.isNaN(phga)) d.phGlowAlpha = Math.max(0, Math.min(1, phga));
+
+            try {
+                const ic = params.get('ic');
+                if (ic != null && ic !== '') {
+                    d.likesIcon = decodeURIComponent(ic).slice(0, 8);
+                }
+            } catch (e2) {}
+
+            return d;
+        }
+
+        let runtimeStyle = parseStyleFromUrl();
+        let ranking = {};
+
+        function mergeBatallaStyle(partial) {
+            if (!partial || typeof partial !== 'object') return;
+            runtimeStyle = Object.assign({}, defaultBatallaStyle(), runtimeStyle, partial);
+            runtimeStyle.limit = Math.max(2, Math.min(3, parseInt(runtimeStyle.limit, 10) || 2));
+        }
+
+        function applyRuntimeStyle() {
+            const s = runtimeStyle;
+            const r = document.documentElement;
+            r.style.setProperty('--bat-gap', String(s.rowGap) + 'px');
+            r.style.setProperty('--bat-c1-bg', rgbaFromHex(s.card1Bg, s.card1BgAlpha, '#243040'));
+            r.style.setProperty('--bat-c1-bd', rgbaFromHex(s.card1Border, s.card1BorderAlpha, '#94a3b8'));
+            r.style.setProperty('--bat-c1-inset1', rgbaFromHex(s.card1Inset1, s.card1Inset1Alpha, '#38bdf8'));
+            r.style.setProperty('--bat-c1-inset2', rgbaFromHex(s.card1Inset2, s.card1Inset2Alpha, '#94a3b8'));
+            r.style.setProperty('--bat-c2-bg', rgbaFromHex(s.card2Bg, s.card2BgAlpha, '#1a1c22'));
+            r.style.setProperty('--bat-c2-bd', rgbaFromHex(s.card2Border, s.card2BorderAlpha, '#646e7d'));
+            r.style.setProperty('--bat-cr-bg', rgbaFromHex(s.restBg, s.restBgAlpha, '#12161e'));
+            r.style.setProperty('--bat-cr-bd', rgbaFromHex(s.restBorder, s.restBorderAlpha, '#5a6476'));
+            r.style.setProperty('--bat-h1a', hexNorm(s.h1a) || '#fff8e1');
+            r.style.setProperty('--bat-h1b', hexNorm(s.h1b) || '#b8860b');
+            r.style.setProperty('--bat-h2a', hexNorm(s.h2a) || '#f8fafc');
+            r.style.setProperty('--bat-h2b', hexNorm(s.h2b) || '#78909c');
+            r.style.setProperty('--bat-h3a', hexNorm(s.h3a) || '#efebe9');
+            r.style.setProperty('--bat-h3b', hexNorm(s.h3b) || '#6d4c41');
+            r.style.setProperty('--bat-ng1', hexNorm(s.ng1) || '#ff006e');
+            r.style.setProperty('--bat-ng2', hexNorm(s.ng2) || '#3a86ff');
+            r.style.setProperty('--bat-ng3', hexNorm(s.ng3) || '#ffbe0b');
+            r.style.setProperty('--bat-vc', hexNorm(s.valueColor) || '#fecaca');
+            r.style.setProperty('--bat-vg', rgbaFromHex(s.valueGlow, s.valueGlowAlpha, '#f87171'));
+            r.style.setProperty('--bat-coin', hexNorm(s.coinColor) || '#fecaca');
+            r.style.setProperty('--bat-coin-glow', rgbaFromHex(s.coinGlow, s.coinGlowAlpha, '#ef4444'));
+            r.style.setProperty('--bat-vs1', hexNorm(s.vs1) || '#fff5e6');
+            r.style.setProperty('--bat-vs2', hexNorm(s.vs2) || '#ff6b35');
+            r.style.setProperty('--bat-vs3', hexNorm(s.vs3) || '#c41e3a');
+            r.style.setProperty('--bat-vs-g1', rgbaFromHex(s.vsGlow1, s.vsGlow1Alpha, '#38bdf8'));
+            r.style.setProperty('--bat-vs-g2', rgbaFromHex(s.vsGlow2, s.vsGlow2Alpha, '#facc15'));
+            r.style.setProperty('--bat-a1-bd', rgbaFromHex(s.avatar1Border, s.avatar1BorderAlpha, '#bae6fd'));
+            r.style.setProperty('--bat-a1-sh', rgbaFromHex(s.avatar1Glow, s.avatar1GlowAlpha, '#38bdf8'));
+            r.style.setProperty('--bat-a2-bd', rgbaFromHex(s.avatar2Border, s.avatar2BorderAlpha, '#b4c5d4'));
+            r.style.setProperty('--bat-a2-sh', rgbaFromHex(s.avatar2Glow, s.avatar2GlowAlpha, '#b4c4d8'));
+            r.style.setProperty('--bat-ar-bd', rgbaFromHex(s.restAvatarBorder, s.restAvatarBorderAlpha, '#a0aab9'));
+            r.style.setProperty('--bat-ar-sh', rgbaFromHex(s.restAvatarGlow, s.restAvatarGlowAlpha, '#a0aab9'));
+            r.style.setProperty('--bat-ph', rgbaFromHex(s.phColor, s.phColorAlpha, '#e2e8f0'));
+            r.style.setProperty('--bat-ph-glow', rgbaFromHex(s.phGlow, s.phGlowAlpha, '#38bdf8'));
+            r.style.setProperty('--bat-hex-text', hexNorm(s.hexText) || '#1a1206');
+            document.body.classList.toggle('no-crown', !s.showCrown);
+
+            const phEl = document.querySelector('.battle-placeholder');
+            if (phEl && (!ranking || Object.keys(ranking).length === 0)) {
+                phEl.textContent = (s.placeholder || 'Esperando combatientes...').slice(0, 120);
+            }
+        }
+
+        applyRuntimeStyle();
+
+        if (!streamerId && !isPreviewEmbed) {
+            document.body.innerHTML = '<div style="color:white; background:rgba(180,30,30,0.95); padding:12px; font-size:12px; border-radius:10px; margin:16px;">Falta el usuario en el link (?user=...)</div>';
+        } else if (streamerId) {
+            setupOverlaySocketRoom(socket, streamerId);
+        }
+
+        const coronaSVG = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ffd700'><path d='M5 16l-2-8 5 3 4-7 4 7 5-3-2 8z'/></svg>";
+
+        function esc(s) {
+            return String(s == null ? '' : s)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+
+        function getLikesIconHtml() {
+            const t = (runtimeStyle.likesIcon != null && String(runtimeStyle.likesIcon).trim() !== '')
+                ? String(runtimeStyle.likesIcon).slice(0, 8)
+                : '\u2764\uFE0F';
+            return '<span class="stat-ico" aria-hidden="true">' + esc(t) + '</span>';
+        }
+
+        function safeId(s) {
+            return String(s == null ? '' : s).replace(/[^a-zA-Z0-9_-]/g, '_');
+        }
+
+        function cardClassForRank(i) {
+            if (i === 0) return 'battle-card--first';
+            if (i === 1) return 'battle-card--second';
+            return 'battle-card--rest';
+        }
+
+        function nombreClass() {
+            return runtimeStyle.nameRainbow ? 'battle-nombre--rainbow' : 'battle-nombre--grad';
+        }
+
+        function actualizarHTML() {
+            const maxRows = Math.max(2, Math.min(3, parseInt(runtimeStyle.limit, 10) || 2));
+            const arregloOrdenado = Object.entries(ranking)
+                .map(([id, datos]) => ({ id, ...datos }))
+                .sort((a, b) => b.likes - a.likes)
+                .slice(0, maxRows);
+
+            const contenedor = document.getElementById('lista-ranking');
+
+            if (arregloOrdenado.length === 0) {
+                contenedor.innerHTML = '<div class="battle-placeholder">' + esc(runtimeStyle.placeholder || 'Esperando combatientes...') + '</div>';
+                applyRuntimeStyle();
+                return;
+            }
+
+            const vsRow = `
+                <div class="battle-duel__vs-row" aria-hidden="true">
+                    <div class="battle-duel__vs-cell"><span class="vs-logo">VS</span></div>
+                    <div class="battle-duel__vs-spacer"></div>
+                </div>`;
+
+            const parts = [];
+            const icoHtml = getLikesIconHtml();
+            arregloOrdenado.forEach((u, i) => {
+                const rankNum = i + 1;
+                const crown = i === 0
+                    ? `<img src="${coronaSVG}" class="corona" alt="">`
+                    : '';
+                const row = `
+                <div class="battle-duel__row ${cardClassForRank(i)} animar" id="card-${safeId(u.id)}">
+                    <div class="battle-duel__icons">
+                        <div class="hexagon">${rankNum}</div>
+                        <div class="avatar-wrap">
+                            ${crown}
+                            <img src="${esc(u.pic)}" class="avatar" referrerpolicy="no-referrer" onerror="this.src='https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png'">
+                        </div>
+                    </div>
+                    <div class="info">
+                        <div class="${nombreClass()}">${esc(u.name)}</div>
+                        <div class="stat-line">${icoHtml} ${u.likes.toLocaleString('es-ES')}</div>
+                    </div>
+                </div>`;
+                parts.push(row);
+                if (i === 0 && arregloOrdenado.length >= 2) {
+                    parts.push(vsRow);
+                }
+            });
+
+            contenedor.innerHTML = `<div class="battle-duel">${parts.join('')}</div>`;
+        }
+
+        function applyEmbedPreviewDemo() {
+            const demo = [
+                { id: 'likes_a', name: 'Fan Alpha', pic: 'https://randomuser.me/api/portraits/women/44.jpg', likes: 500 },
+                { id: 'likes_b', name: 'Fan Beta', pic: 'https://randomuser.me/api/portraits/men/32.jpg', likes: 420 },
+                { id: 'likes_c', name: 'Fan Gamma', pic: 'https://randomuser.me/api/portraits/men/45.jpg', likes: 180 }
+            ];
+            demo.forEach((x) => {
+                if (!ranking[x.id]) {
+                    ranking[x.id] = { name: x.name, likes: 0, pic: x.pic };
+                }
+                ranking[x.id].likes = x.likes;
+            });
+            actualizarHTML();
+        }
+
+        socket.on('like', (data) => {
+            const userId = data.uniqueId || data.user?.uniqueId;
+            if (!userId) return;
+
+            const cantidadLike = parseInt(data.likeCount, 10) || 1;
+            const foto = data.profilePictureUrl || data.user?.profilePictureUrl || 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png';
+            const nombre = data.nickname || userId;
+
+            if (!ranking[userId]) {
+                ranking[userId] = { name: nombre, likes: 0, pic: foto };
+            }
+
+            ranking[userId].likes += cantidadLike;
+            ranking[userId].pic = foto;
+
+            actualizarHTML();
+
+            const card = document.getElementById(`card-${safeId(userId)}`);
+            if (card) {
+                card.classList.add('pum');
+                setTimeout(() => card.classList.remove('pum'), 100);
+            }
+        });
+
+        socket.on('nuevo_live', () => {
+            ranking = {};
+            if (isPreviewEmbed) {
+                applyEmbedPreviewDemo();
+            } else {
+                actualizarHTML();
+            }
+        });
+
+        document.getElementById('btn-prueba').addEventListener('click', () => {
+            const idSimulado = Math.random() > 0.5 ? 'User_1' : 'User_2';
+            if (!ranking[idSimulado]) {
+                ranking[idSimulado] = {
+                    name: idSimulado,
+                    likes: 0,
+                    pic: 'https://randomuser.me/api/portraits/lego/1.jpg'
+                };
+            }
+            ranking[idSimulado].likes += 10;
+            actualizarHTML();
+        });
+
+        window.addEventListener('message', (event) => {
+            const d = event && event.data;
+            if (d && d.type === 'batalla_likes_style' && d.style && typeof d.style === 'object') {
+                mergeBatallaStyle(d.style);
+                applyRuntimeStyle();
+                actualizarHTML();
+                return;
+            }
+            if (!d || d.type !== 'overlay_test' || d.kind !== 'batalla_likes') return;
+            applyEmbedPreviewDemo();
+        });
+
+        if (isPreviewEmbed) {
+            applyEmbedPreviewDemo();
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,94 @@
+{
+  "voices": [
+    {
+      "id": "es_MX-ald-medium",
+      "name": "ald",
+      "quality": "medium",
+      "locale": "Español (México) · es_MX",
+      "tags": "mexico méxico es_mx es-mx",
+      "onnx": "https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/es/es_MX/ald/medium/es_MX-ald-medium.onnx",
+      "json": "https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/es/es_MX/ald/medium/es_MX-ald-medium.onnx.json"
+    },
+    {
+      "id": "es_MX-claude-high",
+      "name": "claude",
+      "quality": "high",
+      "locale": "Español (México) · es_MX",
+      "tags": "mexico méxico es_mx es-mx",
+      "onnx": "https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/es/es_MX/claude/high/es_MX-claude-high.onnx",
+      "json": "https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/es/es_MX/claude/high/es_MX-claude-high.onnx.json"
+    },
+    {
+      "id": "es_AR-daniela-high",
+      "name": "daniela",
+      "quality": "high",
+      "locale": "es_AR (Argentina)",
+      "onnx": "https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/es/es_AR/daniela/high/es_AR-daniela-high.onnx",
+      "json": "https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/es/es_AR/daniela/high/es_AR-daniela-high.onnx.json"
+    },
+    {
+      "id": "es_ES-carlfm-x_low",
+      "name": "carlfm",
+      "quality": "x_low",
+      "locale": "es_ES (España)",
+      "onnx": "https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/es/es_ES/carlfm/x_low/es_ES-carlfm-x_low.onnx",
+      "json": "https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/es/es_ES/carlfm/x_low/es_ES-carlfm-x_low.onnx.json"
+    },
+    {
+      "id": "es_ES-davefx-medium",
+      "name": "davefx",
+      "quality": "medium",
+      "locale": "es_ES (España)",
+      "onnx": "https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/es/es_ES/davefx/medium/es_ES-davefx-medium.onnx",
+      "json": "https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/es/es_ES/davefx/medium/es_ES-davefx-medium.onnx.json"
+    },
+    {
+      "id": "es_ES-mls_10246-low",
+      "name": "mls_10246",
+      "quality": "low",
+      "locale": "es_ES (España)",
+      "onnx": "https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/es/es_ES/mls_10246/low/es_ES-mls_10246-low.onnx",
+      "json": "https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/es/es_ES/mls_10246/low/es_ES-mls_10246-low.onnx.json"
+    },
+    {
+      "id": "es_ES-mls_9972-low",
+      "name": "mls_9972",
+      "quality": "low",
+      "locale": "es_ES (España)",
+      "onnx": "https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/es/es_ES/mls_9972/low/es_ES-mls_9972-low.onnx",
+      "json": "https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/es/es_ES/mls_9972/low/es_ES-mls_9972-low.onnx.json"
+    },
+    {
+      "id": "es_ES-sharvard-medium",
+      "name": "sharvard",
+      "quality": "medium",
+      "locale": "es_ES (España, 2 hablantes)",
+      "onnx": "https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/es/es_ES/sharvard/medium/es_ES-sharvard-medium.onnx",
+      "json": "https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/es/es_ES/sharvard/medium/es_ES-sharvard-medium.onnx.json"
+    },
+    {
+      "id": "en_US-lessac-medium",
+      "name": "lessac",
+      "quality": "medium",
+      "locale": "en_US (US)",
+      "onnx": "https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/en/en_US/lessac/medium/en_US-lessac-medium.onnx",
+      "json": "https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/en/en_US/lessac/medium/en_US-lessac-medium.onnx.json"
+    },
+    {
+      "id": "en_US-amy-medium",
+      "name": "amy",
+      "quality": "medium",
+      "locale": "en_US (US)",
+      "onnx": "https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/en/en_US/amy/medium/en_US-amy-medium.onnx",
+      "json": "https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/en/en_US/amy/medium/en_US-amy-medium.onnx.json"
+    },
+    {
+      "id": "en_GB-alan-medium",
+      "name": "alan",
+      "quality": "medium",
+      "locale": "en_GB (UK)",
+      "onnx": "https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/en/en_GB/alan/medium/en_GB-alan-medium.onnx",
+      "json": "https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/en/en_GB/alan/medium/en_GB-alan-medium.onnx.json"
+    }
+  ]
+}

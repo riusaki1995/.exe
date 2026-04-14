@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="no-referrer">
+    <title>Overlay — Gift VS multi</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Rubik:wght@700;800;900&family=Inter:wght@600;700&display=swap');
+        * { box-sizing: border-box; }
+        html, body {
+            margin: 0;
+            overflow: hidden;
+            background: transparent !important;
+            font-family: 'Inter', system-ui, sans-serif;
+        }
+        /* Misma escala que overlay_gift_vs_gift.html: 850×520. */
+        #multi-rows {
+            flex: 1;
+            width: 100%;
+            min-width: 0;
+            min-height: 0;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .stage {
+            width: 850px;
+            height: 520px;
+            position: relative;
+            background: transparent;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            padding: 16px 32px 28px;
+        }
+        .battle-row {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            width: 100%;
+            height: 100%;
+            min-height: 0;
+        }
+        .side-m {
+            flex: 0 1 300px;
+            max-width: 300px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 0;
+        }
+        .hero-m {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 220px;
+            width: 100%;
+            position: relative;
+        }
+        .hero-m img {
+            max-width: 240px;
+            max-height: 240px;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            filter: drop-shadow(0 0 20px rgba(100, 200, 255, 0.2));
+        }
+        .hero-m .ph {
+            font-size: 72px;
+            opacity: 0.35;
+        }
+        .score-m {
+            font-family: 'Rubik', sans-serif;
+            font-weight: 900;
+            font-size: 72px;
+            line-height: 1;
+            color: #fff;
+            text-shadow: 0 2px 0 #000, 0 0 28px rgba(255, 255, 255, 0.15);
+            letter-spacing: -0.02em;
+            margin-top: 4px;
+        }
+        .mid-m {
+            flex: 0 0 auto;
+            width: auto;
+            min-width: 100px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 0 2px;
+            position: relative;
+            z-index: 1;
+        }
+        .mid-m .mid-aura {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 110px;
+            height: 110px;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 0;
+            background: radial-gradient(
+                circle at 50% 50%,
+                rgba(255, 210, 120, 0.22) 0%,
+                rgba(255, 130, 60, 0.12) 42%,
+                rgba(255, 70, 40, 0.06) 62%,
+                transparent 78%
+            );
+            animation: aura-flicker 2.2s ease-in-out infinite;
+        }
+        @keyframes aura-flicker {
+            0%, 100% { opacity: 0.65; transform: translate(-50%, -50%) scale(1); }
+            33% { opacity: 0.85; transform: translate(-50%, -50%) scale(1.04); }
+            66% { opacity: 0.55; transform: translate(-50%, -50%) scale(0.98); }
+        }
+        .vs-mini {
+            position: relative;
+            z-index: 2;
+            font-family: 'Rubik', sans-serif;
+            font-weight: 900;
+            font-size: 86px;
+            line-height: 0.9;
+            letter-spacing: -0.04em;
+            color: #fff8e8;
+            text-transform: uppercase;
+            background: linear-gradient(185deg, #fffef0 0%, #ffcc33 22%, #ff6600 55%, #ff2200 88%, #ffaa00 100%);
+            background-size: 100% 140%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 3px rgba(255, 190, 100, 0.45));
+            animation: vs-fire 2.4s ease-in-out infinite;
+        }
+        @keyframes vs-fire {
+            0%, 100% {
+                filter:
+                    drop-shadow(0 0 4px rgba(255, 200, 100, 0.5))
+                    drop-shadow(0 0 10px rgba(255, 120, 50, 0.28))
+                    drop-shadow(0 0 18px rgba(255, 70, 30, 0.14));
+            }
+            50% {
+                filter:
+                    drop-shadow(0 0 5px rgba(255, 220, 130, 0.55))
+                    drop-shadow(0 0 12px rgba(255, 130, 55, 0.32))
+                    drop-shadow(0 0 22px rgba(255, 80, 35, 0.18));
+            }
+        }
+        .goal-flash .stage { animation: gf 0.6s ease; }
+        @keyframes gf {
+            0%, 100% { filter: none; }
+            50% { filter: brightness(1.25); }
+        }
+    </style>
+</head>
+<body>
+    <div class="stage" id="stage">
+        <div id="multi-rows"></div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/js/overlay_room.js?v=1"></script>
+    <script>
+        (function () {
+            const params = new URLSearchParams(window.location.search);
+            const streamerId = (params.get('user') || '').trim();
+            const isPreviewEmbed = params.get('preview_embed') === '1';
+
+            const slotCount = Math.min(12, Math.max(1, parseInt(params.get('rows'), 10) || 1));
+            let metaBase = Math.max(1, parseInt(params.get('meta'), 10) || 500);
+            let metaStep = Math.max(1, parseInt(params.get('gs'), 10) || metaBase);
+            let currentMeta = metaBase;
+            const onGoal = (params.get('og') || 'increase').trim();
+
+            /** Pares configurados (varios regalos por bando); solo se muestra el primero de cada lado. */
+            const pairs = [];
+            for (let i = 0; i < slotCount; i++) {
+                pairs.push({
+                    gl: (params.get('gl' + i) || '').trim(),
+                    gr: (params.get('gr' + i) || '').trim(),
+                    gli: (params.get('gli' + i) || '').trim(),
+                    gri: (params.get('gri' + i) || '').trim()
+                });
+            }
+
+            const leftKeys = [];
+            const rightKeys = [];
+            for (let i = 0; i < pairs.length; i++) {
+                if (pairs[i].gl) leftKeys.push(pairs[i].gl);
+                if (pairs[i].gr) rightKeys.push(pairs[i].gr);
+            }
+
+            const hero0 = pairs[0] || { gli: '', gri: '' };
+            const leftInfo = { img: hero0.gli || '', name: '' };
+            const rightInfo = { img: hero0.gri || '', name: '' };
+
+            let combosRegalosActivos = {};
+
+            let leftPts = 0;
+            let rightPts = 0;
+
+            function normRoom(u) {
+                return String(u || '').trim().toLowerCase().replace(/^@+/, '');
+            }
+            const roomSelf = normRoom(streamerId);
+
+            function matchesListaRegalo(catalogKey, data) {
+                const k = String(catalogKey || '').trim().toLowerCase();
+                if (!k) return false;
+                const nombreTikTok = (data.giftName || '').toLowerCase().replace(/_/g, ' ');
+                const gid = data.giftId != null ? String(data.giftId) : '';
+                if (/^\d+$/.test(k)) {
+                    return gid === k;
+                }
+                const partes = k.split('_').filter(Boolean);
+                if (partes.length === 0) return false;
+                const last = partes[partes.length - 1];
+                if (/^\d+$/.test(last)) {
+                    if (gid === last) return true;
+                    const namePart = partes.slice(0, -1).join(' ');
+                    if (namePart && nombreTikTok.indexOf(namePart) !== -1) return true;
+                    return false;
+                }
+                return nombreTikTok.indexOf(partes.join(' ')) !== -1;
+            }
+
+            function matchesAny(keys, data) {
+                for (let i = 0; i < keys.length; i++) {
+                    if (matchesListaRegalo(keys[i], data)) return true;
+                }
+                return false;
+            }
+
+            function diamondCoinsThisSocketEvent(data) {
+                let d = data.diamondCount;
+                if (d === undefined && data.giftDetails) d = data.giftDetails.diamondCount;
+                const per = Math.max(0, Number(d) || 0);
+                if (per <= 0) return 0;
+
+                if (data.giftType !== 1) {
+                    const r = Math.max(1, Number(data.repeatCount) || 1);
+                    return per * r;
+                }
+
+                const idUnicoGrupo = data.groupId != null ? data.groupId : data.giftId;
+                const prev = combosRegalosActivos[idUnicoGrupo] || 0;
+                const rc = Math.max(0, Number(data.repeatCount) || 0);
+                const nuevos = rc - prev;
+                if (data.giftType === 1) combosRegalosActivos[idUnicoGrupo] = data.repeatCount;
+                if (nuevos <= 0) return 0;
+                return per * nuevos;
+            }
+
+            function applySideVisual(side, info) {
+                const pre = side === 'l' ? 'l' : 'r';
+                const img = document.getElementById('img-' + pre + '-0');
+                const ph = document.getElementById('ph-' + pre + '-0');
+                if (!img || !ph) return;
+                const u = (info.img || '').trim();
+                if (u) {
+                    img.style.display = '';
+                    ph.style.display = 'none';
+                    img.src = u;
+                    img.onerror = function () {
+                        img.style.display = 'none';
+                        ph.style.display = '';
+                    };
+                } else {
+                    img.style.display = 'none';
+                    ph.style.display = '';
+                }
+            }
+
+            function renderAllScores() {
+                const el = document.getElementById('score-l-0');
+                const er = document.getElementById('score-r-0');
+                if (el) el.textContent = String(leftPts);
+                if (er) er.textContent = String(rightPts);
+                notifyParent();
+            }
+
+            function notifyParent() {
+                try {
+                    if (window.parent !== window) {
+                        window.parent.postMessage({
+                            type: 'gift_vs_multi_scores',
+                            left: leftPts,
+                            right: rightPts,
+                            meta: currentMeta,
+                            rows: [{ left: leftPts, right: rightPts }]
+                        }, '*');
+                    }
+                } catch (e) {}
+            }
+
+            function checkGoal() {
+                if (leftPts < currentMeta && rightPts < currentMeta) return;
+                document.body.classList.add('goal-flash');
+                setTimeout(function () { document.body.classList.remove('goal-flash'); }, 550);
+                if (onGoal === 'none') {
+                    renderAllScores();
+                    return;
+                }
+                if (onGoal === 'reset') {
+                    leftPts = 0;
+                    rightPts = 0;
+                } else if (onGoal === 'increase') {
+                    currentMeta += metaStep;
+                    leftPts = 0;
+                    rightPts = 0;
+                }
+                renderAllScores();
+            }
+
+            function considerGift(data) {
+                const total = diamondCoinsThisSocketEvent(data);
+                if (total <= 0) return;
+                if (matchesAny(leftKeys, data)) {
+                    leftPts += total;
+                    checkGoal();
+                    renderAllScores();
+                } else if (matchesAny(rightKeys, data)) {
+                    rightPts += total;
+                    checkGoal();
+                    renderAllScores();
+                }
+            }
+
+            function resetAll() {
+                leftPts = 0;
+                rightPts = 0;
+                currentMeta = metaBase;
+                combosRegalosActivos = {};
+                renderAllScores();
+            }
+
+            function runDemo() {
+                combosRegalosActivos = {};
+                leftPts = 0;
+                rightPts = 0;
+                leftInfo.img = hero0.gli || '';
+                rightInfo.img = hero0.gri || '';
+                applySideVisual('l', leftInfo);
+                applySideVisual('r', rightInfo);
+                renderAllScores();
+            }
+
+            function buildDom() {
+                const host = document.getElementById('multi-rows');
+                host.innerHTML =
+                    '<div class="battle-row">' +
+                    '<div class="side-m">' +
+                    '<div class="hero-m">' +
+                    '<img id="img-l-0" alt="" style="display:none" referrerpolicy="no-referrer">' +
+                    '<span class="ph" id="ph-l-0">🎁</span>' +
+                    '</div>' +
+                    '<div class="score-m" id="score-l-0">0</div>' +
+                    '</div>' +
+                    '<div class="mid-m">' +
+                    '<div class="mid-aura" aria-hidden="true"></div>' +
+                    '<div class="vs-mini">VS</div>' +
+                    '</div>' +
+                    '<div class="side-m">' +
+                    '<div class="hero-m">' +
+                    '<img id="img-r-0" alt="" style="display:none" referrerpolicy="no-referrer">' +
+                    '<span class="ph" id="ph-r-0">🎁</span>' +
+                    '</div>' +
+                    '<div class="score-m" id="score-r-0">0</div>' +
+                    '</div>' +
+                    '</div>';
+                leftInfo.img = hero0.gli || '';
+                rightInfo.img = hero0.gri || '';
+                applySideVisual('l', leftInfo);
+                applySideVisual('r', rightInfo);
+            }
+
+            buildDom();
+
+            const socket = io();
+
+            if (streamerId && !isPreviewEmbed) {
+                setupOverlaySocketRoom(socket, streamerId);
+            }
+
+            socket.on('gift', function (data) {
+                if (isPreviewEmbed) return;
+                considerGift(data);
+            });
+
+            socket.on('nuevo_live', function () {
+                if (isPreviewEmbed) return;
+                resetAll();
+            });
+
+            socket.on('gift_vs_multi_manual', function (data) {
+                if (!data || normRoom(data.room) !== roomSelf) return;
+                const d = Number(data.delta) || 0;
+                if (data.side === 'L') leftPts = Math.max(0, leftPts + d);
+                else if (data.side === 'R') rightPts = Math.max(0, rightPts + d);
+                renderAllScores();
+                checkGoal();
+            });
+
+            socket.on('gift_vs_multi_reset', function (data) {
+                if (!data || normRoom(data.room) !== roomSelf) return;
+                resetAll();
+            });
+
+            socket.on('gift_vs_reset', function (data) {
+                if (!data || normRoom(data.room) !== roomSelf) return;
+                resetAll();
+            });
+
+            socket.on('test_gift_vs_multi', function () {
+                runDemo();
+            });
+
+            window.addEventListener('message', function (e) {
+                const d = e.data;
+                if (!d || typeof d !== 'object') return;
+                if (d.type === 'overlay_test' && d.kind === 'gift_vs_multi') {
+                    runDemo();
+                    return;
+                }
+                if (d.type === 'gift_vs_multi_delta') {
+                    if (d.side === 'L') leftPts = Math.max(0, leftPts + (Number(d.delta) || 0));
+                    else if (d.side === 'R') rightPts = Math.max(0, rightPts + (Number(d.delta) || 0));
+                    renderAllScores();
+                    checkGoal();
+                } else if (d.type === 'gift_vs_multi_local_reset') {
+                    resetAll();
+                }
+            });
+
+            if (isPreviewEmbed) {
+                runDemo();
+            } else {
+                renderAllScores();
+            }
+        })();
+    </script>
+</body>
+</html>

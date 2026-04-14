@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Overlay de Videos</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/js/overlay_room.js?v=1"></script>
+    <style>
+        body { margin: 0; padding: 0; overflow: hidden; background: transparent; }
+        #video-player {
+            width: 100vw;
+            height: 100vh;
+            object-fit: contain; /* Ajusta el video sin deformarlo */
+            display: none; /* Invisible por defecto */
+        }
+    </style>
+</head>
+<body>
+    <video id="video-player" playsinline></video>
+
+    <script>
+        const socket = io();
+		// --- CONEXIÓN AL CANAL PRIVADO DEL STREAMER ---
+const params = new URLSearchParams(window.location.search);
+const streamerId = params.get('user');
+
+if (streamerId) {
+    setupOverlaySocketRoom(socket, streamerId);
+    console.log("Conectado con éxito al canal de: " + streamerId);
+} else {
+    // Esto es opcional, por si quieres ver un aviso si olvidas el ?user= en OBS
+    console.error("⚠️ Error: No se detectó usuario en la URL del overlay.");
+}
+        const vid = document.getElementById('video-player');
+        const queue = [];
+        let isPlaying = false;
+
+        socket.on('play_video', url => {
+            queue.push(url);
+            playNext();
+        });
+
+        socket.on('stop_video', () => {
+            queue.length = 0; // Borra la fila
+            vid.pause();
+            vid.currentTime = 0;
+            vid.style.display = 'none';
+            vid.src = "";
+            isPlaying = false;
+        });
+
+        socket.on('nuevo_live', () => {
+            queue.length = 0;
+            vid.pause();
+            vid.currentTime = 0;
+            vid.style.display = 'none';
+            vid.src = '';
+            isPlaying = false;
+        });
+
+        function playNext() {
+            if (isPlaying || queue.length === 0) return;
+            
+            isPlaying = true;
+            // encodeURI ayuda a que OBS lea archivos que tienen espacios en el nombre
+            vid.src = encodeURI(queue.shift()); 
+            vid.style.display = 'block';
+            
+            vid.play().catch(e => {
+                console.log("Error reproduciendo el video:", e);
+                siguienteVideo(); // Si falla, que salte al siguiente y no se trabe
+            });
+        }
+
+        vid.onended = siguienteVideo;
+        
+        // 🛡️ ESCUDO: Si OBS no puede leer el video, que lo salte en lugar de congelarse
+        vid.onerror = siguienteVideo; 
+
+        function siguienteVideo() {
+            vid.style.display = 'none';
+            vid.src = "";
+            isPlaying = false;
+            playNext(); // Revisa si hay más videos en la fila
+        }
+    </script>
+</body>
+</html>

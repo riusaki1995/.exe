@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Overlay Racha</title>
+  <style>
+    body { margin: 0; background: transparent; font-family: Inter, Arial, sans-serif; }
+    .pill { position: fixed; top: 24px; right: 24px; background: rgba(2,6,23,.78); border: 1px solid rgba(56,189,248,.45); border-radius: 999px; padding: 10px 14px; color: #e2e8f0; font-weight: 800; font-size: 14px; }
+    .num { color: #22d3ee; margin-left: 8px; }
+  </style>
+</head>
+<body>
+  <div class="pill">Racha 60s <span id="n" class="num">0</span></div>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/js/overlay_room.js?v=1"></script>
+  <script>
+    const socket = io();
+    const params = new URLSearchParams(window.location.search);
+    const user = (params.get('user') || '').trim().toLowerCase().replace(/^@+/, '');
+    if (user) setupOverlaySocketRoom(socket, user);
+
+    const events = [];
+    const n = document.getElementById('n');
+    function add() { events.push(Date.now()); }
+    function tick() {
+      const lim = Date.now() - 60000;
+      while (events.length && events[0] < lim) events.shift();
+      n.textContent = events.length;
+    }
+    socket.on('like', add);
+    socket.on('follow', add);
+    socket.on('share', add);
+    socket.on('subscribe', add);
+    socket.on('gift', add);
+    socket.on('nuevo_live', () => {
+      events.length = 0;
+      n.textContent = "0";
+    });
+    window.addEventListener('message', (event) => {
+      if (!event?.data || event.data.type !== 'overlay_test') return;
+      if (event.data.kind !== 'racha') return;
+      add(); add(); add();
+    });
+    setInterval(tick, 500);
+  </script>
+</body>
+</html>

@@ -1,0 +1,1282 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Música | Agencia ELArbol</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+        :root {
+            --tf-bg: #0c0e14;
+            --tf-surface: #151a22;
+            --tf-surface-elevated: #1a2029;
+            --tf-border: rgba(100, 116, 139, 0.32);
+            --tf-teal: #3dd6c3;
+            --tf-teal-soft: rgba(61, 214, 195, 0.18);
+            --tf-pink: #f472b6;
+            --tf-pink-deep: #db2777;
+            --tf-pink-glow: rgba(236, 72, 153, 0.22);
+            --tf-text: #e8edf4;
+            --tf-muted: #8b95a8;
+            --spotify: #1db954;
+            --ytm-red: #ff0000;
+            --ytm-surface: rgba(255, 0, 0, 0.08);
+        }
+        html, body { height: 100%; margin: 0; }
+        body {
+            background: var(--tf-bg);
+            color: var(--tf-text);
+            font-family: 'Inter', sans-serif;
+            font-size: 12px;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100%;
+            overflow: auto;
+            box-sizing: border-box;
+        }
+        .glass {
+            background: var(--tf-surface);
+            border: 1px solid var(--tf-border);
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(61, 214, 195, 0.35); border-radius: 8px; }
+
+        #area-principal { flex: 1 1 auto; padding: 0 8px 12px 0; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; min-height: 0; width: 100%; box-sizing: border-box; }
+
+        .musica-tabs {
+            display: flex;
+            gap: 0;
+            padding: 0;
+            margin: 0 0 12px 0;
+            background: rgba(10, 12, 18, 0.85);
+            border: 1px solid var(--tf-border);
+            border-radius: 10px;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+        .musica-tab {
+            flex: 1;
+            padding: 12px 16px;
+            border: none;
+            background: transparent;
+            color: var(--tf-muted);
+            font-family: 'Inter', sans-serif;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s;
+            border-bottom: 3px solid transparent;
+        }
+        .musica-tab:hover { color: var(--tf-text); background: rgba(255,255,255,0.04); }
+        .musica-tab--active {
+            color: var(--tf-text);
+            background: rgba(255,255,255,0.06);
+        }
+        .musica-tab[data-musica-panel="spotify"].musica-tab--active {
+            border-bottom-color: var(--spotify);
+            color: #e8edf4;
+        }
+        .musica-tab[data-musica-panel="ytm"].musica-tab--active {
+            border-bottom-color: #ff4444;
+            color: #e8edf4;
+        }
+        .musica-panel[hidden] { display: none !important; }
+
+        .spotify-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(90deg, rgba(29, 185, 84, 0.12) 0%, transparent 100%);
+            padding: 12px 16px;
+            border-radius: 10px;
+            border-left: 3px solid var(--spotify);
+        }
+        .spotify-title h1 { margin: 0 0 4px 0; font-size: 16px; font-weight: 800; color: var(--tf-text); }
+        .spotify-title p { margin: 0; color: var(--tf-muted); font-size: 12px; line-height: 1.4; }
+        .btn-spotify {
+            background: var(--spotify);
+            color: #04210f;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 999px;
+            font-weight: 800;
+            cursor: pointer;
+            text-transform: uppercase;
+            font-size: 11px;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-spotify:hover { filter: brightness(1.08); transform: translateY(-1px); }
+        .btn-spotify:disabled { opacity: 0.55; cursor: not-allowed; transform: none; filter: none; }
+
+        .musica-vinculo-col {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 8px;
+            max-width: min(300px, 46vw);
+        }
+        .musica-vinculo-lock {
+            margin: 0;
+            font-size: 11px;
+            color: var(--tf-muted);
+            text-align: right;
+            line-height: 1.4;
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            justify-content: flex-end;
+        }
+        .musica-vinculo-lock[hidden] { display: none !important; }
+        .musica-vinculo-lock__ico { font-size: 15px; line-height: 1.2; flex-shrink: 0; }
+
+        .ytm-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(90deg, rgba(255, 68, 68, 0.12) 0%, transparent 100%);
+            padding: 12px 16px;
+            border-radius: 10px;
+            border-left: 3px solid #ff4444;
+        }
+        .btn-ytm {
+            background: linear-gradient(180deg, #ff4444 0%, #cc0000 100%);
+            color: #fff;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 999px;
+            font-weight: 800;
+            cursor: pointer;
+            text-transform: uppercase;
+            font-size: 11px;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-ytm:hover { filter: brightness(1.1); transform: translateY(-1px); }
+        .btn-ytm:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+
+        .ytm-oauth-uri-wrap {
+            margin-top: 10px;
+            padding: 12px 14px;
+            font-size: 11px;
+            color: var(--tf-muted);
+            line-height: 1.45;
+            border: 1px solid rgba(255, 68, 68, 0.25);
+            border-radius: 10px;
+            background: rgba(0, 0, 0, 0.2);
+        }
+        .ytm-oauth-uri-wrap code {
+            display: block;
+            margin-top: 8px;
+            padding: 8px 10px;
+            border-radius: 6px;
+            background: rgba(10, 12, 18, 0.9);
+            color: #fda4af;
+            font-size: 11px;
+            word-break: break-all;
+            user-select: all;
+        }
+        .ytm-oauth-uri-copy {
+            margin-top: 8px;
+            padding: 6px 12px;
+            font-size: 10px;
+            cursor: pointer;
+            border-radius: 6px;
+            border: 1px solid rgba(255, 68, 68, 0.4);
+            background: transparent;
+            color: #ff6b6b;
+            font-weight: 700;
+        }
+        .ytm-oauth-uri-copy:hover { background: rgba(255, 68, 68, 0.12); }
+
+        .card { padding: 14px; border-radius: 10px; margin-bottom: 0; }
+        .card h2 { margin: 0 0 12px 0; font-size: 14px; color: var(--tf-teal); display: flex; align-items: center; gap: 8px; font-weight: 700; }
+
+        .config-row { display: grid; grid-template-columns: 1fr 1fr; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.06); align-items: center; }
+        .config-row:last-child { border-bottom: none; }
+        .config-label { color: var(--tf-text); font-weight: 600; font-size: 12px; }
+        .config-input { display: flex; align-items: center; gap: 10px; }
+
+        input[type="checkbox"] { width: 15px; height: 15px; accent-color: var(--spotify); cursor: pointer; }
+        #musica-panel-ytm input[type="checkbox"] { accent-color: #ff4444; }
+        input[type="text"], select, input[type="number"] {
+            background: rgba(10, 12, 18, 0.85);
+            border: 1px solid var(--tf-border);
+            padding: 5px 10px;
+            border-radius: 6px;
+            color: var(--tf-text);
+            outline: none;
+            font-family: 'Inter', sans-serif;
+            font-size: 12px;
+        }
+        input:focus, select:focus { border-color: var(--tf-teal); box-shadow: 0 0 0 2px var(--tf-teal-soft); }
+        .comando-txt { color: var(--spotify); font-weight: 800; }
+        #musica-panel-ytm .comando-txt { color: #ff6b6b; }
+
+        .historial-tabla { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 12px; }
+        .historial-tabla th { text-align: left; padding: 8px 10px; color: var(--tf-muted); font-weight: 600; border-bottom: 1px solid var(--tf-border); font-size: 11px; }
+        .historial-tabla td { padding: 8px 10px; border-bottom: 1px solid rgba(255,255,255,0.04); }
+        .status-badge { background: rgba(29, 185, 84, 0.2); color: var(--spotify); padding: 3px 8px; border-radius: 8px; font-size: 11px; font-weight: bold; }
+        #musica-panel-ytm .status-badge { background: rgba(255, 68, 68, 0.2); color: #ff6b6b; }
+        #musica-panel-ytm .status-pendiente { background: rgba(255, 193, 7, 0.15); color: #ffc107; padding: 3px 8px; border-radius: 8px; font-size: 11px; font-weight: bold; }
+        #musica-panel-ytm .status-nota { background: rgba(96, 165, 250, 0.15); color: #93c5fd; padding: 3px 8px; border-radius: 8px; font-size: 11px; font-weight: bold; }
+        .status-credit { background: var(--tf-teal-soft); color: var(--tf-teal); padding: 3px 8px; border-radius: 8px; font-size: 11px; font-weight: bold; }
+
+        .mod-tag {
+            background: rgba(10, 12, 18, 0.85);
+            color: var(--tf-teal);
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            border: 1px solid var(--tf-teal);
+            transition: 0.2s;
+        }
+        .mod-tag:hover { background: var(--tf-teal-soft); color: var(--tf-text); cursor: pointer; }
+
+        .custom-dropdown-container { position: relative; width: 100%; }
+        .custom-dropdown-btn {
+            background: rgba(10, 12, 18, 0.85);
+            border: 1px solid var(--tf-border);
+            padding: 5px 10px;
+            border-radius: 6px;
+            color: var(--tf-text);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: 0.2s;
+        }
+        .custom-dropdown-btn:hover { border-color: var(--tf-teal); }
+        .cd-btn-img { width: 18px; height: 18px; object-fit: contain; display: none; }
+
+        .custom-dropdown-menu { display: none; position: absolute; top: 100%; left: 0; width: 100%; background: var(--tf-surface-elevated); border: 1px solid var(--tf-border); border-radius: 6px; margin-top: 4px; z-index: 999999 !important; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.5); overflow: hidden; }
+        .custom-dropdown-menu.show { display: block; }
+        .cd-search { width: 100%; box-sizing: border-box; background: rgba(10, 12, 18, 0.85); border: none; border-bottom: 1px solid var(--tf-border); padding: 6px 8px; color: var(--tf-text); outline: none; font-size: 12px;}
+        .cd-list { max-height: 180px; overflow-y: auto; display: flex; flex-direction: column; }
+        .cd-item { padding: 6px 8px; display: flex; align-items: center; gap: 8px; cursor: pointer; border-bottom: 1px solid rgba(100, 116, 139, 0.12); transition: 0.2s;}
+        .cd-item:hover { background: rgba(255, 255, 255, 0.06); }
+        .cd-item-img { width: 20px; height: 20px; object-fit: contain; }
+        .cd-item-name { font-size: 12px; color: var(--tf-text); font-weight: 500; text-transform: capitalize; }
+
+        @media (max-width: 900px) {
+            html, body { overflow-x: hidden; max-width: 100vw; }
+            #area-principal { padding: 10px; min-width: 0; box-sizing: border-box; }
+            .glass, .card { max-width: 100%; min-width: 0; box-sizing: border-box; }
+        }
+    </style>
+</head>
+<body>
+    <div id="area-principal">
+        <div class="musica-tabs" role="tablist" aria-label="Servicio de música">
+            <button type="button" class="musica-tab musica-tab--active" data-musica-panel="spotify" id="tab-musica-spotify" role="tab" aria-selected="true">Spotify</button>
+            <button type="button" class="musica-tab" data-musica-panel="ytm" id="tab-musica-ytm" role="tab" aria-selected="false">YouTube Music</button>
+        </div>
+
+        <div id="musica-panel-spotify" class="musica-panel">
+        <div class="spotify-header glass">
+            <div class="spotify-title">
+                <h1>Solicitudes de Canciones de Spotify</h1>
+                <p id="estado-texto">Concede permisos especiales a tus seguidores para controlar la música.</p>
+            </div>
+            <div class="musica-vinculo-col">
+                <p class="musica-vinculo-lock" id="musica-vinculo-lock-spotify" hidden>
+                    <span class="musica-vinculo-lock__ico" aria-hidden="true">🔒</span>
+                    <span>Próximamente</span>
+                </p>
+                <button type="button" id="btn-login" class="btn-spotify">Vincular Spotify</button>
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <div class="card glass">
+                <h2>⚙️ Configuraciones</h2>
+                <div class="config-row">
+                    <div class="config-label">Cobrar Regalo por canción</div>
+                    <div class="config-input" style="flex-wrap: wrap; gap: 10px;">
+                        <input type="checkbox" id="check-cobrar-regalo">
+                        
+                        <div class="custom-dropdown-container" id="dropdown-regalo-musica" data-value="" style="width: 190px;">
+                            <div class="custom-dropdown-btn">
+                                <img src="" class="cd-btn-img">
+                                <span class="cd-text" style="text-transform: capitalize;">Seleccionar Regalo...</span>
+                                <span style="margin-left:auto; color:var(--tf-muted); font-size:9px;">▼</span>
+                            </div>
+                            <div class="custom-dropdown-menu"><input type="text" class="cd-search" placeholder="Buscar..."><div class="cd-list"></div></div>
+                        </div>
+
+                    </div>
+                </div>
+                <div class="config-row">
+                    <div class="config-label">Estado de conexión</div>
+                    <div class="config-input"><span id="status-texto" style="color: #ff4b4b; font-weight: 800;">Disconnected</span></div>
+                </div>
+                <div class="config-row">
+                    <div class="config-label"><span class="comando-txt">!play</span> habilitado</div>
+                    <div class="config-input"><input type="checkbox" id="check-play" checked></div>
+                </div>
+                <div class="config-row">
+                    <div class="config-label"><span class="comando-txt">!skip</span> habilitado</div>
+                    <div class="config-input"><input type="checkbox" id="check-skip" checked></div>
+                </div>
+            </div>
+
+            <div class="card glass">
+                <h2>🔒 Permisos y Filtros</h2>
+                
+                <div class="config-row" style="display: flex; flex-direction: column; align-items: flex-start; gap: 10px; padding-top: 0;">
+                    <div class="config-label" style="color: var(--tf-teal);">Gestor de Moderadores (Lista VIP)</div>
+                    <div style="display: flex; gap: 10px; width: 100%;">
+                        <input type="text" id="input-nuevo-mod" placeholder="Ej. elrincondeloretro" style="flex-grow: 1;">
+                        <button type="button" id="btn-add-mod" class="btn-spotify" style="padding: 8px 16px; border-radius: 6px;">Añadir</button>
+                    </div>
+                    <div id="lista-mods-vip" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 5px;">
+                        </div>
+                </div>
+                <div class="config-row">
+                    <div class="config-label">Solo Suscriptores</div>
+                    <div class="config-input"><input type="checkbox" id="check-solo-subs"></div>
+                </div>
+                <div class="config-row">
+                    <div class="config-label">Nivel de Miembro mínimo</div>
+                    <div class="config-input">
+                        <input type="checkbox" id="check-nivel-miembro">
+                        <input type="number" id="input-nivel-miembro" value="1" min="1" style="width: 50px;">
+                    </div>
+                </div>
+                <div class="config-row">
+    <div class="config-label">Todos</div>
+    <div class="config-input" style="flex-wrap: wrap;">
+        <input type="checkbox" id="check-todos">
+    </div>
+</div>
+            </div>
+        </div>
+
+        <div class="card glass">
+            <h2 style="color: #1db954;">📜 Historial</h2>
+            <table class="historial-tabla">
+                <thead>
+                    <tr>
+                        <th>Fecha y Hora</th>
+                        <th>Usuario (TikTok)</th>
+                        <th>Acción / Pista</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody id="tabla-body">
+                    <tr id="fila-vacia">
+                        <td colspan="4" style="text-align: center; color: #666; padding: 30px;">No hay datos... esperando peticiones.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        </div>
+
+        <div id="musica-panel-ytm" class="musica-panel" hidden>
+        <div class="ytm-header glass">
+            <div class="spotify-title">
+                <h1>Solicitudes de Canciones de YouTube Music</h1>
+                <p id="estado-texto-ytm">Cada streamer debe pulsar «Vincular mi cuenta Google» en su PC una vez. Así las peticiones usan su sesión y no se mezclan.</p>
+            </div>
+            <div class="musica-vinculo-col">
+                <p class="musica-vinculo-lock" id="musica-vinculo-lock-ytm" hidden>
+                    <span class="musica-vinculo-lock__ico" aria-hidden="true">🔒</span>
+                    <span>Próximamente</span>
+                </p>
+                <button type="button" id="btn-login-ytm" class="btn-ytm">Vincular mi cuenta Google</button>
+            </div>
+        </div>
+
+        <div id="ytm-oauth-uri-wrap" class="ytm-oauth-uri-wrap glass" hidden>
+            <strong style="color: var(--tf-teal);">Si Google dice «redirect_uri_mismatch»:</strong> en Google Cloud → Credenciales → tu cliente OAuth → <strong>URIs de redirección autorizados del cliente</strong>, añade <strong>exactamente</strong> esta línea (sin espacio al final, sin barra / al final):
+            <code id="ytm-oauth-uri-value"></code>
+            <button type="button" class="ytm-oauth-uri-copy" id="ytm-oauth-uri-copy">Copiar URI</button>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <div class="card glass">
+                <h2>⚙️ Configuraciones</h2>
+                <div class="config-row">
+                    <div class="config-label">Cobrar Regalo por canción</div>
+                    <div class="config-input" style="flex-wrap: wrap; gap: 10px;">
+                        <input type="checkbox" id="check-cobrar-regalo-ytm">
+                        <div class="custom-dropdown-container" id="dropdown-regalo-musica-ytm" data-value="" style="width: 190px;">
+                            <div class="custom-dropdown-btn">
+                                <img src="" class="cd-btn-img">
+                                <span class="cd-text" style="text-transform: capitalize;">Seleccionar Regalo...</span>
+                                <span style="margin-left:auto; color:var(--tf-muted); font-size:9px;">▼</span>
+                            </div>
+                            <div class="custom-dropdown-menu"><input type="text" class="cd-search" placeholder="Buscar..."><div class="cd-list"></div></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="config-row">
+                    <div class="config-label">Estado de conexión</div>
+                    <div class="config-input"><span id="status-texto-ytm" style="color: #ff4b4b; font-weight: 800;">Disconnected</span></div>
+                </div>
+                <div class="config-row">
+                    <div class="config-label"><span class="comando-txt">!play</span> habilitado</div>
+                    <div class="config-input"><input type="checkbox" id="check-play-ytm" checked></div>
+                </div>
+                <div class="config-row">
+                    <div class="config-label"><span class="comando-txt">!skip</span> habilitado</div>
+                    <div class="config-input"><input type="checkbox" id="check-skip-ytm" checked></div>
+                </div>
+            </div>
+
+            <div class="card glass">
+                <h2>🔒 Permisos y Filtros</h2>
+                <div class="config-row" style="display: flex; flex-direction: column; align-items: flex-start; gap: 10px; padding-top: 0;">
+                    <div class="config-label" style="color: var(--tf-teal);">Gestor de Moderadores (Lista VIP)</div>
+                    <div style="display: flex; gap: 10px; width: 100%;">
+                        <input type="text" id="input-nuevo-mod-ytm" placeholder="Ej. elrincondeloretro" style="flex-grow: 1;">
+                        <button type="button" id="btn-add-mod-ytm" class="btn-ytm" style="padding: 8px 16px; border-radius: 6px;">Añadir</button>
+                    </div>
+                    <div id="lista-mods-vip-ytm" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 5px;"></div>
+                </div>
+                <div class="config-row">
+                    <div class="config-label">Solo Suscriptores</div>
+                    <div class="config-input"><input type="checkbox" id="check-solo-subs-ytm"></div>
+                </div>
+                <div class="config-row">
+                    <div class="config-label">Nivel de Miembro mínimo</div>
+                    <div class="config-input">
+                        <input type="checkbox" id="check-nivel-miembro-ytm">
+                        <input type="number" id="input-nivel-miembro-ytm" value="1" min="1" style="width: 50px;">
+                    </div>
+                </div>
+                <div class="config-row">
+                    <div class="config-label">Todos</div>
+                    <div class="config-input" style="flex-wrap: wrap;">
+                        <input type="checkbox" id="check-todos-ytm">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card glass">
+            <h2 style="color: #ff4444;">📜 Historial</h2>
+            <table class="historial-tabla">
+                <thead>
+                    <tr>
+                        <th>Fecha y Hora</th>
+                        <th>Usuario (TikTok)</th>
+                        <th>Acción / Pista</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody id="tabla-body-ytm">
+                    <tr id="fila-vacia-ytm">
+                        <td colspan="4" style="text-align: center; color: #666; padding: 30px;">No hay datos... esperando peticiones.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        let salaActualMusica = '';
+        socket.on('connect', () => { salaActualMusica = ''; });
+        // 🔥 RADAR INTELIGENTE: Verifica cada segundo si el panel ya se conectó
+        setInterval(() => {
+            try {
+                const inputUsuario = window.parent.document.getElementById('input-usuario');
+                const usuario = inputUsuario ? inputUsuario.value.trim().toLowerCase().replace(/^@+/, '') : '';
+                
+                const btnDesconectar = window.parent.document.getElementById('btn-desconectar');
+                const estaConectado = btnDesconectar && window.getComputedStyle(btnDesconectar).display !== 'none';
+
+                // Si estamos conectados pero la música no ha entrado a la sala, la metemos a la fuerza
+                if (usuario && estaConectado && salaActualMusica !== usuario) {
+                    socket.emit('join_room', usuario);
+                    salaActualMusica = usuario;
+                    console.log("🟢 PANEL MÚSICA ESCUCHANDO A: @" + usuario);
+                } else if (!estaConectado && salaActualMusica !== '') {
+                    salaActualMusica = ''; // Resetea si desconectas el live
+                }
+            } catch(e) {}
+        }, 1000);		
+        let spotifyAccessToken = localStorage.getItem('spotify_token') || null;
+        let youtubeAccessToken = localStorage.getItem('youtube_access_token') || null;
+        let creditosMusica = { spotify: {}, ytm: {} };
+        let musicaActiva = localStorage.getItem('musica_activa_tab') === 'ytm' ? 'ytm' : 'spotify';
+
+        function setMusicaTab(panel) {
+            musicaActiva = panel === 'ytm' ? 'ytm' : 'spotify';
+            localStorage.setItem('musica_activa_tab', musicaActiva);
+            const panelSpotify = document.getElementById('musica-panel-spotify');
+            const panelYtm = document.getElementById('musica-panel-ytm');
+            const tabSp = document.getElementById('tab-musica-spotify');
+            const tabYtm = document.getElementById('tab-musica-ytm');
+            if (panelSpotify) panelSpotify.hidden = musicaActiva !== 'spotify';
+            if (panelYtm) panelYtm.hidden = musicaActiva !== 'ytm';
+            if (tabSp) {
+                tabSp.classList.toggle('musica-tab--active', musicaActiva === 'spotify');
+                tabSp.setAttribute('aria-selected', musicaActiva === 'spotify' ? 'true' : 'false');
+            }
+            if (tabYtm) {
+                tabYtm.classList.toggle('musica-tab--active', musicaActiva === 'ytm');
+                tabYtm.setAttribute('aria-selected', musicaActiva === 'ytm' ? 'true' : 'false');
+            }
+            setTimeout(function () {
+                if (typeof applyMusicaVinculoGate === 'function') applyMusicaVinculoGate();
+            }, 0);
+        }
+        document.getElementById('tab-musica-spotify')?.addEventListener('click', () => setMusicaTab('spotify'));
+        document.getElementById('tab-musica-ytm')?.addEventListener('click', () => setMusicaTab('ytm'));
+        setMusicaTab(musicaActiva); 
+        
+        const SPOTIFY_CLIENT_ID = 'ea5856a2acba48398db477d9406c634b'; 
+        const isLocal = window.location.hostname === "127.0.0.1" || window.location.hostname === "localhost";
+const REDIRECT_URI = isLocal 
+    ? 'http://127.0.0.1:3000/musica.html' 
+    : 'https://livecoins.net/musica.html';
+
+        const urlAuth = atob('aHR0cHM6Ly9hY2NvdW50cy5zcG90aWZ5LmNvbS9hdXRob3JpemU=');
+        const urlToken = atob('aHR0cHM6Ly9hY2NvdW50cy5zcG90aWZ5LmNvbS9hcGkvdG9rZW4=');
+        const urlSearch = atob('aHR0cHM6Ly9hcGkuc3BvdGlmeS5jb20vdjEvc2VhcmNoP3E9');
+        const urlQueue = atob('aHR0cHM6Ly9hcGkuc3BvdGlmeS5jb20vdjEvbWUvcGxheWVyL3F1ZXVlP3VyaT0=');
+        const urlSkip = atob('aHR0cHM6Ly9hcGkuc3BvdGlmeS5jb20vdjEvbWUvcGxheWVyL25leHQ=');
+
+        const YT_CALLBACK_PATH = '/youtube-music-callback.html';
+        const YT_OAUTH_SCOPE = 'https://www.googleapis.com/auth/youtube.readonly';
+        /** ID OAuth de Google (público). Si está vacío, se usa el que envía el servidor (archivo youtube_oauth_client_id.txt o env). */
+        const YOUTUBE_OAUTH_CLIENT_ID_EMBEDDED = '197493231955-jinuhdpj94pbl5r5a7lg26kiulf8c93p.apps.googleusercontent.com';
+
+        /** Mismo origen que esta página → localStorage del PKCE coincide con youtube-music-callback.html. En Google Cloud añade la URI exacta (p. ej. http://localhost:3000/... y http://127.0.0.1:3000/... si usas ambas). */
+        function getYoutubeOAuthRedirectUri() {
+            return window.location.origin + YT_CALLBACK_PATH;
+        }
+
+        function refreshYtmOAuthUriHint() {
+            const wrap = document.getElementById('ytm-oauth-uri-wrap');
+            const val = document.getElementById('ytm-oauth-uri-value');
+            if (!wrap || !val) return;
+            try {
+                val.textContent = getYoutubeOAuthRedirectUri();
+                const hasClient = !!(youtubeClientIdConfigured || (YOUTUBE_OAUTH_CLIENT_ID_EMBEDDED || '').trim());
+                wrap.hidden = !hasClient;
+            } catch (e) {}
+        }
+
+        let catalogoRegalosGlobal = [];
+
+        // === CARGAR REGALOS Y GENERAR EL DESPLEGABLE VISUAL ===
+        async function cargarRegalos() {
+            try {
+                const res = await fetch('/lista-regalos-locales');
+                const regalos = await res.json();
+                if (regalos.length > 0) {
+                    catalogoRegalosGlobal = regalos.map(r => ({ nombre: r.archivo, imagen: r.url }));
+                }
+            } catch(e){}
+        }
+        cargarRegalos();
+
+        function setupRegaloDropdown(containerId) {
+            const dropdownContainer = document.getElementById(containerId);
+            if (!dropdownContainer) return;
+            const dropdownBtn = dropdownContainer.querySelector('.custom-dropdown-btn');
+            const dropdownMenu = dropdownContainer.querySelector('.custom-dropdown-menu');
+            const searchInput = dropdownContainer.querySelector('.cd-search');
+            const cdList = dropdownContainer.querySelector('.cd-list');
+            const cdBtnImg = dropdownContainer.querySelector('.cd-btn-img');
+            const cdText = dropdownContainer.querySelector('.cd-text');
+
+            function renderLista(filtro = '') {
+                cdList.innerHTML = '';
+                const filtrados = catalogoRegalosGlobal.filter(r => r.nombre.toLowerCase().includes(filtro.toLowerCase()));
+                filtrados.forEach(regalo => {
+                    const item = document.createElement('div'); item.className = 'cd-item';
+                    item.innerHTML = `<img src="${regalo.imagen}" class="cd-item-img"><div class="cd-item-info"><span class="cd-item-name">${regalo.nombre.replace(/_/g, ' ')}</span></div>`;
+                    item.addEventListener('click', () => {
+                        cdBtnImg.src = regalo.imagen;
+                        cdBtnImg.style.display = 'block';
+                        cdText.textContent = regalo.nombre.replace(/_/g, ' ');
+                        dropdownContainer.dataset.value = regalo.nombre;
+                        dropdownMenu.classList.remove('show');
+                    });
+                    cdList.appendChild(item);
+                });
+            }
+
+            dropdownBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                document.querySelectorAll('.custom-dropdown-menu').forEach(m => m.classList.remove('show'));
+                dropdownMenu.classList.add('show');
+                renderLista();
+            });
+
+            searchInput.addEventListener('input', (e) => renderLista(e.target.value));
+            searchInput.addEventListener('click', (e) => e.stopPropagation());
+        }
+        setupRegaloDropdown('dropdown-regalo-musica');
+        setupRegaloDropdown('dropdown-regalo-musica-ytm');
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.custom-dropdown-container')) {
+                document.querySelectorAll('.custom-dropdown-menu').forEach(menu => menu.classList.remove('show'));
+            }
+        });
+
+        // === SISTEMA DE COBRO VISUALIZADO ===
+        function procesarGiftPanel(data, ids, mapaCreditos, panelHistorial) {
+            const cobrarRegalo = document.getElementById(ids.checkCobrar)?.checked;
+            if (!cobrarRegalo) return;
+            const dropdown = document.getElementById(ids.dropdown);
+            const regaloElegido = dropdown && dropdown.dataset ? dropdown.dataset.value : '';
+            if (!regaloElegido) return;
+            if (data.giftName.toLowerCase().includes(regaloElegido.split('_')[0]) || regaloElegido.includes(data.giftName.toLowerCase())) {
+                if (data.repeatEnd || data.giftType !== 1) {
+                    const uid = data.uniqueId;
+                    if (!mapaCreditos[uid]) mapaCreditos[uid] = 0;
+                    mapaCreditos[uid] += data.repeatCount;
+                    agregarFilaHistorial(uid, `🎁 Envió ${data.repeatCount} Regalos para Música`, 'credito', panelHistorial);
+                }
+            }
+        }
+        socket.on('gift', data => {
+            procesarGiftPanel(data, { checkCobrar: 'check-cobrar-regalo', dropdown: 'dropdown-regalo-musica' }, creditosMusica.spotify, 'spotify');
+            procesarGiftPanel(data, { checkCobrar: 'check-cobrar-regalo-ytm', dropdown: 'dropdown-regalo-musica-ytm' }, creditosMusica.ytm, 'ytm');
+        });
+
+        // === GESTOR DE MODERADORES VIP ===
+        // Solo lista guardada (sin nombres por defecto: antes ciertos @ pasaban todos los filtros como VIP)
+        let modsVip = [];
+        try {
+            const rawMods = localStorage.getItem('mods_vip_list');
+            if (rawMods) modsVip = JSON.parse(rawMods);
+        } catch (e) {}
+        if (!Array.isArray(modsVip)) modsVip = [];
+
+        function renderModsVip() {
+            ['lista-mods-vip', 'lista-mods-vip-ytm'].forEach(listId => {
+                const container = document.getElementById(listId);
+                if (!container) return;
+                container.innerHTML = '';
+                modsVip.forEach(mod => {
+                    const tag = document.createElement('span');
+                    tag.className = 'mod-tag';
+                    tag.title = 'Clic para eliminar';
+                    tag.innerHTML = `${mod} <span>&times;</span>`;
+                    tag.onclick = () => {
+                        modsVip = modsVip.filter(m => m !== mod);
+                        localStorage.setItem('mods_vip_list', JSON.stringify(modsVip));
+                        renderModsVip();
+                    };
+                    container.appendChild(tag);
+                });
+            });
+        }
+        renderModsVip(); // Lo renderizamos al abrir la página
+
+        function añadirModDesdeInput(inputId) {
+            const el = document.getElementById(inputId);
+            let user = (el && el.value || '').trim().toLowerCase().replace('@', '');
+            if (user && !modsVip.includes(user)) {
+                modsVip.push(user);
+                localStorage.setItem('mods_vip_list', JSON.stringify(modsVip));
+                renderModsVip();
+            }
+            if (el) el.value = '';
+        }
+        document.getElementById('btn-add-mod').onclick = () => añadirModDesdeInput('input-nuevo-mod');
+        document.getElementById('btn-add-mod-ytm').onclick = () => añadirModDesdeInput('input-nuevo-mod-ytm');
+
+        /** TikTok Live Connector pone userBadges, isSubscriber, gifterLevel, etc. en la raíz del mensaje; rawData suele no existir. */
+        function datosUsuarioChat(data) {
+            if (!data) return {};
+            return Object.assign({}, data.rawData || {}, data);
+        }
+
+        // Función central y Auto-Aprendizaje
+        function esModerador(data) {
+            if (!data) return false;
+            const usuario = (data.uniqueId || data.user || "").toLowerCase();
+            if (!usuario) return false;
+
+            if (modsVip.includes(usuario)) return true;
+
+            const u = datosUsuarioChat(data);
+            let esModOficial = false;
+            if (u.isModerator === true || u.isMod === true) {
+                esModOficial = true;
+            } else if (u.userBadges && Array.isArray(u.userBadges)) {
+                esModOficial = u.userBadges.some(b =>
+                    (b.type && String(b.type).toLowerCase().includes('moderator')) ||
+                    (b.name && String(b.name).toLowerCase().includes('moderator')) ||
+                    b.badgeSceneType === 1
+                );
+            }
+
+            if (esModOficial && !modsVip.includes(usuario)) {
+                modsVip.push(usuario);
+                localStorage.setItem('mods_vip_list', JSON.stringify(modsVip));
+                renderModsVip();
+            }
+            return esModOficial;
+        }
+
+        // === FUNCIONES UI Y SPOTIFY ===
+        const btnLogin = document.getElementById('btn-login');
+        const statusTexto = document.getElementById('status-texto');
+        const btnLoginYtm = document.getElementById('btn-login-ytm');
+        const statusTextoYtm = document.getElementById('status-texto-ytm');
+        const estadoTextoYtmHeader = document.getElementById('estado-texto-ytm');
+        let youtubeClientIdConfigured = '';
+        let youtubeHasApiKey = false;
+        /** true si la API indica explícitamente que no hay secreto (cliente OAuth tipo «Aplicación web» lo necesita). */
+        let youtubeOAuthMissingWebSecret = false;
+
+        function panelTiktokUsuarioRaw() {
+            try {
+                const p = window.parent;
+                if (!p || p === window) return '';
+                const doc = p.document;
+                return (doc.getElementById('input-usuario')?.value ||
+                    doc.getElementById('input-usuario-browser')?.value || '').trim();
+            } catch (e) {
+                return '';
+            }
+        }
+
+        function isJesusUser() {
+            const u = panelTiktokUsuarioRaw().replace(/^@+/, '').toLowerCase();
+            return u === 'jesus';
+        }
+
+        async function cargarYoutubeClientId() {
+            try {
+                const r = await fetch('/api/youtube-oauth-config');
+                const j = await r.json();
+                youtubeClientIdConfigured = (j.clientId || YOUTUBE_OAUTH_CLIENT_ID_EMBEDDED || '').trim();
+                youtubeHasApiKey = !!j.hasApiKey;
+                youtubeOAuthMissingWebSecret = !!(j.clientId && j.hasClientSecret === false);
+                return youtubeClientIdConfigured;
+            } catch (e) {
+                youtubeClientIdConfigured = (YOUTUBE_OAUTH_CLIENT_ID_EMBEDDED || '').trim();
+                return youtubeClientIdConfigured;
+            }
+        }
+
+        function actualizarInterfazYtm() {
+            if (!statusTextoYtm || !btnLoginYtm) return;
+            if (youtubeAccessToken) {
+                statusTextoYtm.textContent = 'Connected';
+                statusTextoYtm.style.color = '#7bed9f';
+                if (estadoTextoYtmHeader) {
+                    estadoTextoYtmHeader.textContent = 'Cuenta Google vinculada en este navegador. Cada streamer hace lo mismo en su equipo; el token no se comparte entre PCs.';
+                }
+                btnLoginYtm.textContent = 'Cambiar cuenta Google';
+                btnLoginYtm.style.display = '';
+                btnLoginYtm.disabled = false;
+            } else if (youtubeClientIdConfigured) {
+                statusTextoYtm.textContent = 'Pendiente: vincular cuenta';
+                statusTextoYtm.style.color = '#ffc107';
+                if (estadoTextoYtmHeader) {
+                    let hint = 'Pulsa «Vincular mi cuenta Google». Cada persona que use el panel debe iniciar sesión en su propio PC para no mezclar música.';
+                    if (youtubeOAuthMissingWebSecret) {
+                        hint += ' Si al autorizar aparece «client_secret», crea en el servidor el archivo youtube_oauth_client_secret.txt (una línea = secreto de Credenciales en Google Cloud) o define YOUTUBE_OAUTH_CLIENT_SECRET.';
+                    }
+                    estadoTextoYtmHeader.textContent = hint;
+                }
+                btnLoginYtm.textContent = 'Vincular mi cuenta Google';
+                btnLoginYtm.style.display = '';
+                btnLoginYtm.disabled = false;
+            } else if (youtubeHasApiKey) {
+                statusTextoYtm.textContent = 'Solo servidor (sin OAuth)';
+                statusTextoYtm.style.color = '#aab0bc';
+                if (estadoTextoYtmHeader) {
+                    estadoTextoYtmHeader.textContent = 'Solo hay clave API en el servidor (búsquedas compartidas). Para vincular cuentas, añade youtube_oauth_client_id.txt o YOUTUBE_OAUTH_CLIENT_ID en el servidor.';
+                }
+                btnLoginYtm.style.display = 'none';
+            } else {
+                statusTextoYtm.textContent = 'No disponible';
+                statusTextoYtm.style.color = '#ff4b4b';
+                if (estadoTextoYtmHeader) {
+                    estadoTextoYtmHeader.textContent = 'Falta configuración: clave API del programa y/o Client ID OAuth (ver quien distribuye la app).';
+                }
+                btnLoginYtm.textContent = 'Vincular mi cuenta Google';
+                btnLoginYtm.style.display = '';
+                btnLoginYtm.disabled = true;
+            }
+        }
+
+        function applyMusicaVinculoGate() {
+            const ok = isJesusUser();
+            const lockSp = document.getElementById('musica-vinculo-lock-spotify');
+            const lockYtm = document.getElementById('musica-vinculo-lock-ytm');
+            if (lockSp) lockSp.hidden = ok;
+            if (lockYtm) lockYtm.hidden = ok;
+            actualizarInterfaz();
+            actualizarInterfazYtm();
+            if (!ok) {
+                if (btnLogin) btnLogin.disabled = true;
+                if (btnLoginYtm && btnLoginYtm.style.display !== 'none') btnLoginYtm.disabled = true;
+            }
+        }
+
+        function actualizarInterfaz() {
+            if (spotifyAccessToken) {
+                statusTexto.innerText = "Connected";
+                statusTexto.style.color = "#1db954";
+                btnLogin.innerText = "Re-vincular Spotify";
+            }
+        }
+        actualizarInterfaz();
+        cargarYoutubeClientId().then(() => {
+            actualizarInterfazYtm();
+            refreshYtmOAuthUriHint();
+            applyMusicaVinculoGate();
+        });
+        setInterval(applyMusicaVinculoGate, 2000);
+        document.getElementById('ytm-oauth-uri-copy')?.addEventListener('click', () => {
+            const t = document.getElementById('ytm-oauth-uri-value')?.textContent;
+            if (t) {
+                navigator.clipboard.writeText(t).then(() => {
+                    alert('Copiado. En Google Cloud: Credenciales → tu ID de cliente OAuth → URIs de redirección autorizados → + AÑADIR URI → pegar → Guardar.');
+                }).catch(() => {});
+            }
+        });
+
+        function generarStringAleatorio(length) {
+            const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            return crypto.getRandomValues(new Uint8Array(length)).reduce((acc, x) => acc + possible[x % possible.length], "");
+        }
+        async function sha256(plain) {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(plain);
+            return window.crypto.subtle.digest('SHA-256', data);
+        }
+        function base64urlencode(a) {
+            return btoa(String.fromCharCode.apply(null, new Uint8Array(a))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+        }
+
+        const urlParams = new URLSearchParams(window.location.search);
+        let codigoAuth = urlParams.get('code');
+        let secretState = urlParams.get('state'); // <-- ¡NUEVO! Recuperamos la llave desde la URL
+
+        if (codigoAuth && secretState) {
+            document.body.innerHTML = `
+                <div style="display:flex; height:100vh; width:100vw; align-items:center; justify-content:center; background:#191414; color:#1DB954; font-family:'Inter', sans-serif; font-size:20px; font-weight:800; flex-direction:column; gap:10px;">
+                    <div>🔄 Vinculando con Spotify...</div>
+                    <div style="font-size:14px; color:#b3b3b3;">Por favor espera</div>
+                </div>
+            `;
+
+            const payload = {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams({
+                    client_id: SPOTIFY_CLIENT_ID,
+                    grant_type: 'authorization_code',
+                    code: codigoAuth,
+                    redirect_uri: REDIRECT_URI,
+                    code_verifier: secretState 
+                }),
+            };
+
+            fetch(urlToken, payload)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.access_token) {
+                        // Enviamos el token directo a tu panel principal a prueba de fallos
+                        if (window.opener) {
+                            window.opener.postMessage({ type: 'SPOTIFY_TOKEN', token: data.access_token }, '*');
+                        }
+                        localStorage.setItem('spotify_token', data.access_token);
+
+                        document.body.innerHTML = `
+                            <div style="display:flex; height:100vh; width:100vw; align-items:center; justify-content:center; background:#191414; color:#1DB954; font-family:'Inter', sans-serif; font-size:24px; font-weight:800;">
+                                ✅ ¡Vinculado con éxito!
+                            </div>
+                        `;
+                        setTimeout(() => window.close(), 1000);
+                    } else {
+                        document.body.innerHTML = `
+                            <div style="display:flex; height:100vh; width:100vw; align-items:center; justify-content:center; background:#191414; color:#ff4b4b; font-family:'Inter', sans-serif; font-size:16px; font-weight:800; flex-direction:column; padding: 20px; text-align: center;">
+                                <span>❌ Error de Spotify:</span>
+                                <span style="font-size:14px; color:#fff; margin-top:10px; background:#333; padding:10px; border-radius:8px;">${data.error_description || data.error}</span>
+                            </div>
+                        `;
+                    }
+                })
+                .catch(err => {
+                    document.body.innerHTML = `<div style="display:flex; height:100vh; width:100vw; align-items:center; justify-content:center; background:#191414; color:#ff4b4b; font-family:'Inter', sans-serif; font-size:18px; font-weight:800;">📡 Error de conexión.</div>`;
+                });
+        }
+
+        btnLogin.onclick = async () => {
+            if (!isJesusUser()) {
+                alert('Próximamente');
+                return;
+            }
+            const codeVerifier = generarStringAleatorio(64);
+            const hashed = await sha256(codeVerifier);
+            const params = new URLSearchParams({
+                response_type: 'code',
+                client_id: SPOTIFY_CLIENT_ID,
+                scope: 'user-modify-playback-state user-read-currently-playing user-read-playback-state',
+                code_challenge_method: 'S256',
+                code_challenge: base64urlencode(hashed),
+                redirect_uri: REDIRECT_URI,
+                state: codeVerifier // <-- ¡NUEVO! Escondemos la llave en la URL para que no se pierda
+            });
+            window.open(urlAuth + "?" + params.toString(), 'SpotifyLogin', 'width=500,height=650');
+        };
+
+        async function ensureYoutubeAccessToken() {
+            if (!youtubeAccessToken) return null;
+            const exp = parseInt(localStorage.getItem('youtube_expires_at') || '0', 10);
+            if (Date.now() < exp - 120000) return youtubeAccessToken;
+            const rt = localStorage.getItem('youtube_refresh_token');
+            if (!rt) return youtubeAccessToken;
+            try {
+                const res = await fetch('/api/youtube-refresh', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ refresh_token: rt })
+                });
+                const data = await res.json();
+                if (data.ok && data.access_token) {
+                    youtubeAccessToken = data.access_token;
+                    localStorage.setItem('youtube_access_token', data.access_token);
+                    localStorage.setItem('youtube_expires_at', String(Date.now() + (data.expires_in || 3600) * 1000));
+                    return youtubeAccessToken;
+                }
+            } catch (e) {}
+            return null;
+        }
+
+        btnLoginYtm.onclick = async () => {
+            if (!isJesusUser()) {
+                alert('Próximamente');
+                return;
+            }
+            const cid = (youtubeClientIdConfigured || await cargarYoutubeClientId() || YOUTUBE_OAUTH_CLIENT_ID_EMBEDDED || '').trim();
+            if (!cid) {
+                alert('Hace falta el ID de cliente OAuth de Google. Quien distribuye la app debe crear un archivo youtube_oauth_client_id.txt (una línea) junto al servidor, o variable YOUTUBE_OAUTH_CLIENT_ID, o pegar el ID en musica.html (YOUTUBE_OAUTH_CLIENT_ID_EMBEDDED). En Google Cloud, añade como URI de redirección EXACTA: ' + getYoutubeOAuthRedirectUri());
+                return;
+            }
+            const redirectUri = getYoutubeOAuthRedirectUri();
+            const codeVerifier = generarStringAleatorio(64);
+            localStorage.setItem('yt_oauth_client_id', cid);
+            localStorage.setItem('yt_oauth_redirect_uri', redirectUri);
+            localStorage.setItem('yt_pkce_verifier', codeVerifier);
+            const hashed = await sha256(codeVerifier);
+            const params = new URLSearchParams({
+                client_id: cid,
+                redirect_uri: redirectUri,
+                response_type: 'code',
+                scope: YT_OAUTH_SCOPE,
+                code_challenge_method: 'S256',
+                code_challenge: base64urlencode(hashed),
+                access_type: 'offline',
+                prompt: 'consent'
+            });
+            window.open('https://accounts.google.com/o/oauth2/v2/auth?' + params.toString(), 'YouTubeOAuth', 'width=520,height=720');
+        };
+
+        window.addEventListener('message', (event) => {
+            if (event.data && event.data.type === 'SPOTIFY_TOKEN') {
+                spotifyAccessToken = event.data.token;
+                localStorage.setItem('spotify_token', spotifyAccessToken);
+                actualizarInterfaz();
+            }
+            if (event.data && event.data.type === 'YOUTUBE_TOKEN') {
+                youtubeAccessToken = event.data.access_token;
+                localStorage.setItem('youtube_access_token', youtubeAccessToken);
+                if (event.data.refresh_token) {
+                    localStorage.setItem('youtube_refresh_token', event.data.refresh_token);
+                }
+                actualizarInterfazYtm();
+            }
+            if (event.data && event.data.type === 'YOUTUBE_OAUTH_ERR') {
+                console.warn('[YouTube OAuth]', event.data.error);
+            }
+        });
+
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'spotify_token' && e.newValue) { spotifyAccessToken = e.newValue; actualizarInterfaz(); }
+            if (e.key === 'youtube_access_token' && e.newValue) { youtubeAccessToken = e.newValue; actualizarInterfazYtm(); }
+        });
+
+        // === TABLA DE HISTORIAL ===
+        function agregarFilaHistorial(usuario, texto, tipo = 'normal', panel = 'spotify') {
+            const tbodyId = panel === 'ytm' ? 'tabla-body-ytm' : 'tabla-body';
+            const filaVaciaId = panel === 'ytm' ? 'fila-vacia-ytm' : 'fila-vacia';
+            const tbody = document.getElementById(tbodyId);
+            const filaVacia = document.getElementById(filaVaciaId);
+            if (!tbody) return;
+            if (filaVacia) filaVacia.remove();
+
+            const d = new Date();
+            const horaStr = d.getHours() + ':' + (d.getMinutes()<10?'0':'') + d.getMinutes();
+            let badgeClase = 'status-badge';
+            let badgeTexto = 'Añadida a la cola';
+            if (tipo === 'credito') {
+                badgeClase = 'status-credit';
+                badgeTexto = 'Crédito Agregado';
+            } else if (tipo === 'skip') {
+                badgeTexto = 'Saltada';
+            } else if (tipo === 'nota') {
+                badgeClase = panel === 'ytm' ? 'status-nota' : 'status-pendiente';
+                badgeTexto = 'Nota';
+            } else if (tipo === 'pendiente') {
+                badgeClase = 'status-pendiente';
+                badgeTexto = 'Atención';
+            }
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td>Hoy, ${horaStr}</td><td style="color:var(--tf-teal); font-weight:bold;">@${usuario}</td><td>${texto}</td><td><span class="${badgeClase}">${badgeTexto}</span></td>`;
+            tbody.prepend(tr);
+        }
+
+        // === HELPERS DE PERMISOS EXTRA ===
+        /** Misma regla que tiktok-live-connector (data-converter): url con /sub_/ o escenas 4 y 7. */
+        function badgeIndicaSuscriptor(b) {
+            if (!b || typeof b !== 'object') return false;
+            if (b.badgeSceneType === 4 || b.badgeSceneType === 7) return true;
+            const rawUrl = b.url;
+            if (rawUrl) {
+                const urls = Array.isArray(rawUrl) ? rawUrl : [rawUrl];
+                for (const s of urls) {
+                    if (typeof s === 'string' && s.toLowerCase().includes('/sub_')) return true;
+                }
+            }
+            return false;
+        }
+
+        function esSuscriptor(data) {
+            const u = datosUsuarioChat(data);
+            if (!u || !Object.keys(u).length) return false;
+            if (u.isSubscriber === true || u.isSubscriber === 1) return true;
+            if (u.userBadges && Array.isArray(u.userBadges)) {
+                if (u.userBadges.some(badgeIndicaSuscriptor)) return true;
+                return u.userBadges.some(b => {
+                    const t = b.type != null ? String(b.type).toLowerCase() : '';
+                    const n = b.name != null ? String(b.name).toLowerCase() : '';
+                    return t.includes('subscriber') || n.includes('subscriber');
+                });
+            }
+            return false;
+        }
+
+        /** Nivel “miembro”: grado regalo (8), equipo/fans (10), privilege, y campos ya calculados por el connector. */
+        function obtenerNivelMiembro(data) {
+            const u = datosUsuarioChat(data);
+            if (!u || !Object.keys(u).length) return 0;
+            let n = 0;
+            const gl = u.gifterLevel != null ? parseInt(String(u.gifterLevel), 10) : 0;
+            const tm = u.teamMemberLevel != null ? parseInt(String(u.teamMemberLevel), 10) : 0;
+            if (!isNaN(gl)) n = Math.max(n, gl);
+            if (!isNaN(tm)) n = Math.max(n, tm);
+            const badges = u.userBadges;
+            if (!badges || !Array.isArray(badges)) return n;
+            for (let b of badges) {
+                if (b.badgeSceneType === 8 && b.level) n = Math.max(n, parseInt(String(b.level), 10) || 0);
+                if (b.badgeSceneType === 10 && b.level) n = Math.max(n, parseInt(String(b.level), 10) || 0);
+                if (b.privilegeLogExtra && b.privilegeLogExtra.level) n = Math.max(n, parseInt(String(b.privilegeLogExtra.level), 10) || 0);
+                if (b.type === 'privilege' && b.level) n = Math.max(n, parseInt(String(b.level), 10) || 0);
+            }
+            return n;
+        }
+
+        /** Evita doble fila si TikTok/Socket repite el mismo mensaje (p. ej. msgId repetido o eco). */
+        const chatMsgIdsVistos = new Set();
+        const chatFingerReciente = new Map();
+        function esChatDuplicado(data, mensaje) {
+            const mid = data.msgId != null && data.msgId !== '' ? String(data.msgId) : '';
+            if (mid) {
+                if (chatMsgIdsVistos.has(mid)) return true;
+                chatMsgIdsVistos.add(mid);
+                if (chatMsgIdsVistos.size > 600) chatMsgIdsVistos.clear();
+                return false;
+            }
+            const fp = `${data.uniqueId || ''}|${mensaje}`;
+            const ahora = Date.now();
+            const prev = chatFingerReciente.get(fp);
+            if (prev != null && ahora - prev < 3000) return true;
+            chatFingerReciente.set(fp, ahora);
+            if (chatFingerReciente.size > 250) {
+                for (const [k, t] of chatFingerReciente) {
+                    if (ahora - t > 12000) chatFingerReciente.delete(k);
+                }
+            }
+            return false;
+        }
+
+        // --- Permisos por panel (Spotify / YouTube Music) ---
+        function usuarioTienePermisoSpotify(data, esVip) {
+            if (esVip) return true;
+            const checkTodos = document.getElementById('check-todos')?.checked;
+            const checkSoloSubs = document.getElementById('check-solo-subs')?.checked;
+            const checkNivelMiembro = document.getElementById('check-nivel-miembro')?.checked;
+            if (checkTodos) return true;
+            if (checkSoloSubs && esSuscriptor(data)) return true;
+            if (checkNivelMiembro) {
+                const minLevel = parseInt(document.getElementById('input-nivel-miembro').value, 10) || 1;
+                if (obtenerNivelMiembro(data) >= minLevel) return true;
+            }
+            return false;
+        }
+        function usuarioTienePermisoYtm(data, esVip) {
+            if (esVip) return true;
+            const checkTodos = document.getElementById('check-todos-ytm')?.checked;
+            const checkSoloSubs = document.getElementById('check-solo-subs-ytm')?.checked;
+            const checkNivelMiembro = document.getElementById('check-nivel-miembro-ytm')?.checked;
+            if (checkTodos) return true;
+            if (checkSoloSubs && esSuscriptor(data)) return true;
+            if (checkNivelMiembro) {
+                const minLevel = parseInt(document.getElementById('input-nivel-miembro-ytm').value, 10) || 1;
+                if (obtenerNivelMiembro(data) >= minLevel) return true;
+            }
+            return false;
+        }
+
+        // === COMANDOS DIRECTOS DESDE EL CHAT ===
+        socket.on('chat', async (data) => {
+            const mensaje = (data.comment || data.texto || data.text || data.query || '').trim().toLowerCase();
+            if (esChatDuplicado(data, mensaje)) return;
+            const usuario = data.uniqueId || data.user || "Usuario";
+            const esVip = esModerador(data);
+
+            if (mensaje.includes('!play') || mensaje.includes('!skip')) {
+                console.log(`💬 Comando de @${usuario}: ${mensaje} (servicio activo: ${musicaActiva})`);
+            }
+
+            if (musicaActiva === 'spotify') {
+                if (!spotifyAccessToken) return;
+
+                if (mensaje === '!skip' && document.getElementById('check-skip').checked) {
+                    try {
+                        if (!usuarioTienePermisoSpotify(data, esVip)) return;
+                        const skipRes = await fetch(urlSkip, {
+                            method: 'POST',
+                            headers: { 'Authorization': 'Bearer ' + spotifyAccessToken }
+                        });
+                        if (skipRes.ok || skipRes.status === 204) {
+                            agregarFilaHistorial(usuario, "⏩ Saltó la canción", 'skip', 'spotify');
+                        }
+                    } catch (e) {
+                        console.error("Error en !skip:", e);
+                    }
+                    return;
+                }
+
+                if (mensaje.startsWith('!play ') && document.getElementById('check-play').checked) {
+                    try {
+                        if (!esVip) {
+                            const cobrarRegalo = document.getElementById('check-cobrar-regalo').checked;
+                            if (cobrarRegalo) {
+                                if (!creditosMusica.spotify[usuario] || creditosMusica.spotify[usuario] <= 0) return;
+                                creditosMusica.spotify[usuario]--;
+                            } else {
+                                if (!usuarioTienePermisoSpotify(data, esVip)) return;
+                            }
+                        }
+                        const cancion = mensaje.substring(6).trim();
+                        if (!cancion) return;
+                        const searchRes = await fetch(urlSearch + encodeURIComponent(cancion) + "&type=track&limit=1", {
+                            headers: { 'Authorization': 'Bearer ' + spotifyAccessToken }
+                        });
+                        const searchData = await searchRes.json();
+                        if (searchData.tracks && searchData.tracks.items.length > 0) {
+                            const track = searchData.tracks.items[0];
+                            const queueRes = await fetch(urlQueue + track.uri, {
+                                method: 'POST',
+                                headers: { 'Authorization': 'Bearer ' + spotifyAccessToken }
+                            });
+                            if (queueRes.ok || queueRes.status === 204) {
+                                agregarFilaHistorial(usuario, `${track.name} - ${track.artists[0].name}`, 'normal', 'spotify');
+                            }
+                        }
+                    } catch (e) {
+                        console.error("Error en !play:", e);
+                    }
+                }
+                return;
+            }
+
+            if (musicaActiva === 'ytm') {
+                if (mensaje === '!skip' && document.getElementById('check-skip-ytm').checked) {
+                    if (!usuarioTienePermisoYtm(data, esVip)) return;
+                    agregarFilaHistorial(usuario, '⏩ Saltar: no hay API pública para la app YouTube Music (controla la cola en el móvil o PC).', 'nota', 'ytm');
+                    return;
+                }
+                if (mensaje.startsWith('!play ') && document.getElementById('check-play-ytm').checked) {
+                    const ytTokPersonal = await ensureYoutubeAccessToken();
+                    if (youtubeClientIdConfigured && !ytTokPersonal) {
+                        agregarFilaHistorial(usuario, '⚠️ Vincula tu cuenta Google en esta pestaña (botón arriba). Cada streamer en su PC; sin eso no se usa tu sesión.', 'pendiente', 'ytm');
+                        return;
+                    }
+                    if (!ytTokPersonal && !youtubeHasApiKey) {
+                        agregarFilaHistorial(usuario, '⚠️ No hay OAuth ni clave API en el servidor. Configura youtube_oauth_client_id.txt o youtube_api_key.txt.', 'pendiente', 'ytm');
+                        return;
+                    }
+                    if (!esVip) {
+                        const cobrarRegalo = document.getElementById('check-cobrar-regalo-ytm').checked;
+                        if (cobrarRegalo) {
+                            if (!creditosMusica.ytm[usuario] || creditosMusica.ytm[usuario] <= 0) return;
+                            creditosMusica.ytm[usuario]--;
+                        } else {
+                            if (!usuarioTienePermisoYtm(data, esVip)) return;
+                        }
+                    }
+                    const cancion = mensaje.substring(6).trim();
+                    if (!cancion) return;
+                    try {
+                        let searchData;
+                        if (ytTokPersonal) {
+                            const searchUrl = 'https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=1&q=' + encodeURIComponent(cancion);
+                            const searchRes = await fetch(searchUrl, { headers: { Authorization: 'Bearer ' + ytTokPersonal } });
+                            searchData = await searchRes.json();
+                            if (searchData.error) {
+                                agregarFilaHistorial(usuario, (searchData.error.message || 'Error YouTube API'), 'pendiente', 'ytm');
+                                return;
+                            }
+                        } else if (youtubeHasApiKey) {
+                            const searchRes = await fetch('/api/youtube-search?q=' + encodeURIComponent(cancion));
+                            searchData = await searchRes.json();
+                            if (!searchRes.ok || searchData.error) {
+                                const errMsg = (searchData.error && searchData.error.message) || searchData.error || 'Error búsqueda';
+                                agregarFilaHistorial(usuario, String(errMsg), 'pendiente', 'ytm');
+                                return;
+                            }
+                        } else {
+                            return;
+                        }
+                        const item = searchData.items && searchData.items[0];
+                        const vid = item && item.id && item.id.videoId;
+                        if (vid) {
+                            const title = item.snippet && item.snippet.title ? item.snippet.title : cancion;
+                            agregarFilaHistorial(usuario, title + ' — https://music.youtube.com/watch?v=' + vid, 'normal', 'ytm');
+                        } else {
+                            agregarFilaHistorial(usuario, 'Sin resultados para: ' + cancion, 'pendiente', 'ytm');
+                        }
+                    } catch (e) {
+                        console.error('Error en !play YouTube:', e);
+                        agregarFilaHistorial(usuario, 'Error de red al buscar en YouTube.', 'pendiente', 'ytm');
+                    }
+                }
+            }
+        });
+
+    </script>
+</body>
+</html>
