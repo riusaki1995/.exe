@@ -1,0 +1,4 @@
+{
+  "_instrucciones": "1) Sube config/panel-update.json a HTTPS y copia su URL. 2) Pégala en manifestUrl. 3) npm run build. Ver INSTRUCCIONES-ACTUALIZACIONES.txt",
+  "manifestUrl": ""
+}

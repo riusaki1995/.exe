@@ -1,0 +1,80 @@
+========================================
+  AVISOS DE "HAY ACTUALIZACIÓN" (solo .exe)
+========================================
+
+ARCHIVOS IMPORTANTES
+----------------------
+• config/panel-update.json
+  → Es el que SUBES a internet (HTTPS). Los usuarios no lo llevan dentro del programa:
+    el .exe solo guarda la URL donde está este archivo (en update-channel.json del build).
+
+• config/update-channel.json
+  → Solo en TU proyecto: aquí pones la URL pública del panel-update.json.
+  → Vuelve a generar el instalador (npm run build) después de editarlo.
+
+• lib/update-check.js
+  → Lógica interna; no hace falta tocarlo salvo cambios avanzados.
+
+
+PASO 1 — Edita panel-update.json (en la carpeta config/)
+---------------------------------------------------------
+- "version": número de la ÚLTIMA versión que quieres ofrecer (ej. 1.0.62).
+  Debe ser MAYOR que la versión instalada de quien debe ver el aviso.
+  (La versión del instalador sale de package.json → "version" al hacer npm run build.)
+
+- "downloadUrl": enlace HTTPS directo al .exe del instalador nuevo.
+  Ejemplos: tu servidor, GitHub Releases (asset), enlace público de Drive con descarga directa.
+
+- "notes": texto corto que verán en el cuadro (opcional).
+
+
+PASO 2 — Sube panel-update.json a un sitio con HTTPS
+-----------------------------------------------------
+Opciones típicas:
+• Tu propia web: https://tudominio.com/actualizaciones/panel-update.json
+• GitHub: sube el archivo a un repo y usa la URL "raw" del archivo.
+• Firebase Hosting, Netlify, etc. (solo archivo estático).
+
+Copia la URL final completa (debe empezar por https://).
+
+
+PASO 3 — Enlace en el proyecto
+--------------------------------
+Abre config/update-channel.json y pon esa URL en "manifestUrl", por ejemplo:
+
+  "manifestUrl": "https://tudominio.com/actualizaciones/panel-update.json"
+
+Guarda.
+
+
+PASO 4 — Genera el instalador que distribuyes
+-----------------------------------------------
+En la raíz del proyecto:
+  npm run build
+
+El .exe resultante (en dist/) ya sabrá dónde buscar el JSON. Reparte ese instalador.
+
+
+PASO 5 — Cuando salga una versión nueva
+-----------------------------------------
+1) Sube el nuevo .exe a donde lo tengas (Drive, web, GitHub Releases…).
+2) Edita el MISMO panel-update.json en internet (o súbelo de nuevo):
+   - Sube "version" (ej. 1.0.63).
+   - Actualiza "downloadUrl" al nuevo .exe.
+3) Quien tenga una versión vieja, al abrir el panel, verá el aviso.
+
+No hace falta recompilar el .exe solo por cambiar el JSON en el servidor.
+Sí hace falta nuevo build si cambias update-channel.json (nueva URL del JSON).
+
+
+RECORDAR MÁS TARDE
+------------------
+Si el usuario pulsa "Recordar más tarde", no le vuelve a salir el mismo número de versión.
+Cuando subas una versión mayor en el JSON, volverá a avisar.
+
+
+PROBAR
+------
+• Instala un build con version antigua en package.json (ej. 1.0.60).
+• Deja en el servidor panel-update.json con "version": "1.0.62".
+• Abre el panel: debe aparecer el diálogo de actualización.

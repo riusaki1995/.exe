@@ -1,0 +1,5 @@
+{
+  "version": "1.0.62",
+  "downloadUrl": "https://REEMPLAZA-CON-TU-URL-DIRECTA-AL-INSTALADOR.exe",
+  "notes": "Cambia version cuando publiques una release nueva. downloadUrl debe ser HTTPS y apuntar al Panel-TikTok-PRO-Setup.exe (o el nombre que genere electron-builder en dist/)."
+}
