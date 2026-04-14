@@ -1,5 +1,5 @@
 {
-  "version": "1.0.62",
-  "downloadUrl": "https://REEMPLAZA-CON-TU-URL-DIRECTA-AL-INSTALADOR.exe",
+  "version": "1.0.70",
+  "downloadUrl": "https://github.com/riusaki1995/.exe/releases/download/v1.0.70/Panel.TikTok.PRO.Setup.1.0.70.exe",
   "notes": "Cambia version cuando publiques una release nueva. downloadUrl debe ser HTTPS y apuntar al Panel-TikTok-PRO-Setup.exe (o el nombre que genere electron-builder en dist/)."
 }
